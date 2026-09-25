@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+:root {
+  --ink: #10172a;
+  --muted: #64748b;
+  --canvas: #f7f8fc;
+  --line: #e6eaf1;
+  --brand: #4056d8;
+  --brand-deep: #263aa8;
+  --violet: #7c4dff;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; background: var(--canvas); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+/* Lucide SVGs should align to their flex container, never to a text baseline. */
+svg.lucide {
+  display: block;
+  flex-shrink: 0;
+}
+::selection { background: #c7d2fe; color: #172554; }
+
+@layer base {
+  body {
+    @apply bg-bg-light text-slate-800 font-sans antialiased selection:bg-primary-500 selection:text-white;
+  }
+
+  .dark body {
+    @apply bg-bg-dark text-slate-100;
+  }
+
+  /* Typography Hierarchy */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-slate-900 dark:text-white;
+  }
+
+  .text-white h1, .text-white h2, .text-white h3, .text-white h4, .text-white h5, .text-white h6,
+  .text-white [class*="text-"] {
+    color: inherit;
+  }
+
+  h1 { @apply text-4xl md:text-5xl lg:text-6xl; }
+  h2 { @apply text-3xl md:text-4xl; }
+  h3 { @apply text-2xl md:text-3xl; }
+  h4 { @apply text-xl md:text-2xl; }
+  
+  p { @apply leading-relaxed; }
+}
+
+@layer components {
+  /* Premium Glass Effect */
+  .glass-panel {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-800/50 shadow-premium;
+  }
+  
+  .glass-card {
+    @apply bg-white dark:bg-slate-800/80 rounded-2xl shadow-premium border border-slate-100 dark:border-slate-700/50 hover:shadow-premium-hover transition-all duration-300;
+  }
+
+  /* Interactive Elements */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium transition-all duration-200 active:scale-95 shadow-md hover:shadow-lg shadow-primary-500/30;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 active:scale-95 shadow-sm;
+  }
+
+  /* Inputs */
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-200 text-slate-900 dark:text-white;
+  }
+}
+
+/* Background Effects */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.dark .bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+}
+
+.radial-gradient-bg {
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+}

@@ -1,0 +1,1 @@
+const router = require('express').Router(); const controller = require('../controllers/contestController'); const { protect, authorize } = require('../middleware/authMiddleware'); router.get('/', controller.list); router.get('/:id', controller.get); router.post('/', protect, authorize('moderator', 'admin'), controller.create); module.exports = router;

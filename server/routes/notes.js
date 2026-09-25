@@ -1,0 +1,4 @@
+const router = require('express').Router(); const multer = require('multer'); const path = require('path'); const controller = require('../controllers/noteController'); const { protect } = require('../middleware/authMiddleware');
+const storage = multer.diskStorage({ destination: path.join(__dirname, '..', 'uploads'), filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`) });
+const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 }, fileFilter: (req, file, cb) => /pdf|msword|officedocument|presentation|image/.test(file.mimetype) ? cb(null, true) : cb(new Error('Only document, presentation, PDF, and image files are allowed')) });
+router.get('/', controller.list); router.get('/:id', controller.get); router.post('/', protect, upload.single('file'), controller.create); module.exports = router;
