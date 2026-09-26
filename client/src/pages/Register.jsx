@@ -1,17 +1,34 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, User, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Sparkles, User, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, loginWithGoogle } = useContext(AuthContext);
+  const { user, register, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const getErrorMessage = (err) => {
+    if (err.response?.data?.message) {
+      return err.response.data.message;
+    }
+    if (err.code === 'ERR_NETWORK' || !err.response) {
+      return 'Unable to reach server. Please verify backend connection.';
+    }
+    return 'Registration failed. Email may already be registered.';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +39,7 @@ export default function Register() {
       await register({ name, email, password });
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Email may already be registered.');
+      setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -38,7 +55,7 @@ export default function Register() {
       });
       navigate('/dashboard');
     } catch (err) {
-      setError('Google Sign-Up failed. Please try again.');
+      setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -124,13 +141,20 @@ export default function Register() {
             <div className="relative">
               <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
-                type="password" 
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs font-medium focus:border-indigo-600 focus:bg-white focus:outline-none transition" 
+                type={showPassword ? 'text' : 'password'} 
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-xs font-medium focus:border-indigo-600 focus:bg-white focus:outline-none transition" 
                 placeholder="Minimum 6 characters"
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 required 
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 

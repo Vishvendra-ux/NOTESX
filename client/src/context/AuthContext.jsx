@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -12,9 +12,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const res = await axios.get('/api/auth/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const res = await api.get('/auth/me');
           setUser(res.data);
         } catch (error) {
           console.error('Failed to fetch user', error);
@@ -27,24 +25,27 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await axios.post('/api/auth/login', { email, password });
+    const res = await api.post('/auth/login', { email: email.trim().toLowerCase(), password });
     localStorage.setItem('token', res.data.token);
     setUser(res.data);
+    return res.data;
   };
 
   const register = async (userData) => {
-    const res = await axios.post('/api/auth/register', userData);
+    const res = await api.post('/auth/register', userData);
     localStorage.setItem('token', res.data.token);
     setUser(res.data);
+    return res.data;
   };
 
   const loginWithGoogle = async (googleData) => {
-    const res = await axios.post('/api/auth/google', googleData || {
+    const res = await api.post('/auth/google', googleData || {
       name: 'Google Student',
       email: 'student.google@gmail.com',
     });
     localStorage.setItem('token', res.data.token);
     setUser(res.data);
+    return res.data;
   };
 
   const logout = () => {

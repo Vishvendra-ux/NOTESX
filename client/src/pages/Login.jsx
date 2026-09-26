@@ -1,16 +1,34 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Sparkles, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff, UserCheck } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, loginWithGoogle } = useContext(AuthContext);
+  const { user, login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // If already logged in, redirect straight to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const getErrorMessage = (err) => {
+    if (err.response?.data?.message) {
+      return err.response.data.message;
+    }
+    if (err.code === 'ERR_NETWORK' || !err.response) {
+      return 'Unable to connect to server. Please verify backend connection.';
+    }
+    return 'Invalid email or password. Please check your credentials and try again.';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +39,23 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInstantAdminLogin = async () => {
+    setError('');
+    setIsSubmitting(true);
+    setEmail('pratapsinghvishvendra6@gmail.com');
+    setPassword('Vishu@123&#');
+
+    try {
+      await login('pratapsinghvishvendra6@gmail.com', 'Vishu@123&#');
+      navigate('/dashboard');
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -37,7 +71,7 @@ export default function Login() {
       });
       navigate('/dashboard');
     } catch (err) {
-      setError('Google Sign-In failed. Please try again.');
+      setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -63,12 +97,46 @@ export default function Login() {
           <p className="text-slate-500 text-xs mt-1 font-medium">Log in to access your college ecosystem & resources.</p>
         </div>
 
+        {/* 1-CLICK INSTANT ADMIN LOGIN BANNER */}
+        <div className="mb-4 rounded-2xl border border-indigo-200 bg-indigo-50/80 p-3.5 transition">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-600 text-white shadow-xs">
+                <ShieldCheck size={18} />
+              </span>
+              <div>
+                <b className="block text-xs font-bold text-indigo-950">System Admin Sign-In</b>
+                <span className="text-[11px] text-indigo-700 font-medium block truncate max-w-[190px]">
+                  pratapsinghvishvendra6@gmail.com
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 items-end shrink-0">
+              <button
+                type="button"
+                onClick={handleInstantAdminLogin}
+                disabled={isSubmitting}
+                className="text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 rounded-lg shadow-xs transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+              >
+                1-Click Login ⚡
+              </button>
+              <button
+                type="button"
+                onClick={handleFillAdmin}
+                className="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+              >
+                Auto-fill inputs
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* GOOGLE SIGN IN BUTTON */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs hover:border-slate-300 mb-4"
+          className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-2.5 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs hover:border-slate-300 mb-4 cursor-pointer disabled:opacity-50"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -83,25 +151,6 @@ export default function Login() {
           <div className="border-t border-slate-200 w-full" />
           <span className="bg-white px-3 text-[10px] uppercase tracking-wider font-bold text-slate-400 shrink-0">or sign in with email</span>
           <div className="border-t border-slate-200 w-full" />
-        </div>
-
-        {/* Quick Admin Auto-fill Card */}
-        <div 
-          onClick={handleFillAdmin}
-          className="mb-5 cursor-pointer rounded-2xl border border-indigo-100 bg-indigo-50/70 p-3 flex items-center justify-between transition hover:border-indigo-300 hover:bg-indigo-100/60"
-        >
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-indigo-600 text-white shadow-xs">
-              <ShieldCheck size={16} />
-            </span>
-            <div>
-              <b className="block text-xs font-bold text-indigo-950">System Admin Sign-In</b>
-              <span className="text-[11px] text-indigo-700 font-medium">pratapsinghvishvendra6@gmail.com</span>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-200 px-2 py-1 rounded-lg">
-            Auto-Fill ⚡
-          </span>
         </div>
 
         {/* Error Alert */}
@@ -136,20 +185,27 @@ export default function Login() {
             <div className="relative">
               <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
-                type="password" 
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs font-medium focus:border-indigo-600 focus:bg-white focus:outline-none transition" 
+                type={showPassword ? 'text' : 'password'} 
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-xs font-medium focus:border-indigo-600 focus:bg-white focus:outline-none transition" 
                 placeholder="••••••••"
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 required 
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 
           <button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full btn-primary py-3 text-xs font-bold mt-2 shadow-md shadow-indigo-200 flex items-center justify-center gap-2"
+            className="w-full btn-primary py-3 text-xs font-bold mt-2 shadow-md shadow-indigo-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isSubmitting ? 'Signing In...' : 'Sign In'} {!isSubmitting && <ArrowRight size={16} />}
           </button>

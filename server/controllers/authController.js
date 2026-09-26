@@ -8,6 +8,27 @@ const generateToken = (id) => {
   });
 };
 
+const formatUserResponse = (user, token) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  bio: user.bio,
+  collegeName: user.collegeName,
+  course: user.course,
+  year: user.year,
+  semester: user.semester,
+  github: user.github,
+  linkedin: user.linkedin,
+  reputation: user.reputation,
+  badges: user.badges,
+  profilePhoto: user.profilePhoto,
+  resume: user.resume,
+  resumeOriginalName: user.resumeOriginalName,
+  isVerified: user.isVerified,
+  token,
+});
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -33,13 +54,7 @@ const register = async (req, res) => {
     });
 
     if (user) {
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
-      });
+      res.status(201).json(formatUserResponse(user, generateToken(user._id)));
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
@@ -67,13 +82,7 @@ const login = async (req, res) => {
 
     if (isMatch) {
       console.log(`Login successful for: ${user.email} (${user.role})`);
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
-      });
+      res.json(formatUserResponse(user, generateToken(user._id)));
     } else {
       console.log(`Login attempt failed: Password mismatch for email '${cleanEmail}'`);
       res.status(401).json({ message: 'Invalid email or password' });
@@ -108,13 +117,7 @@ const googleLogin = async (req, res) => {
       console.log(`✅ Existing user logged in via Google Sign-in: ${user.email}`);
     }
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
-    });
+    res.json(formatUserResponse(user, generateToken(user._id)));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
