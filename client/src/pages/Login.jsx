@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff, UserCheck } from 'lucide-react';
+import { Sparkles, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff, Loader2, GraduationCap } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -9,6 +9,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeDemo, setActiveDemo] = useState(null); // 'admin' | 'student' | null
 
   const { user, login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -25,9 +26,9 @@ export default function Login() {
       return err.response.data.message;
     }
     if (err.code === 'ERR_NETWORK' || !err.response) {
-      return 'Unable to connect to server. Please verify backend connection.';
+      return 'Unable to reach the server. Please ensure the backend is running.';
     }
-    return 'Invalid email or password. Please check your credentials and try again.';
+    return 'Invalid email or password. Please verify your credentials.';
   };
 
   const handleSubmit = async (e) => {
@@ -48,6 +49,7 @@ export default function Login() {
   const handleInstantAdminLogin = async () => {
     setError('');
     setIsSubmitting(true);
+    setActiveDemo('admin');
     setEmail('pratapsinghvishvendra6@gmail.com');
     setPassword('Vishu@123&#');
 
@@ -58,6 +60,26 @@ export default function Login() {
       setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
+      setActiveDemo(null);
+    }
+  };
+
+  const handleInstantStudentLogin = async () => {
+    setError('');
+    setIsSubmitting(true);
+    setActiveDemo('student');
+
+    try {
+      await loginWithGoogle({
+        name: 'Demo Student',
+        email: 'student.demo@notesx.edu',
+      });
+      navigate('/dashboard');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+      setActiveDemo(null);
     }
   };
 
@@ -77,66 +99,37 @@ export default function Login() {
     }
   };
 
-  const handleFillAdmin = () => {
-    setEmail('pratapsinghvishvendra6@gmail.com');
-    setPassword('Vishu@123&#');
-    setError('');
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-[75vh] px-4 py-8">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl animate-slide-up relative overflow-hidden">
-        {/* Top Accent Gradient Strip */}
-        <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500" />
+    <div className="relative min-h-[calc(100vh-14rem)] flex items-center justify-center py-6 px-4 sm:px-6">
+      {/* Background Decorative Ambient Glows */}
+      <div className="absolute top-1/4 -left-20 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
 
+      <div className="w-full max-w-[430px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-indigo-950/5 relative overflow-hidden animate-slide-up">
+        {/* Top Accent Gradient Bar */}
+        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-400" />
+
+        {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 mx-auto mb-4">
-            <Sparkles size={26} />
-          </div>
-          <h2 className="text-2xl font-extrabold text-slate-900">Welcome Back</h2>
-          <p className="text-slate-500 text-xs mt-1 font-medium">Log in to access your college ecosystem & resources.</p>
+          <Link to="/" className="inline-flex items-center gap-2 mb-3 group">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform duration-200">
+              <Sparkles size={20} />
+            </div>
+          </Link>
+          <h1 className="text-2xl sm:text-[26px] font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Welcome Back
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1 font-medium">
+            Sign in to access your notes, colleges & community
+          </p>
         </div>
 
-        {/* 1-CLICK INSTANT ADMIN LOGIN BANNER */}
-        <div className="mb-4 rounded-2xl border border-indigo-200 bg-indigo-50/80 p-3.5 transition">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-600 text-white shadow-xs">
-                <ShieldCheck size={18} />
-              </span>
-              <div>
-                <b className="block text-xs font-bold text-indigo-950">System Admin Sign-In</b>
-                <span className="text-[11px] text-indigo-700 font-medium block truncate max-w-[190px]">
-                  pratapsinghvishvendra6@gmail.com
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1 items-end shrink-0">
-              <button
-                type="button"
-                onClick={handleInstantAdminLogin}
-                disabled={isSubmitting}
-                className="text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 rounded-lg shadow-xs transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
-              >
-                1-Click Login ⚡
-              </button>
-              <button
-                type="button"
-                onClick={handleFillAdmin}
-                className="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
-              >
-                Auto-fill inputs
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* GOOGLE SIGN IN BUTTON */}
+        {/* Google One-Click Sign In */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-2.5 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs hover:border-slate-300 mb-4 cursor-pointer disabled:opacity-50"
+          className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all duration-150 shadow-sm hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60 mb-5"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -147,55 +140,69 @@ export default function Login() {
           Continue with Google
         </button>
 
+        {/* Divider */}
         <div className="relative flex items-center justify-center mb-5">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[10px] uppercase tracking-wider font-bold text-slate-400 shrink-0">or sign in with email</span>
-          <div className="border-t border-slate-200 w-full" />
+          <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
+          <span className="bg-white dark:bg-slate-900 px-3 text-[11px] uppercase tracking-wider font-semibold text-slate-400 shrink-0">
+            or sign in with email
+          </span>
+          <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 animate-fade-in">
-            <AlertCircle size={16} className="shrink-0 text-rose-600" />
-            <span>{error}</span>
+          <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50/90 dark:bg-rose-950/30 dark:border-rose-900/50 p-3 text-xs font-medium text-rose-700 dark:text-rose-400 animate-fade-in">
+            <AlertCircle size={16} className="shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+            <span className="leading-snug">{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
-            <div className="relative">
-              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Email Address
+            </label>
+            <div className="relative flex items-center">
+              <Mail size={17} className="absolute left-3.5 text-slate-400 pointer-events-none" />
               <input 
                 type="email" 
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs font-medium focus:border-indigo-600 focus:bg-white focus:outline-none transition" 
+                className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 pl-11 pr-4 text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/20 transition-all outline-none" 
                 placeholder="student@college.edu"
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
+                autoComplete="email"
                 required 
               />
             </div>
           </div>
           
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-bold text-slate-700">Password</label>
-              <a href="#" className="text-[11px] text-indigo-600 hover:underline font-semibold">Forgot password?</a>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Password
+              </label>
+              <a href="#" className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">
+                Forgot password?
+              </a>
             </div>
-            <div className="relative">
-              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <div className="relative flex items-center">
+              <Lock size={17} className="absolute left-3.5 text-slate-400 pointer-events-none" />
               <input 
                 type={showPassword ? 'text' : 'password'} 
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-xs font-medium focus:border-indigo-600 focus:bg-white focus:outline-none transition" 
+                className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 pl-11 pr-11 text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/20 transition-all outline-none" 
                 placeholder="••••••••"
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
+                autoComplete="current-password"
                 required 
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                className="absolute right-2.5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition cursor-pointer"
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -205,15 +212,53 @@ export default function Login() {
           <button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full btn-primary py-3 text-xs font-bold mt-2 shadow-md shadow-indigo-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-bold shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/35 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 active:scale-[0.99] mt-2"
           >
-            {isSubmitting ? 'Signing In...' : 'Sign In'} {!isSubmitting && <ArrowRight size={16} />}
+            {isSubmitting && !activeDemo ? (
+              <>
+                <Loader2 size={17} className="animate-spin" />
+                <span>Signing In...</span>
+              </>
+            ) : (
+              <>
+                <span>Sign In</span>
+                <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </form>
 
-        <p className="mt-5 text-center text-xs font-medium text-slate-500">
+        {/* Quick Demo Access Bar */}
+        <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-[11px] uppercase tracking-wider font-bold text-slate-400 text-center mb-2.5">
+            Quick 1-Click Demo Access
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={handleInstantAdminLogin}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/70 hover:bg-indigo-100/70 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+            >
+              <ShieldCheck size={14} className="text-indigo-600 dark:text-indigo-400" />
+              {activeDemo === 'admin' ? 'Signing in...' : 'Admin Login ⚡'}
+            </button>
+            <button
+              type="button"
+              onClick={handleInstantStudentLogin}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+            >
+              <GraduationCap size={14} className="text-slate-500 dark:text-slate-400" />
+              {activeDemo === 'student' ? 'Signing in...' : 'Student Demo ⚡'}
+            </button>
+          </div>
+        </div>
+
+        {/* Footer Navigation */}
+        <p className="mt-5 text-center text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
           Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-600 font-bold hover:underline">
+          <Link to="/register" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
             Create an account
           </Link>
         </p>
