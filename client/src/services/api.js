@@ -36,7 +36,18 @@ export const notesService = {
   toggleHelpfulReview: (id, reviewId) => api.post(`/notes/${id}/reviews/${reviewId}/helpful`),
   getContributor: (id) => api.get(`/notes/contributors/${id}`)
 };
-export const testService = { create: (data) => api.post('/tests', data), get: (id) => api.get(`/tests/${id}`), submit: (id, data) => api.post(`/tests/${id}/submit`, data) };
+export const testService = {
+  create: (data) => api.post('/tests', data),
+  customize: (data) => api.post('/tests/custom', data),
+  get: (id) => api.get(`/tests/${id}`),
+  submit: (id, data) => api.post(`/tests/${id}/submit`, data),
+};
+export const gateService = {
+  getProgress: () => api.get('/gate/progress'),
+  startTopic: (topicId, subjectId) => api.post(`/gate/topics/${topicId}/start`, { subjectId }),
+  completeTopic: (topicId, subjectId) => api.post(`/gate/topics/${topicId}/complete`, { subjectId }),
+  reopenTopic: (topicId, subjectId) => api.post(`/gate/topics/${topicId}/reopen`, { subjectId }),
+};
 export const doubtService = { list: (params) => api.get('/doubts', { params }), create: (data) => api.post('/doubts', data) };
 export const questionService = { list: (params) => api.get('/questions', { params }), create: (data) => api.post('/questions', data) };
 export const contestService = { list: () => api.get('/contests'), get: (id) => api.get(`/contests/${id}`) };

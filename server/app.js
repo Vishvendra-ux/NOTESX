@@ -20,6 +20,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/gate', require('./routes/gate'));
 app.use('/api', require('./routes/hierarchy'));
 app.use('/api/colleges', require('./routes/colleges'));
 app.use('/api/notes', require('./routes/notes'));

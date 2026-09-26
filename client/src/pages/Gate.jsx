@@ -1,26 +1,15 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
-  Activity, ArrowDownRight, ArrowRight, Atom, Binary, BookOpen, BrainCircuit,
-  Check, CheckCircle2, ChevronDown, ChevronRight, Clock3, Code2, Cpu,
-  Database, Filter, Layers3, Network, Play, Search, Sparkles,
-  Target, Terminal, X,
+  Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CheckCircle2, ChevronDown,
+  ChevronRight, Clock3, Flame, LoaderCircle, Play, RotateCcw, Search, Sparkles,
+  Target, X,
 } from 'lucide-react';
+import { gatePhases, gateSubjects, gateTopicCount } from '../data/gateSyllabus';
+import { gateService } from '../services/api';
 
-const subjects = [
-  { name: 'Engineering Mathematics', short: 'Maths', icon: BrainCircuit, color: 'violet', progress: 58, phase: 'Build foundations', topics: ['Linear algebra', 'Calculus', 'Discrete mathematics', 'Probability & statistics'], note: 'The logic behind every great solution.' },
-  { name: 'Digital Logic', short: 'Logic', icon: Binary, color: 'amber', progress: 42, phase: 'Build foundations', topics: ['Boolean algebra', 'Combinational circuits', 'Sequential circuits', 'Number representation'], note: 'Turn bits into building blocks.' },
-  { name: 'Computer Organization & Architecture', short: 'COA', icon: Cpu, color: 'blue', progress: 60, phase: 'Build foundations', topics: ['Instruction sets', 'Pipelining', 'Memory hierarchy', 'I/O systems'], note: 'See what happens beneath the code.' },
-  { name: 'Programming & Data Structures', short: 'PDS', icon: Code2, color: 'emerald', progress: 90, phase: 'Core computing', topics: ['C programming', 'Recursion', 'Arrays & linked lists', 'Trees, heaps & graphs'], note: 'Write it well. Structure it better.' },
-  { name: 'Algorithms', short: 'Algo', icon: Layers3, color: 'rose', progress: 68, phase: 'Core computing', topics: ['Searching & sorting', 'Greedy methods', 'Dynamic programming', 'Graph algorithms'], note: 'Find the elegant path to an answer.' },
-  { name: 'Theory of Computation', short: 'TOC', icon: Atom, color: 'cyan', progress: 80, phase: 'Core computing', topics: ['Finite automata', 'Regular languages', 'Context-free grammars', 'Decidability'], note: 'Explore the limits of computation.' },
-  { name: 'Compiler Design', short: 'Compiler', icon: Terminal, color: 'orange', progress: 35, phase: 'Core computing', topics: ['Lexical analysis', 'Parsing', 'Syntax-directed translation', 'Code optimization'], note: 'Follow a language from source to machine.' },
-  { name: 'Operating Systems', short: 'OS', icon: Activity, color: 'indigo', progress: 70, phase: 'Systems', topics: ['Processes & threads', 'CPU scheduling', 'Synchronization', 'Virtual memory & file systems'], note: 'Make sense of the machine multitasking.' },
-  { name: 'Databases', short: 'DBMS', icon: Database, color: 'purple', progress: 60, phase: 'Systems', topics: ['ER models & SQL', 'Relational algebra', 'Normalization', 'Transactions & indexing'], note: 'Design data that stays useful.' },
-  { name: 'Computer Networks', short: 'Networks', icon: Network, color: 'teal', progress: 50, phase: 'Systems', topics: ['Network layers', 'IP addressing', 'Routing & switching', 'TCP, UDP & applications'], note: 'Trace the journey from one packet to another.' },
-  { name: 'General Aptitude', short: 'Aptitude', icon: Sparkles, color: 'pink', progress: 46, phase: 'Every week', topics: ['Verbal aptitude', 'Quantitative aptitude', 'Analytical aptitude', 'Spatial aptitude'], note: 'A few focused minutes make a difference.' },
-];
+const GateTestBuilder = lazy(() => import('../components/gate/GateTestBuilder'));
+const GateTestSession = lazy(() => import('../components/gate/GateTestSession'));
 
-const phases = ['All subjects', 'Build foundations', 'Core computing', 'Systems', 'Every week'];
 const colorTokens = {
   violet: 'text-violet-600 bg-violet-50 dark:bg-violet-400/10 dark:text-violet-300',
   amber: 'text-amber-600 bg-amber-50 dark:bg-amber-400/10 dark:text-amber-300',
@@ -35,18 +24,87 @@ const colorTokens = {
   pink: 'text-pink-600 bg-pink-50 dark:bg-pink-400/10 dark:text-pink-300',
 };
 
+const actionLabel = {
+  in_progress: 'In progress',
+  completed: 'Completed',
+};
+
+function TopicStatus({ entry }) {
+  if (!entry) return <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Not started</span>;
+  const done = entry.status === 'completed';
+  return <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${done ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300' : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-300'}`}>
+    {done ? <CheckCircle2 size={12} /> : <Activity size={12} />}{actionLabel[entry.status] || 'In progress'}
+  </span>;
+}
+
 export default function Gate() {
-  const [showBuilder, setShowBuilder] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [busyTopic, setBusyTopic] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState(null);
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState('All subjects');
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState(['Programming & Data Structures', 'Algorithms']);
-  const visibleSubjects = useMemo(() => subjects.filter((subject) => {
+  const [showTestBuilder, setShowTestBuilder] = useState(false);
+  const [testSession, setTestSession] = useState(null);
+
+  const loadProgress = async () => {
+    setLoading(true);
+    setLoadError('');
+    try {
+      const response = await gateService.getProgress();
+      setProgress(response.data);
+    } catch (error) {
+      setLoadError(error.response?.data?.message || 'Your GATE progress could not be loaded. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadProgress(); }, []);
+
+  useEffect(() => {
+    if (!selectedTopic) return undefined;
+    const onKeyDown = (event) => { if (event.key === 'Escape') setSelectedTopic(null); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedTopic]);
+
+  const progressByTopic = useMemo(() => new Map((progress?.topics || []).map((entry) => [entry.topicId, entry])), [progress]);
+  const visibleSubjects = useMemo(() => gateSubjects.filter((subject) => {
     const matchesPhase = filter === 'All subjects' || subject.phase === filter;
-    const text = `${subject.name} ${subject.topics.join(' ')}`.toLowerCase();
+    const text = `${subject.name} ${subject.topics.map((topic) => `${topic.title} ${topic.goal} ${topic.concepts.join(' ')}`).join(' ')}`.toLowerCase();
     return matchesPhase && text.includes(query.trim().toLowerCase());
   }), [filter, query]);
-  const completed = subjects.filter((subject) => subject.progress >= 80).length;
+
+  const allTopics = gateSubjects.flatMap((subject) => subject.topics.map((topic) => ({ ...topic, subject })));
+  const completedTopics = (progress?.topics || []).filter((entry) => entry.status === 'completed').length;
+  const inProgressTopics = (progress?.topics || []).filter((entry) => entry.status === 'in_progress').length;
+  const activeSubjects = new Set((progress?.topics || []).map((entry) => entry.subjectId)).size;
+  const weightedProgress = allTopics.reduce((sum, topic) => {
+    const entry = progressByTopic.get(topic.id);
+    return sum + (entry?.status === 'completed' ? 1 : entry?.status === 'in_progress' ? 0.35 : 0);
+  }, 0);
+  const overallProgress = Math.round((weightedProgress / gateTopicCount) * 100);
+  const nextTopic = allTopics.find(({ id }) => progressByTopic.get(id)?.status === 'in_progress')
+    || allTopics.find(({ id }) => !progressByTopic.has(id));
+
+  const updateTopic = async (topic, subject, action) => {
+    setBusyTopic(topic.id);
+    setActionError('');
+    try {
+      const response = await gateService[`${action}Topic`](topic.id, subject.id);
+      setProgress(response.data);
+    } catch (error) {
+      setActionError(error.response?.data?.message || 'Progress could not be saved. Check your connection and try again.');
+    } finally {
+      setBusyTopic('');
+    }
+  };
+
+  const findTopic = (topicId) => allTopics.find((item) => item.id === topicId);
 
   return (
     <main className="animate-fade-in pb-14">
@@ -59,54 +117,82 @@ export default function Gate() {
               <Sparkles size={14} /> GATE CS · 2027
             </div>
             <h1 className="mb-3 max-w-[15ch] text-4xl font-black leading-[1.04] tracking-[-0.045em] text-slate-950 sm:text-5xl dark:text-white">Your next big idea starts with one topic.</h1>
-            <p className="max-w-xl text-base leading-7 text-slate-600 sm:text-lg dark:text-slate-300">Eleven subjects. One clear path. Pick a topic, build your momentum, and make exam day feel familiar.</p>
+            <p className="max-w-xl text-base leading-7 text-slate-600 sm:text-lg dark:text-slate-300">Eleven subjects. A syllabus you can work through one topic at a time. Start a topic, mark it complete, and watch your preparation take shape.</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <button onClick={() => setShowBuilder(true)} className="btn-primary gap-2 px-5 py-3"><Play size={16} fill="currentColor" /> Build a custom test</button>
-              <a href="#subject-map" className="btn-secondary gap-2 px-5 py-3">Explore subjects <ArrowRight size={16} /></a>
+              <button onClick={() => { setShowTestBuilder((open) => !open); setTestSession(null); }} className="btn-primary gap-2 px-5 py-3"><Play size={16} fill="currentColor" />Customize a test</button>
+              <button onClick={() => nextTopic && setSelectedTopic(findTopic(nextTopic.id))} disabled={!nextTopic || loading} className="btn-secondary gap-2 px-5 py-3 disabled:cursor-not-allowed disabled:opacity-50">{nextTopic && progressByTopic.get(nextTopic.id)?.status === 'in_progress' ? 'Continue your topic' : 'Start your next topic'} <ArrowRight size={16} /></button>
+              <a href="#subject-map" className="btn-secondary gap-2 px-5 py-3">Explore subjects</a>
             </div>
           </div>
-          <div className="grid w-full grid-cols-3 divide-x divide-indigo-100/80 rounded-2xl bg-white/75 px-2 py-4 shadow-sm ring-1 ring-white/90 backdrop-blur lg:w-[330px] lg:shrink-0 dark:divide-slate-700 dark:bg-slate-900/65 dark:ring-slate-700">
-            <div className="px-2 text-center"><p className="text-2xl font-black tracking-tight text-indigo-700 dark:text-indigo-300">11</p><p className="mt-1 text-[11px] font-semibold text-slate-500">subjects</p></div>
-            <div className="px-2 text-center"><p className="text-2xl font-black tracking-tight text-emerald-700 dark:text-emerald-300">{completed}<span className="text-sm">/11</span></p><p className="mt-1 text-[11px] font-semibold text-slate-500">in motion</p></div>
-            <div className="px-2 text-center"><p className="text-2xl font-black tracking-tight text-amber-700 dark:text-amber-300">64<span className="text-sm">%</span></p><p className="mt-1 text-[11px] font-semibold text-slate-500">overall</p></div>
+          <div className="grid w-full grid-cols-3 divide-x divide-indigo-100/80 rounded-2xl bg-white/75 px-2 py-4 shadow-sm ring-1 ring-white/90 backdrop-blur lg:w-[350px] lg:shrink-0 dark:divide-slate-700 dark:bg-slate-900/65 dark:ring-slate-700">
+            <div className="px-2 text-center"><p className="text-2xl font-black tracking-tight text-indigo-700 dark:text-indigo-300">{gateSubjects.length}</p><p className="mt-1 text-[11px] font-semibold text-slate-500">subjects</p></div>
+            <div className="px-2 text-center"><p className="text-2xl font-black tracking-tight text-emerald-700 dark:text-emerald-300">{loading ? '—' : activeSubjects}<span className="text-sm">{loading ? '' : `/${gateSubjects.length}`}</span></p><p className="mt-1 text-[11px] font-semibold text-slate-500">in motion</p></div>
+            <div className="px-2 text-center"><p className="text-2xl font-black tracking-tight text-amber-700 dark:text-amber-300">{loading ? '—' : overallProgress}<span className="text-sm">{loading ? '' : '%'}</span></p><p className="mt-1 text-[11px] font-semibold text-slate-500">prep progress</p></div>
           </div>
         </div>
       </section>
 
-      {showBuilder && <section className="glass-card relative mt-6 overflow-hidden p-5 sm:p-7" aria-label="Custom test builder">
-        <div className="mb-5 flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-widest text-primary-600">Quick challenge</p><h2 className="mt-1 text-2xl font-bold">Build your test</h2><p className="mt-1 text-sm text-slate-500">Choose the subjects you want to practise.</p></div><button aria-label="Close test builder" onClick={() => setShowBuilder(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><X size={19}/></button></div>
-        <div className="flex flex-wrap gap-2">{subjects.map((subject) => <button key={subject.short} onClick={() => setSelected((current) => current.includes(subject.name) ? current.filter((item) => item !== subject.name) : [...current, subject.name])} className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition ${selected.includes(subject.name) ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-400/40 dark:bg-indigo-400/10 dark:text-indigo-200' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}><span className={`grid h-4 w-4 place-items-center rounded-full ${selected.includes(subject.name) ? 'bg-indigo-600 text-white' : 'border border-slate-300'}`}>{selected.includes(subject.name) && <Check size={11}/>}</span>{subject.short}</button>)}</div>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-700"><p className="text-sm text-slate-500">{selected.length} subjects selected <span className="mx-1 text-slate-300">·</span> 30 questions <span className="mx-1 text-slate-300">·</span> 45 minutes</p><button disabled={!selected.length} className="btn-primary gap-2 disabled:cursor-not-allowed disabled:opacity-50"><Play size={15} fill="currentColor"/> Generate test</button></div>
-      </section>}
+      {showTestBuilder && !testSession && <Suspense fallback={<div className="glass-card mt-6 p-6 text-sm font-semibold text-slate-500">Loading test builder…</div>}><GateTestBuilder subjects={gateSubjects} onClose={() => setShowTestBuilder(false)} onTestStarted={(test) => { setTestSession(test); setShowTestBuilder(false); }} /></Suspense>}
+      {testSession && <Suspense fallback={<div className="glass-card mt-6 p-6 text-sm font-semibold text-slate-500">Preparing your test…</div>}><GateTestSession test={testSession} onExit={() => setTestSession(null)} /></Suspense>}
+
+      {loadError && <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-400/20 dark:bg-rose-950/30 dark:text-rose-200"><span>{loadError}</span><button onClick={loadProgress} className="font-bold underline underline-offset-2">Retry</button></div>}
 
       <section className="mt-10 grid gap-7 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div id="subject-map" className="scroll-mt-6">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">Your syllabus, made navigable</p><h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Choose your next chapter</h2></div><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">{visibleSubjects.length} subjects</span></div>
-          <div className="mb-5 flex gap-2 overflow-x-auto pb-1">{phases.map((phase) => <button key={phase} onClick={() => setFilter(phase)} className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${filter === phase ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900' : 'border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'}`}>{phase}</button>)}</div>
-          <label className="mb-5 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-400 shadow-sm focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:ring-indigo-900"><Search size={18}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a subject or topic…" className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-white"/><Filter size={16}/></label>
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">Your syllabus, made navigable</p><h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Choose your next chapter</h2></div><div className="flex flex-wrap items-center gap-3"><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">{visibleSubjects.length} subjects shown · {gateTopicCount} total topics</span><a href="https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CS_GATE2027_Syllabus.pdf" target="_blank" rel="noreferrer" className="text-xs font-bold text-indigo-600 underline decoration-indigo-300 underline-offset-4 hover:text-indigo-500 dark:text-indigo-300">Official 2027 syllabus ↗</a></div></div>
+          <div className="mb-5 flex gap-2 overflow-x-auto pb-1">{gatePhases.map((phase) => <button key={phase} onClick={() => setFilter(phase)} className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${filter === phase ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900' : 'border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'}`}>{phase}</button>)}</div>
+          <label className="mb-5 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-400 shadow-sm focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:ring-indigo-900"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a subject or topic…" className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-white" /><span className="hidden text-xs text-slate-400 sm:inline">{gateTopicCount} topics</span></label>
+          {loading && <div className="glass-card flex items-center justify-center gap-3 p-10 text-sm font-semibold text-slate-500"><LoaderCircle size={20} className="animate-spin text-indigo-500" /> Loading your saved progress…</div>}
+          {!loading && <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {visibleSubjects.map((subject, index) => {
               const Icon = subject.icon;
-              const isOpen = expanded === subject.name;
-              return <article key={subject.name} className={`group relative overflow-hidden rounded-[1.25rem] border bg-white p-5 shadow-[0_2px_10px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(51,65,125,0.12)] dark:bg-slate-900 ${isOpen ? 'border-indigo-200 ring-2 ring-indigo-100 dark:border-indigo-400/40 dark:ring-indigo-900/50' : 'border-slate-200/80 dark:border-slate-700'}`}>
-                <div className={`absolute inset-x-0 top-0 h-1 ${subject.progress >= 80 ? 'bg-emerald-400' : 'bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-400'} opacity-80`}/>
-                <div className="flex items-start justify-between gap-3"><span className={`grid h-11 w-11 place-items-center rounded-2xl ring-1 ring-black/[0.03] ${colorTokens[subject.color]}`}><Icon size={21}/></span><span className="rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-800 dark:text-slate-400">{String(index + 1).padStart(2, '0')}</span></div>
+              const isOpen = expanded === subject.id;
+              const topicProgress = subject.topics.reduce((sum, topic) => {
+                const entry = progressByTopic.get(topic.id);
+                return sum + (entry?.status === 'completed' ? 1 : entry?.status === 'in_progress' ? 0.35 : 0);
+              }, 0);
+              const subjectPercent = Math.round((topicProgress / subject.topics.length) * 100);
+              const subjectCompleted = subject.topics.filter((topic) => progressByTopic.get(topic.id)?.status === 'completed').length;
+              const subjectActive = subject.topics.some((topic) => progressByTopic.has(topic.id));
+              return <article key={subject.id} className={`group relative overflow-hidden rounded-[1.25rem] border bg-white p-5 shadow-[0_2px_10px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(51,65,125,0.12)] dark:bg-slate-900 ${isOpen ? 'border-indigo-200 ring-2 ring-indigo-100 dark:border-indigo-400/40 dark:ring-indigo-900/50' : 'border-slate-200/80 dark:border-slate-700'}`}>
+                <div className={`absolute inset-x-0 top-0 h-1 ${subjectPercent === 100 ? 'bg-emerald-400' : 'bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-400'} opacity-80`} />
+                <div className="flex items-start justify-between gap-3"><span className={`grid h-11 w-11 place-items-center rounded-2xl ring-1 ring-black/[0.03] ${colorTokens[subject.color]}`}><Icon size={21} /></span><span className="rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-800 dark:text-slate-400">{String(index + 1).padStart(2, '0')}</span></div>
                 <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">{subject.phase}</p><h3 className="mt-1 min-h-[3rem] text-lg font-extrabold leading-snug text-slate-900 dark:text-white">{subject.name}</h3><p className="mt-1 min-h-6 text-sm text-slate-500 dark:text-slate-400">{subject.note}</p>
-                <div className="mt-4 flex items-center justify-between text-xs"><span className="font-semibold text-slate-500">Study progress</span><span className="font-extrabold text-slate-800 dark:text-slate-200">{subject.progress}%</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-full rounded-full transition-all ${subject.progress >= 80 ? 'bg-emerald-400' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`} style={{ width: `${subject.progress}%` }}/></div>
-                <button aria-expanded={isOpen} onClick={() => setExpanded(isOpen ? null : subject.name)} className="mt-4 flex w-full items-center justify-between border-t border-slate-100 pt-3 text-sm font-bold text-indigo-700 transition hover:text-indigo-500 dark:border-slate-800 dark:text-indigo-300"><span>{isOpen ? 'Hide topics' : 'Explore topics'}</span>{isOpen ? <ChevronDown size={16} className="rotate-180 transition"/> : <ChevronRight size={16} className="transition group-hover:translate-x-0.5"/>}</button>
-                {isOpen && <div className="mt-3 flex flex-wrap gap-2">{subject.topics.map((topic) => <span key={topic} className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{topic}</span>)}</div>}
+                <div className="mt-4 flex items-center justify-between text-xs"><span className="font-semibold text-slate-500">Prep progress</span><span className="font-extrabold text-slate-800 dark:text-slate-200">{subjectPercent}% <span className="font-medium text-slate-400">· {subjectCompleted}/{subject.topics.length} done</span></span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-full rounded-full transition-all ${subjectPercent === 100 ? 'bg-emerald-400' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`} style={{ width: `${subjectPercent}%` }} /></div>
+                <button aria-expanded={isOpen} onClick={() => setExpanded(isOpen ? null : subject.id)} className="mt-4 flex w-full items-center justify-between border-t border-slate-100 pt-3 text-sm font-bold text-indigo-700 transition hover:text-indigo-500 dark:border-slate-800 dark:text-indigo-300"><span>{isOpen ? 'Hide topics' : `Explore ${subject.topics.length} topics`}</span>{isOpen ? <ChevronDown size={16} className="rotate-180 transition" /> : <ChevronRight size={16} className="transition group-hover:translate-x-0.5" />}</button>
+                {isOpen && <div className="mt-3 space-y-2">{subject.topics.map((topic) => {
+                  const entry = progressByTopic.get(topic.id);
+                  return <button key={topic.id} onClick={() => { setSelectedTopic({ ...topic, subject }); setActionError(''); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5 text-left transition hover:border-indigo-200 hover:bg-indigo-50/70 dark:border-slate-800 dark:bg-slate-800/70 dark:hover:border-indigo-400/30 dark:hover:bg-indigo-400/10"><span className="min-w-0"><span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-100">{topic.title}</span><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-500"><Clock3 size={11} /> {topic.minutes} min</span></span><TopicStatus entry={entry} /></button>;
+                })}</div>}
+                {subjectActive && <p className="mt-3 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">You have study activity in this subject.</p>}
               </article>;
             })}
-            {!visibleSubjects.length && <div className="col-span-full rounded-2xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700"><p className="font-bold">No subjects found</p><p className="mt-1 text-sm text-slate-500">Try another subject name or topic.</p></div>}
-          </div>
+            {!visibleSubjects.length && <div className="col-span-full rounded-2xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700"><p className="font-bold">No subjects or topics found</p><p className="mt-1 text-sm text-slate-500">Try another subject name or topic.</p></div>}
+          </div>}
         </div>
 
         <aside className="space-y-4 xl:pt-1">
-          <div className="rounded-2xl bg-slate-950 p-5 text-white shadow-lg shadow-indigo-950/10 dark:bg-indigo-950/70"><div className="flex items-center gap-2 text-indigo-300"><Target size={17}/><span className="text-xs font-bold uppercase tracking-[0.14em]">Your momentum</span></div><p className="mt-4 text-4xl font-black">64<span className="text-xl text-indigo-300">%</span></p><p className="mt-1 text-sm text-slate-300">of your prep plan is on track</p><div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-400" style={{width:'64%'}}/></div><p className="mt-3 flex items-center gap-1.5 text-xs text-indigo-200"><ArrowDownRight size={14}/> Keep your daily streak going</p></div>
-          <div className="glass-card p-5"><h3 className="text-base font-extrabold">The full picture</h3><p className="mt-1 text-xs text-slate-500">Small steps add up.</p><div className="mt-4 space-y-4"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-300"><CheckCircle2 size={17}/></span><span className="text-sm font-semibold">Questions solved</span></div><span className="font-extrabold">1,284</span></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300"><Activity size={17}/></span><span className="text-sm font-semibold">Accuracy</span></div><span className="font-extrabold">78%</span></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-400/10 dark:text-violet-300"><Clock3 size={17}/></span><span className="text-sm font-semibold">Mock tests</span></div><span className="font-extrabold">24</span></div></div></div>
-          <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50 p-5 dark:border-amber-400/20 dark:from-amber-950/40 dark:to-orange-950/30"><div className="flex items-center gap-2 text-amber-700 dark:text-amber-300"><BookOpen size={17}/><span className="text-xs font-bold uppercase tracking-[0.14em]">A good rhythm</span></div><p className="mt-3 text-sm font-bold leading-relaxed text-slate-800 dark:text-slate-100">Mix one core topic with a little aptitude practice each week.</p><p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">Steady revision helps ideas stick long after a study session ends.</p></div>
+          <div className="rounded-2xl bg-slate-950 p-5 text-white shadow-lg shadow-indigo-950/10 dark:bg-indigo-950/70"><div className="flex items-center gap-2 text-indigo-300"><Target size={17} /><span className="text-xs font-bold uppercase tracking-[0.14em]">Your momentum</span></div><p className="mt-4 text-4xl font-black">{loading ? '—' : overallProgress}<span className="text-xl text-indigo-300">{loading ? '' : '%'}</span></p><p className="mt-1 text-sm text-slate-300">of your syllabus has study activity</p><div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-400 transition-all" style={{ width: `${overallProgress}%` }} /></div><p className="mt-3 flex items-center gap-1.5 text-xs text-indigo-200"><ArrowDownRight size={14} /> Started topics count as 35%; completed topics count as 100%.</p></div>
+          <div className="glass-card p-5"><h3 className="text-base font-extrabold">The full picture</h3><p className="mt-1 text-xs text-slate-500">Your activity, saved to your account.</p><div className="mt-4 space-y-4"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-300"><Activity size={17} /></span><span className="text-sm font-semibold">Topics in progress</span></div><span className="font-extrabold">{loading ? '—' : inProgressTopics}</span></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300"><CheckCircle2 size={17} /></span><span className="text-sm font-semibold">Topics completed</span></div><span className="font-extrabold">{loading ? '—' : completedTopics}</span></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300"><Flame size={17} /></span><span className="text-sm font-semibold">Active day streak</span></div><span className="font-extrabold">{loading ? '—' : progress?.currentStreak || 0}</span></div></div></div>
+          <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50 to-violet-50 p-5 dark:border-indigo-400/20 dark:from-indigo-950/40 dark:to-violet-950/30"><div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300"><BookOpen size={17} /><span className="text-xs font-bold uppercase tracking-[0.14em]">Your next step</span></div>{loading ? <p className="mt-3 text-sm text-slate-500">Loading your study plan…</p> : nextTopic ? <><p className="mt-3 text-sm font-bold leading-relaxed text-slate-800 dark:text-slate-100">{progressByTopic.get(nextTopic.id)?.status === 'in_progress' ? 'Pick up where you left off:' : 'Start with:'} {nextTopic.title}</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{nextTopic.subject.name} · about {nextTopic.minutes} minutes</p><button onClick={() => setSelectedTopic(findTopic(nextTopic.id))} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-indigo-700 hover:text-indigo-500 dark:text-indigo-300">Open topic <ArrowRight size={15} /></button></> : <p className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100">You have worked through every topic in this syllabus.</p>}</div>
+          <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50 p-5 dark:border-amber-400/20 dark:from-amber-950/40 dark:to-orange-950/30"><div className="flex items-center gap-2 text-amber-700 dark:text-amber-300"><Sparkles size={17} /><span className="text-xs font-bold uppercase tracking-[0.14em]">A good rhythm</span></div><p className="mt-3 text-sm font-bold leading-relaxed text-slate-800 dark:text-slate-100">Mix one core topic with a little aptitude practice each week.</p><p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">Steady revision helps ideas stick long after a study session ends.</p></div>
         </aside>
       </section>
+
+      {selectedTopic && <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedTopic(null); }}>
+        <section role="dialog" aria-modal="true" aria-labelledby="gate-topic-title" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">{selectedTopic.subject.name} · Topic guide</p><h2 id="gate-topic-title" className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white">{selectedTopic.title}</h2></div><button aria-label="Close topic" onClick={() => setSelectedTopic(null)} className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"><X size={20} /></button></div>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">{selectedTopic.goal}</p>
+          <div className="mt-5 flex flex-wrap items-center gap-2"><TopicStatus entry={progressByTopic.get(selectedTopic.id)} /><span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Clock3 size={12} /> {selectedTopic.minutes} min suggested</span></div>
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-800/60"><h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Study checklist</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Work through these ideas, then mark the topic complete.</p><ul className="mt-4 space-y-3">{selectedTopic.concepts.map((concept) => <li key={concept} className="flex gap-3 text-sm leading-5 text-slate-700 dark:text-slate-200"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-indigo-200 bg-white text-indigo-600 dark:border-indigo-400/30 dark:bg-slate-900 dark:text-indigo-300"><Check size={12} /></span>{concept}</li>)}</ul></div>
+          {actionError && <p role="alert" className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:border-rose-400/20 dark:bg-rose-950/30 dark:text-rose-200">{actionError}</p>}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5 dark:border-slate-800"><p className="text-xs leading-5 text-slate-500">Your progress follows you across visits when you’re signed in.</p><div className="flex flex-wrap gap-2">
+            {!progressByTopic.has(selectedTopic.id) && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'start')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <Play size={15} fill="currentColor" />} Start topic</button>}
+            {progressByTopic.get(selectedTopic.id)?.status === 'in_progress' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'complete')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Mark complete</button>}
+            {progressByTopic.get(selectedTopic.id)?.status === 'completed' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'reopen')} disabled={busyTopic === selectedTopic.id} className="btn-secondary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <RotateCcw size={15} />} Reopen topic</button>}
+          </div></div>
+        </section>
+      </div>}
     </main>
   );
 }
