@@ -23,7 +23,10 @@ exports.create = async (req, res, next) => {
       authorId: req.user._id
     });
     
-    res.status(201).json(comment);
+    const populated = await Comment.findById(comment._id)
+      .populate('authorId', 'name profilePhoto reputation');
+
+    res.status(201).json(populated);
   } catch (error) { next(error); }
 };
 

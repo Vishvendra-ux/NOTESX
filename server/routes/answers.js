@@ -7,9 +7,10 @@ const { protect } = require('../middleware/authMiddleware');
 router.get('/', controller.list);
 router.post('/', protect, controller.create);
 
-// Or direct routes /api/answers/:id
+// Direct routes /api/answers/:id
 router.post('/:id/upvote', protect, controller.upvote);
 router.post('/:id/downvote', protect, controller.downvote);
+router.delete('/:id', protect, controller.deleteAnswer);
 
 module.exports = router;
 

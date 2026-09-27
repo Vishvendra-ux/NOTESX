@@ -48,7 +48,24 @@ export const gateService = {
   completeTopic: (topicId, subjectId) => api.post(`/gate/topics/${topicId}/complete`, { subjectId }),
   reopenTopic: (topicId, subjectId) => api.post(`/gate/topics/${topicId}/reopen`, { subjectId }),
 };
-export const doubtService = { list: (params) => api.get('/doubts', { params }), create: (data) => api.post('/doubts', data) };
+export const doubtService = {
+  list: (params) => api.get('/doubts', { params }),
+  stats: () => api.get('/doubts/stats'),
+  get: (id) => api.get(`/doubts/${id}`),
+  create: (data) => api.post('/doubts', data),
+  delete: (id) => api.delete(`/doubts/${id}`),
+  upvote: (id) => api.post(`/doubts/${id}/upvote`),
+  downvote: (id) => api.post(`/doubts/${id}/downvote`),
+  toggleBookmark: (id) => api.post(`/doubts/${id}/bookmark`),
+  acceptAnswer: (doubtId, answerId) => api.post(`/doubts/${doubtId}/accept/${answerId}`),
+  getAnswers: (doubtId) => api.get(`/doubts/${doubtId}/answers`),
+  createAnswer: (doubtId, data) => api.post(`/doubts/${doubtId}/answers`, data),
+  upvoteAnswer: (answerId) => api.post(`/answers/${answerId}/upvote`),
+  downvoteAnswer: (answerId) => api.post(`/answers/${answerId}/downvote`),
+  deleteAnswer: (answerId) => api.delete(`/answers/${answerId}`),
+  getComments: (parentId, onModel) => api.get('/comments', { params: { parentId, onModel } }),
+  createComment: (data) => api.post('/comments', data),
+};
 export const questionService = { list: (params) => api.get('/questions', { params }), create: (data) => api.post('/questions', data) };
 export const contestService = { list: () => api.get('/contests'), get: (id) => api.get(`/contests/${id}`) };
 export const userService = { me: () => api.get('/users/me'), profile: (username) => api.get(`/users/${username}`) };

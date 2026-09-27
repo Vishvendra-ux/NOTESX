@@ -37,5 +37,22 @@ const authorize = (...roles) => {
   };
 };
 
-module.exports = { protect, authorize };
+const optionalProtect = async (req, res, next) => {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+    } catch {
+      // Invalid/expired token: ignore and treat as unauthenticated
+      req.user = null;
+    }
+  }
+  next();
+};
+
+module.exports = { protect, optionalProtect, authorize };
 

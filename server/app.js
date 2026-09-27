@@ -25,6 +25,7 @@ app.use('/api', require('./routes/hierarchy'));
 app.use('/api/colleges', require('./routes/colleges'));
 app.use('/api/notes', require('./routes/notes'));
 app.use('/api/doubts', require('./routes/doubts'));
+app.use('/api/answers', require('./routes/answers'));
 app.use('/api/contests', require('./routes/contests'));
 app.use('/api/tests', require('./routes/tests'));
 app.use('/api/questions', require('./routes/questions'));
