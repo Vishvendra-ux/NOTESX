@@ -1,17 +1,123 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User } from 'lucide-react';
-import { useState, useContext } from 'react';
+import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check } from 'lucide-react';
+import { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { notesService } from '../services/api';
 import SearchModal from './SearchModal';
+
+const getNotificationId = (note) => String(note._id || note.id);
+
+const formatRelativeDate = (dateValue) => {
+  if (!dateValue) return '';
+  const timestamp = new Date(dateValue).getTime();
+  if (!Number.isFinite(timestamp)) return '';
+
+  const minutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60000));
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(timestamp);
+};
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [readNotificationIds, setReadNotificationIds] = useState(new Set());
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState(false);
+  const [notificationRefresh, setNotificationRefresh] = useState(0);
+  const notificationPanelRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   const { user, logout } = useContext(AuthContext);
+  const userKey = user ? String(user._id || user.id || user.email || 'account') : '';
+  const readStorageKey = userKey ? `notesx:notifications:seen:${userKey}` : '';
+  const unreadCount = notifications.filter((note) => !readNotificationIds.has(getNotificationId(note))).length;
+
+  useEffect(() => {
+    if (!readStorageKey) {
+      setReadNotificationIds(new Set());
+      return;
+    }
+
+    try {
+      const savedIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+      setReadNotificationIds(new Set(Array.isArray(savedIds) ? savedIds.map(String) : []));
+    } catch {
+      setReadNotificationIds(new Set());
+    }
+  }, [readStorageKey]);
+
+  useEffect(() => {
+    let isCurrent = true;
+    if (!user) {
+      setNotifications([]);
+      setNotificationsError(false);
+      setNotificationsLoading(false);
+      return () => { isCurrent = false; };
+    }
+
+    setNotificationsLoading(true);
+    setNotificationsError(false);
+    notesService.list({ limit: 5, sort: 'newest' })
+      .then(({ data }) => {
+        if (isCurrent) setNotifications(Array.isArray(data?.notes) ? data.notes : []);
+      })
+      .catch(() => {
+        if (isCurrent) setNotificationsError(true);
+      })
+      .finally(() => {
+        if (isCurrent) setNotificationsLoading(false);
+      });
+
+    return () => { isCurrent = false; };
+  }, [userKey, notificationRefresh]);
+
+  const markNotificationsRead = useCallback((items = notifications) => {
+    if (!readStorageKey || !items.length) return;
+
+    setReadNotificationIds((previous) => {
+      const next = new Set(previous);
+      items.forEach((note) => next.add(getNotificationId(note)));
+      try {
+        localStorage.setItem(readStorageKey, JSON.stringify([...next]));
+      } catch {
+        // Keep the in-memory read state even when browser storage is unavailable.
+      }
+      return next;
+    });
+  }, [notifications, readStorageKey]);
+
+  useEffect(() => {
+    if (notificationsOpen) markNotificationsRead();
+  }, [notificationsOpen, markNotificationsRead]);
+
+  useEffect(() => {
+    if (!notificationsOpen) return undefined;
+    const handlePointerDown = (event) => {
+      if (!notificationPanelRef.current?.contains(event.target)) setNotificationsOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setNotificationsOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [notificationsOpen]);
+
+  useEffect(() => {
+    setNotificationsOpen(false);
+  }, [location.pathname]);
 
   const navLinks = [
     { name: 'Colleges', path: '/colleges' },
@@ -78,10 +184,89 @@ export default function Navbar() {
 
               {user ? (
                 <>
-                  <button className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors relative" aria-label="Notifications">
-                    <Bell size={18} />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                  </button>
+                  <div className="relative" ref={notificationPanelRef}>
+                    <button
+                      onClick={() => setNotificationsOpen((open) => !open)}
+                      className={`p-2 rounded-xl transition-colors relative ${notificationsOpen ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-100'}`}
+                      aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+                      aria-expanded={notificationsOpen}
+                      aria-haspopup="dialog"
+                    >
+                      <Bell size={18} />
+                      {unreadCount > 0 && <span className="absolute top-1 right-1 flex min-w-4 h-4 items-center justify-center rounded-full border-2 border-white bg-red-500 px-0.5 text-[9px] font-bold leading-none text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+                    </button>
+
+                    {notificationsOpen && (
+                      <section
+                        role="dialog"
+                        aria-label="Notifications"
+                        className="absolute right-0 top-full z-[60] mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 animate-slide-up"
+                      >
+                        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3.5">
+                          <div>
+                            <h2 className="text-sm font-bold text-slate-900">Notifications</h2>
+                            <p className="mt-0.5 text-[11px] text-slate-500">Recent notes shared with the community</p>
+                          </div>
+                          {unreadCount > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => markNotificationsRead()}
+                              className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50"
+                            >
+                              <Check size={13} /> Mark read
+                            </button>
+                          )}
+                        </div>
+
+                        {notificationsLoading ? (
+                          <div className="px-4 py-8 text-center text-xs text-slate-500">Loading recent notes…</div>
+                        ) : notificationsError ? (
+                          <div className="px-4 py-7 text-center">
+                            <p className="text-xs text-slate-600">Couldn’t load recent notes.</p>
+                            <button type="button" onClick={() => setNotificationRefresh((count) => count + 1)} className="mt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700">Try again</button>
+                          </div>
+                        ) : notifications.length ? (
+                          <div className="max-h-[min(60vh,24rem)] overflow-y-auto py-1">
+                            {notifications.map((note) => {
+                              const notificationId = getNotificationId(note);
+                              const isUnread = !readNotificationIds.has(notificationId);
+                              return (
+                                <button
+                                  type="button"
+                                  key={notificationId}
+                                  onClick={() => {
+                                    markNotificationsRead([note]);
+                                    setNotificationsOpen(false);
+                                    navigate(`/notes/${notificationId}`);
+                                  }}
+                                  className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                                >
+                                  <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isUnread ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}><BookOpen size={17} /></span>
+                                  <span className="min-w-0 flex-1">
+                                    <span className="flex items-start justify-between gap-2">
+                                      <span className="line-clamp-2 text-xs font-bold text-slate-800">{note.title || 'New study note'}</span>
+                                      {isUnread && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-500" aria-label="Unread" />}
+                                    </span>
+                                    <span className="mt-1 block truncate text-[11px] text-slate-500">{note.subject || note.branch || 'New study material'}{note.createdAt ? ` · ${formatRelativeDate(note.createdAt)}` : ''}</span>
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="px-4 py-8 text-center">
+                            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-400"><Bell size={18} /></span>
+                            <p className="mt-3 text-xs font-semibold text-slate-700">You’re all caught up</p>
+                            <p className="mt-1 text-[11px] text-slate-500">New study notes will show up here.</p>
+                          </div>
+                        )}
+
+                        <div className="border-t border-slate-100 px-4 py-2.5">
+                          <button type="button" onClick={() => { setNotificationsOpen(false); navigate('/notes'); }} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Browse all notes</button>
+                        </div>
+                      </section>
+                    )}
+                  </div>
 
                   <div className="h-6 w-px bg-slate-200 mx-1"></div>
 

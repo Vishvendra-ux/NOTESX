@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { 
   Search, Upload, Bookmark, BookOpen, Layers, X, 
   ArrowLeft, ArrowRight, Sparkles, Filter, CheckCircle2 
@@ -24,6 +24,7 @@ import LoadingSkeleton from '../components/notes/LoadingSkeleton';
 
 export default function Notes() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { id: routeNoteId } = useParams();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -130,6 +131,26 @@ export default function Notes() {
     fetchUserBookmarks();
     return () => { isMounted = false; };
   }, [user]);
+
+  // Notification links can open a note directly at /notes/:id.
+  useEffect(() => {
+    if (!routeNoteId || routeNoteId === 'upload') {
+      setActiveViewerNote(null);
+      return undefined;
+    }
+
+    let isMounted = true;
+    setActiveViewerNote(null);
+    notesService.get(routeNoteId)
+      .then(({ data }) => {
+        if (isMounted) setActiveViewerNote(data);
+      })
+      .catch(() => {
+        if (isMounted) navigate('/notes', { replace: true });
+      });
+
+    return () => { isMounted = false; };
+  }, [routeNoteId, navigate]);
 
   // ── 3. Synchronize Active Selections with URL SearchParams (Enables Browser Back/Forward Step-by-Step) ──
   useEffect(() => {
@@ -925,7 +946,10 @@ export default function Notes() {
           noteId={activeViewerNote._id || activeViewerNote.id}
           initialNote={activeViewerNote}
           isBookmarked={bookmarkedNoteIds.has(activeViewerNote._id || activeViewerNote.id)}
-          onClose={() => setActiveViewerNote(null)}
+          onClose={() => {
+            setActiveViewerNote(null);
+            if (routeNoteId && routeNoteId !== 'upload') navigate('/notes', { replace: true });
+          }}
           onBookmarkToggle={handleToggleBookmark}
           onReport={(note) => setReportingNote(note)}
         />
