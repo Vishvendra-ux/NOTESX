@@ -122,6 +122,8 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Colleges', path: '/colleges' },
     { name: 'Notes', path: '/notes' },
+    { name: 'Roadmaps', path: '/roadmaps' },
+    { name: 'Jobs', path: '/jobs' },
     { name: 'GATE', path: '/gate' },
     { name: 'Doubts', path: '/doubts' },
     { name: 'Contests', path: '/contests' },

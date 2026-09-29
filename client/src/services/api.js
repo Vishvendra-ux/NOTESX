@@ -70,3 +70,18 @@ export const questionService = { list: (params) => api.get('/questions', { param
 export const contestService = { list: () => api.get('/contests'), get: (id) => api.get(`/contests/${id}`) };
 export const userService = { me: () => api.get('/users/me'), profile: (username) => api.get(`/users/${username}`) };
 export const aiService = { ask: (data) => api.post('/ai/chat', data) };
+export const roadmapService = {
+  list: (params) => api.get('/roadmaps', { params }),
+  categories: () => api.get('/roadmaps/categories'),
+  get: (idOrSlug) => api.get(`/roadmaps/${idOrSlug}`),
+};
+export const jobService = {
+  list: (params) => api.get('/jobs', { params }),
+  stats: () => api.get('/jobs/stats'),
+  get: (id) => api.get(`/jobs/${id}`),
+  create: (data) => api.post('/jobs', data),
+  toggleSave: (id) => api.post(`/jobs/${id}/save`),
+  apply: (id, data) => api.post(`/jobs/${id}/apply`, data),
+  myApplications: () => api.get('/jobs/my/applications'),
+};
+

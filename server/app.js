@@ -32,6 +32,8 @@ app.use('/api/questions', require('./routes/questions'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/comments', require('./routes/comments'));
+app.use('/api/roadmaps', require('./routes/roadmaps'));
+app.use('/api/jobs', require('./routes/jobs'));
 
 // Basic Route
 app.get('/', (req, res) => {

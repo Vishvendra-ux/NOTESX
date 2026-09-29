@@ -15,6 +15,8 @@ import Doubts from './pages/Doubts';
 import Contests from './pages/Contests';
 import Profile from './pages/Profile';
 import AIAssistantPage from './pages/AIAssistantPage';
+import Roadmaps from './pages/Roadmaps';
+import Jobs from './pages/Jobs';
 
 function App() {
   return (
@@ -26,6 +28,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/roadmaps" element={<Roadmaps />} />
+            <Route path="/roadmaps/:id" element={<Roadmaps />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/jobs/:id" element={<Jobs />} />
 
             {/* Protected Routes (Must be logged in) */}
             <Route element={<ProtectedRoute />}>
