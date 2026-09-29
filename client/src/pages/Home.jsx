@@ -1,4 +1,5 @@
-import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, ChevronRight, CircleHelp, FileText, Flame, GraduationCap, MapPin, Sparkles, Trophy, Users, Zap, Compass, Briefcase } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, ChevronRight, CircleHelp, FileText, Flame, GraduationCap, MapPin, Sparkles, Trophy, Users, Zap, Compass, Briefcase, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const colleges = [
@@ -14,33 +15,33 @@ const notes = [
 ];
 
 const stateData = [
-  { state: 'Uttar Pradesh', count: 142, dot: 'bg-indigo-500', text: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-100 hover:border-indigo-400 hover:bg-indigo-100' },
-  { state: 'Delhi', count: 98, dot: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50 border-violet-100 hover:border-violet-400 hover:bg-violet-100' },
-  { state: 'Maharashtra', count: 210, dot: 'bg-orange-500', text: 'text-orange-700', bg: 'bg-orange-50 border-orange-100 hover:border-orange-400 hover:bg-orange-100' },
-  { state: 'Tamil Nadu', count: 164, dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100 hover:border-emerald-400 hover:bg-emerald-100' },
-  { state: 'Karnataka', count: 187, dot: 'bg-red-500', text: 'text-red-700', bg: 'bg-red-50 border-red-100 hover:border-red-400 hover:bg-red-100' },
-  { state: 'West Bengal', count: 112, dot: 'bg-cyan-500', text: 'text-cyan-700', bg: 'bg-cyan-50 border-cyan-100 hover:border-cyan-400 hover:bg-cyan-100' },
-  { state: 'Rajasthan', count: 96, dot: 'bg-yellow-500', text: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-100 hover:border-yellow-400 hover:bg-yellow-100' },
-  { state: 'Gujarat', count: 134, dot: 'bg-pink-500', text: 'text-pink-700', bg: 'bg-pink-50 border-pink-100 hover:border-pink-400 hover:bg-pink-100' },
-  { state: 'Madhya Pradesh', count: 88, dot: 'bg-teal-500', text: 'text-teal-700', bg: 'bg-teal-50 border-teal-100 hover:border-teal-400 hover:bg-teal-100' },
-  { state: 'Bihar', count: 74, dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50 border-amber-100 hover:border-amber-400 hover:bg-amber-100' },
-  { state: 'Telangana', count: 102, dot: 'bg-lime-600', text: 'text-lime-700', bg: 'bg-lime-50 border-lime-100 hover:border-lime-400 hover:bg-lime-100' },
-  { state: 'Andhra Pradesh', count: 118, dot: 'bg-sky-500', text: 'text-sky-700', bg: 'bg-sky-50 border-sky-100 hover:border-sky-400 hover:bg-sky-100' },
-  { state: 'Kerala', count: 91, dot: 'bg-green-600', text: 'text-green-700', bg: 'bg-green-50 border-green-100 hover:border-green-400 hover:bg-green-100' },
-  { state: 'Punjab', count: 79, dot: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50 border-rose-100 hover:border-rose-400 hover:bg-rose-100' },
-  { state: 'Haryana', count: 65, dot: 'bg-fuchsia-500', text: 'text-fuchsia-700', bg: 'bg-fuchsia-50 border-fuchsia-100 hover:border-fuchsia-400 hover:bg-fuchsia-100' },
-  { state: 'Uttarakhand', count: 52, dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50 border-blue-100 hover:border-blue-400 hover:bg-blue-100' },
-  { state: 'Jharkhand', count: 43, dot: 'bg-orange-600', text: 'text-orange-800', bg: 'bg-orange-50 border-orange-100 hover:border-orange-400 hover:bg-orange-100' },
-  { state: 'Odisha', count: 68, dot: 'bg-purple-500', text: 'text-purple-700', bg: 'bg-purple-50 border-purple-100 hover:border-purple-400 hover:bg-purple-100' },
-  { state: 'Assam', count: 38, dot: 'bg-emerald-600', text: 'text-emerald-800', bg: 'bg-emerald-50 border-emerald-100 hover:border-emerald-400 hover:bg-emerald-100' },
-  { state: 'Chhattisgarh', count: 47, dot: 'bg-indigo-600', text: 'text-indigo-800', bg: 'bg-indigo-50 border-indigo-100 hover:border-indigo-400 hover:bg-indigo-100' },
+  { state: 'Uttar Pradesh', count: 142 },
+  { state: 'Delhi', count: 98 },
+  { state: 'Maharashtra', count: 210 },
+  { state: 'Tamil Nadu', count: 164 },
+  { state: 'Karnataka', count: 187 },
+  { state: 'West Bengal', count: 112 },
+  { state: 'Rajasthan', count: 96 },
+  { state: 'Gujarat', count: 134 },
+  { state: 'Madhya Pradesh', count: 88 },
+  { state: 'Bihar', count: 74 },
+  { state: 'Telangana', count: 102 },
+  { state: 'Andhra Pradesh', count: 118 },
+  { state: 'Kerala', count: 91 },
+  { state: 'Punjab', count: 79 },
+  { state: 'Haryana', count: 65 },
+  { state: 'Uttarakhand', count: 52 },
+  { state: 'Jharkhand', count: 43 },
+  { state: 'Odisha', count: 68 },
+  { state: 'Assam', count: 38 },
+  { state: 'Chhattisgarh', count: 47 },
 ];
 
-function MiniStat({ icon: Icon, label, value, tint }) {
+function MiniStat({ icon: Icon, label, value }) {
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
       <div className="flex items-center gap-2 text-xs text-slate-500">
-        <span className={`grid h-6 w-6 place-items-center rounded-lg ${tint}`}><Icon size={13} /></span>
+        <span className="grid h-6 w-6 place-items-center rounded-lg bg-indigo-50 text-indigo-600"><Icon size={13} /></span>
         {label}
       </div>
       <p className="mt-2 text-lg font-extrabold text-slate-900">{value}</p>
@@ -49,6 +50,11 @@ function MiniStat({ icon: Icon, label, value, tint }) {
 }
 
 export default function Home() {
+  const [stateSearch, setStateSearch] = useState('');
+  const filteredStates = stateData.filter(s =>
+    s.state.toLowerCase().includes(stateSearch.toLowerCase().trim())
+  );
+
   return (
     <div className="pb-20">
 
@@ -90,50 +96,42 @@ export default function Home() {
 
           {/* Right — dashboard card */}
           <div className="relative mx-auto w-full max-w-[600px] lg:ml-auto">
-            <div className="absolute -left-7 top-14 z-20 hidden rounded-xl border border-slate-100 bg-white p-3 shadow-xl sm:flex sm:items-center sm:gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-emerald-600"><FileText size={15} /></span>
-              <span><b className="block text-xs text-slate-800">New note uploaded</b><small className="text-[10px] text-slate-500">Operating Systems</small></span>
-            </div>
-            <div className="absolute -right-4 bottom-10 z-20 hidden rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-xl sm:flex sm:items-center sm:gap-2">
-              <Flame size={18} className="fill-orange-500 text-orange-500" />
-              <span><b className="block text-xs text-slate-800">7 day streak</b><small className="text-[10px] text-emerald-600">+50 XP today</small></span>
-            </div>
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_28px_60px_-24px_rgba(39,58,171,.35)] sm:p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white"><GraduationCap size={19} /></span>
-                  <div><b className="block text-sm text-slate-800">Your learning space</b><small className="text-xs text-slate-500">GLA University · CSE</small></div>
-                </div>
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">On track</span>
+            <div className="absolute -right-3 -top-3 z-20 hidden rounded-xl border border-slate-200/80 bg-white/95 px-3.5 py-2 shadow-lg backdrop-blur-sm sm:flex sm:items-center sm:gap-2.5">
+              <Flame size={18} className="fill-amber-500 text-amber-500" />
+              <div>
+                <b className="block text-xs text-slate-900">7-day study streak</b>
+                <span className="text-[11px] text-slate-500">+50 XP earned today</span>
               </div>
-              <div className="mt-5 grid grid-cols-3 gap-2">
-                <MiniStat icon={Zap} label="Weekly XP" value="480" tint="bg-amber-50 text-amber-600" />
-                <MiniStat icon={CircleHelp} label="Solved" value="142" tint="bg-indigo-50 text-indigo-600" />
-                <MiniStat icon={Trophy} label="College rank" value="#18" tint="bg-violet-50 text-violet-600" />
-              </div>
-              <div className="mt-4 grid gap-4 sm:grid-cols-[1.1fr_.9fr]">
-                <div className="rounded-xl bg-slate-950 p-4 text-white">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-300">GATE preparation</span>
-                    <span className="text-[10px] text-emerald-300">+8% this month</span>
-                  </div>
-                  <div className="mt-5 flex items-end gap-2"><b className="text-3xl">64%</b><span className="mb-1 text-xs text-slate-400">complete</span></div>
-                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-700"><i className="block h-full w-[64%] rounded-full bg-cyan-400" /></div>
-                  <div className="mt-4 flex gap-2">
-                    <span className="rounded bg-white/10 px-2 py-1 text-[10px]">DSA 90%</span>
-                    <span className="rounded bg-white/10 px-2 py-1 text-[10px]">OS 70%</span>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_24px_50px_-20px_rgba(79,70,229,.18)]">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20"><GraduationCap size={20} /></span>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Your learning space</h3>
+                    <p className="text-xs text-slate-500">GLA University · Computer Science</p>
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-100 p-4">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" /> Live now
-                  </div>
-                  <b className="mt-3 block text-sm text-slate-900">College Coding Battle</b>
-                  <p className="mt-1 text-xs text-slate-500">1,248 students competing</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs font-bold text-orange-600">42:18 left</span>
-                    <span className="rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-bold text-white">Join</span>
-                  </div>
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">On track</span>
+              </div>
+
+              <div className="mt-5 grid grid-cols-3 gap-3">
+                <MiniStat icon={Zap} label="Weekly XP" value="480" />
+                <MiniStat icon={CircleHelp} label="Solved" value="142" />
+                <MiniStat icon={Trophy} label="Campus rank" value="#18" />
+              </div>
+
+              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-700">Semester Exam Prep</span>
+                  <span className="font-bold text-indigo-600">64% completed</span>
+                </div>
+                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-full w-[64%] rounded-full bg-indigo-600 transition-all duration-500" />
+                </div>
+                <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                  <span>Current: Process Synchronization</span>
+                  <Link to="/notes" className="font-semibold text-indigo-600 hover:text-indigo-700">Resume study →</Link>
                 </div>
               </div>
             </div>
@@ -145,24 +143,30 @@ export default function Home() {
       <section className="mx-auto max-w-[1280px] px-4 pt-20 sm:px-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-indigo-600">Find your people</p>
+            <p className="text-xs font-semibold tracking-wide text-indigo-600">Find your community</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-[-.04em] text-slate-900">Explore your college</h2>
             <p className="mt-2 text-sm text-slate-500">Communities built around the campus you call home.</p>
           </div>
-          <Link to="/colleges" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600">Browse all colleges <ChevronRight size={16} /></Link>
+          <Link to="/colleges" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition" aria-label="View all colleges">
+            View all colleges <ChevronRight size={16} aria-hidden="true" />
+          </Link>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {colleges.map(([name, location, students, noteCount, initial, color, id]) => (
             <Link to={`/colleges/${id}`} key={name} className="group overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg">
               <div className={`-mx-5 -mt-5 h-20 rounded-t-xl bg-gradient-to-r ${color} opacity-90`} />
               <span className={`-mt-7 grid h-14 w-14 place-items-center rounded-xl bg-gradient-to-br ${color} text-xl font-extrabold text-white shadow-lg`}>{initial}</span>
-              <h3 className="mt-4 text-lg font-bold text-slate-900">{name}</h3>
+              <h3 className="mt-4 text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{name}</h3>
               <p className="mt-1 text-xs text-slate-500">{location}</p>
-              <div className="mt-5 grid grid-cols-2 border-t border-slate-100 pt-4 text-xs">
-                <span className="text-slate-500"><b className="block text-sm text-slate-800">{students}</b> Students</span>
-                <span className="text-slate-500"><b className="block text-sm text-slate-800">{noteCount}</b> Notes</span>
+              <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs">
+                <div className="flex gap-4">
+                  <span className="text-slate-500"><b className="font-bold text-slate-800">{students}</b> Students</span>
+                  <span className="text-slate-500"><b className="font-bold text-slate-800">{noteCount}</b> Notes</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600 transition group-hover:translate-x-0.5">
+                  View community <ArrowRight size={14} aria-hidden="true" />
+                </span>
               </div>
-              <p className="mt-5 text-sm font-bold text-indigo-600">View community →</p>
             </Link>
           ))}
         </div>
@@ -170,47 +174,66 @@ export default function Home() {
 
       {/* ── Browse by State ── */}
       <section className="mx-auto max-w-[1280px] px-4 pt-20 sm:px-6">
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-indigo-600">Every corner of India</p>
+            <p className="text-xs font-semibold tracking-wide text-indigo-600">Colleges across India</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-[-.04em] text-slate-900">Browse by State</h2>
             <p className="mt-2 text-sm text-slate-500">
               Colleges, notes and student communities across <b className="text-slate-700">28+ states</b> in India.
             </p>
           </div>
-          <Link to="/colleges" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600">
-            View all <ChevronRight size={16} />
+          <Link to="/colleges" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition" aria-label="View all colleges by state">
+            View all colleges <ChevronRight size={16} aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {stateData.map(({ state, count, dot, text, bg }) => (
+        {/* Quick state search */}
+        <div className="relative mb-6 max-w-sm">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input
+            type="text"
+            placeholder="Search state..."
+            value={stateSearch}
+            onChange={(e) => setStateSearch(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            aria-label="Search states"
+          />
+        </div>
+
+        {/* Responsive, breathable state cards */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          {filteredStates.map(({ state, count }) => (
             <Link
               key={state}
               to={`/colleges?state=${encodeURIComponent(state)}`}
-              className={`flex flex-col gap-2.5 rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${bg}`}
+              className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md"
             >
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
-                <span className={`text-sm font-bold leading-tight ${text}`}>{state}</span>
+                <MapPin size={15} className="shrink-0 text-indigo-600 transition group-hover:scale-110" aria-hidden="true" />
+                <span className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{state}</span>
               </div>
-              <p className="flex items-center gap-1 text-xs text-slate-500">
-                <MapPin size={11} /> {count} colleges
+              <p className="pl-6 text-xs text-slate-500">
+                {count} colleges
               </p>
             </Link>
           ))}
+          {filteredStates.length === 0 && (
+            <p className="col-span-full py-8 text-center text-sm text-slate-400">
+              No states matching "{stateSearch}".
+            </p>
+          )}
         </div>
 
         {/* Platform stats strip */}
         <div className="mt-10 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-4">
           {[
-            { value: '28+', label: 'States covered', color: 'text-indigo-600' },
-            { value: '2,400+', label: 'Colleges listed', color: 'text-emerald-600' },
-            { value: '50K+', label: 'Active students', color: 'text-violet-600' },
-            { value: '1.2L+', label: 'Notes shared', color: 'text-orange-500' },
-          ].map(({ value, label, color }) => (
+            { value: '28+', label: 'States covered' },
+            { value: '2,400+', label: 'Colleges listed' },
+            { value: '50K+', label: 'Active students' },
+            { value: '1.2L+', label: 'Notes shared' },
+          ].map(({ value, label }) => (
             <div key={label} className="text-center">
-              <p className={`text-3xl font-extrabold ${color}`}>{value}</p>
+              <p className="text-3xl font-extrabold text-indigo-600">{value}</p>
               <p className="mt-1 text-xs font-semibold text-slate-500">{label}</p>
             </div>
           ))}
@@ -238,7 +261,7 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <Link to="/roadmaps" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition group-hover:translate-x-1">
+            <Link to="/roadmaps" className="btn-primary inline-flex items-center gap-2 text-xs">
               <span>Explore Roadmaps</span>
               <ArrowRight size={14} />
             </Link>
@@ -262,7 +285,7 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <Link to="/jobs" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition group-hover:translate-x-1">
+            <Link to="/jobs" className="btn-primary inline-flex items-center gap-2 text-xs">
               <span>Browse Job Openings</span>
               <ArrowRight size={14} />
             </Link>
@@ -273,7 +296,7 @@ export default function Home() {
       {/* ── Learning Loop ── */}
       <section className="mx-auto max-w-[1280px] px-4 pt-24 sm:px-6">
         <div className="rounded-2xl bg-slate-950 px-6 py-10 text-white sm:px-10">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">One connected loop</p>
+          <p className="text-xs font-semibold tracking-wide text-cyan-300">One connected study loop</p>
           <h2 className="mt-3 text-3xl font-extrabold tracking-[-.04em]">Build a habit that compounds.</h2>
           <div className="mt-8 grid gap-3 md:grid-cols-5">
             {[
@@ -297,29 +320,38 @@ export default function Home() {
       {/* ── Notes ── */}
       <section className="mx-auto max-w-[1280px] px-4 pt-24 sm:px-6">
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-indigo-600">Exam ready</p>
+          <p className="text-xs font-semibold tracking-wide text-indigo-600">Exam preparation</p>
           <h2 className="mt-2 text-3xl font-extrabold tracking-[-.04em] text-slate-900">Everything you need for your next exam</h2>
         </div>
         <div className="mt-8 flex flex-wrap justify-center gap-2">
           {['GLA University', 'B.Tech CSE', '3rd Year', 'Semester 5', 'All subjects'].map((filter, i) => (
-            <button key={filter} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${i === 0 ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600'}`}>
+            <button
+              key={filter}
+              className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all ${
+                i === 0
+                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
               {filter}
             </button>
           ))}
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {notes.map(([tag, title, meta, rating, downloads]) => (
-            <Link key={title} to="/notes" className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-indigo-200 hover:shadow-lg">
+            <Link key={title} to="/notes" className="group rounded-xl border border-slate-200 bg-white p-5 transition hover:border-indigo-200 hover:shadow-lg">
               <div className="flex items-start justify-between">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-rose-50 text-rose-500"><FileText size={20} /></span>
-                <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-600">★ {rating}</span>
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-50 text-indigo-600"><FileText size={20} /></span>
+                <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">★ {rating}</span>
               </div>
               <span className="mt-5 inline-block rounded bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700">{tag}</span>
-              <h3 className="mt-3 text-lg font-bold text-slate-900">{title}</h3>
+              <h3 className="mt-3 text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{title}</h3>
               <p className="mt-1 text-xs text-slate-500">{meta}</p>
-              <div className="mt-5 border-t border-slate-100 pt-4 text-xs text-slate-500">
-                ↓ {downloads} downloads
-                <span className="float-right font-bold text-indigo-600">View notes →</span>
+              <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-500">
+                <span>↓ {downloads} downloads</span>
+                <span className="inline-flex items-center gap-1 font-bold text-indigo-600 transition group-hover:translate-x-0.5">
+                  View notes <ArrowRight size={14} aria-hidden="true" />
+                </span>
               </div>
             </Link>
           ))}

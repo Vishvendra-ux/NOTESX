@@ -174,15 +174,26 @@ export default function Navbar() {
 
             {/* Right Actions */}
             <div className="hidden lg:flex items-center space-x-3">
-              <button 
-                onClick={() => setSearchOpen(true)} 
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 hover:border-indigo-200"
-                aria-label="Search"
-              >
-                <Search size={16} />
-                <span>Search</span>
-                <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
-              </button>
+              {location.pathname === '/colleges' ? (
+                <button 
+                  onClick={() => setSearchOpen(true)} 
+                  className="p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 hover:border-indigo-200 hover:text-indigo-600 hover:bg-white transition-all shadow-sm"
+                  aria-label="Global quick search (⌘K)"
+                  title="Global quick search (⌘K)"
+                >
+                  <Search size={16} aria-hidden="true" />
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setSearchOpen(true)} 
+                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 hover:border-indigo-200"
+                  aria-label="Search"
+                >
+                  <Search size={16} />
+                  <span>Search</span>
+                  <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
+                </button>
+              )}
 
               {user ? (
                 <>
@@ -306,6 +317,13 @@ export default function Navbar() {
                         >
                           <User size={14} /> My Profile
                         </Link>
+                        <Link 
+                          to="/ai-assistant" 
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-xl"
+                        >
+                          <Sparkles size={14} /> AI Study Assistant
+                        </Link>
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl"
@@ -360,6 +378,13 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
+            <Link
+              to="/ai-assistant"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold text-indigo-600 hover:bg-indigo-50"
+            >
+              <Sparkles size={16} /> AI Study Assistant
+            </Link>
 
             <div className="border-t border-slate-100 pt-3 mt-2">
               {user ? (

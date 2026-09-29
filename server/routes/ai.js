@@ -1,1 +1,8 @@
-const router = require('express').Router(); const { ask } = require('../controllers/aiController'); const { protect } = require('../middleware/authMiddleware'); router.post('/chat', protect, ask); module.exports = router;
+const router = require('express').Router();
+const { ask } = require('../controllers/aiController');
+const { optionalProtect } = require('../middleware/authMiddleware');
+
+router.post('/chat', optionalProtect, ask);
+
+module.exports = router;
+

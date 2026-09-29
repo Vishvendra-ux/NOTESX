@@ -149,41 +149,47 @@ export default function Colleges() {
   }), [query, state]);
 
   return (
-    <div className="animate-fade-in pb-12">
-      <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-indigo-600">Campus communities</p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-[-.04em] text-slate-900">Explore colleges</h1>
-          <p className="mt-2 text-sm text-slate-500">Find your campus to unlock notes, discussions, contests, and peers.</p>
-        </div>
-        <div className="relative w-full md:w-[360px]">
-          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"/>
+    <div className="animate-fade-in pb-28 lg:pb-24">
+      {/* ── Hero Section with Integrated Search ── */}
+      <div className="max-w-2xl">
+        <p className="text-xs font-semibold tracking-wide text-indigo-600">Campus communities</p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-[-.04em] text-slate-900 sm:text-4xl">Explore colleges</h1>
+        <p className="mt-2 text-sm text-slate-500">Find your campus to unlock notes, discussions, contests, and peers.</p>
+
+        {/* Directory Search - Cohesively positioned directly beneath description */}
+        <div className="relative mt-5 max-w-lg">
+          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <input 
             value={query} 
             onChange={(e) => setQuery(e.target.value)} 
             type="search" 
-            className="input-field py-3 pl-10 pr-10 text-sm" 
-            placeholder="Search by college, city, or state..." 
-            aria-label="Search colleges"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
+            placeholder="Filter by college, city, or state..." 
+            aria-label="Filter colleges directory"
           />
           {query && (
             <button 
               onClick={() => setQuery('')} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700" 
-              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:text-slate-600 focus:outline-none" 
+              aria-label="Clear search query"
             >
-              <X size={16}/>
+              <X size={15}/>
             </button>
           )}
         </div>
       </div>
 
+      {/* ── Standardized Filter Chips ── */}
       <div className="mt-8 flex gap-2 overflow-x-auto pb-2">
         {filters.map((filter) => (
           <button 
             key={filter} 
             onClick={() => setState(filter)} 
-            className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition ${state === filter ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-200' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-700'}`}
+            className={`whitespace-nowrap rounded-xl border px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              state === filter 
+                ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm' 
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+            }`}
           >
             {filter}
           </button>
@@ -193,7 +199,10 @@ export default function Colleges() {
       <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
         <span>{visible.length} {visible.length === 1 ? 'college' : 'colleges'} found</span>
         {(query || state !== 'All Colleges') && (
-          <button onClick={() => { setQuery(''); setState('All Colleges'); }} className="font-semibold text-indigo-600">
+          <button 
+            onClick={() => { setQuery(''); setState('All Colleges'); }} 
+            className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+          >
             Clear filters
           </button>
         )}
@@ -260,14 +269,17 @@ export default function Colleges() {
           ))}
         </div>
       ) : (
-        <div className="mt-8 grid min-h-72 place-items-center border border-dashed border-slate-300 bg-white p-8 text-center">
+        <div className="mt-8 grid min-h-72 place-items-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <div>
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-indigo-50 text-indigo-600">
               <Search size={21}/>
             </span>
             <h2 className="mt-4 text-lg font-bold text-slate-900">No colleges found</h2>
             <p className="mt-1 text-sm text-slate-500">Try a different college name, city, or state.</p>
-            <button onClick={() => { setQuery(''); setState('All Colleges'); }} className="mt-5 text-sm font-bold text-indigo-600">
+            <button 
+              onClick={() => { setQuery(''); setState('All Colleges'); }} 
+              className="btn-primary mt-5 text-xs"
+            >
               Show all colleges
             </button>
           </div>
