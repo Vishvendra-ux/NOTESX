@@ -873,22 +873,29 @@ const roadmapsData = [
   }
 ];
 
+const moreRoadmapsData = require('./moreRoadmapsData');
+
 async function seed() {
   try {
     const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/notesx';
     await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB for Roadmap Seeding...');
 
-    for (const r of roadmapsData) {
+    const allRoadmaps = [
+      ...roadmapsData.map(r => ({ ...r, roadmapType: r.roadmapType || 'Role-based' })),
+      ...moreRoadmapsData
+    ];
+
+    for (const r of allRoadmaps) {
       await Roadmap.findOneAndUpdate(
         { slug: r.slug },
         r,
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
-      console.log(`✅ Seeded Roadmap: ${r.title} (${r.slug})`);
+      console.log(`✅ Seeded Roadmap: ${r.title} (${r.slug}) [${r.roadmapType || 'Role-based'}]`);
     }
 
-    console.log(`\n🎉 Successfully seeded ${roadmapsData.length} industry-standard engineering roadmaps!`);
+    console.log(`\n🎉 Successfully seeded ${allRoadmaps.length} industry-standard engineering roadmaps!`);
     await mongoose.disconnect();
     process.exit(0);
   } catch (err) {

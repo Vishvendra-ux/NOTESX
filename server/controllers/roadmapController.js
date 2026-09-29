@@ -5,14 +5,18 @@ const Roadmap = require('../models/Roadmap');
 // @access  Public
 exports.list = async (req, res, next) => {
   try {
-    const { category, difficulty, search, tag } = req.query;
+    const { category, difficulty, search, tag, type } = req.query;
     const query = {};
 
-    if (category && category !== 'All') {
+    if (type && type !== 'All' && type !== 'All Roadmaps') {
+      query.roadmapType = type;
+    }
+
+    if (category && category !== 'All' && category !== 'All Domains') {
       query.category = category;
     }
 
-    if (difficulty && difficulty !== 'All') {
+    if (difficulty && difficulty !== 'All' && difficulty !== 'All Levels') {
       query.difficulty = difficulty;
     }
 
@@ -32,7 +36,7 @@ exports.list = async (req, res, next) => {
     }
 
     const roadmaps = await Roadmap.find(query)
-      .select('slug title subtitle description category difficulty estimatedDuration icon color tags salaryRange careerPaths stages views')
+      .select('slug title subtitle description category difficulty estimatedDuration icon color tags salaryRange careerPaths stages views roadmapType')
       .sort({ featured: -1, views: -1, createdAt: 1 })
       .lean();
 

@@ -46,8 +46,16 @@ const RoadmapSchema = new mongoose.Schema({
       'Cloud & DevOps',
       'Mobile & Software',
       'Cybersecurity',
-      'Core CS & Placement'
+      'Core CS & Placement',
+      'Languages & Frameworks',
+      'Databases & Architecture'
     ],
+    index: true
+  },
+  roadmapType: {
+    type: String,
+    enum: ['Role-based', 'Skill-based'],
+    default: 'Role-based',
     index: true
   },
   difficulty: { type: String, enum: ['Beginner Friendly', 'Intermediate', 'Advanced'], default: 'Beginner Friendly' },

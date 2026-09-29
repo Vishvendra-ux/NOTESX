@@ -4,7 +4,9 @@ import {
   Compass, Search, ArrowRight, ArrowLeft, CheckCircle2, Circle, Clock,
   Award, Sparkles, BookOpen, ExternalLink, Code2, Layers,
   ChevronRight, BrainCircuit, Layout, Server, Cloud, Binary,
-  Shield, Database, Smartphone, Check, Share2, Filter, Star
+  Shield, Database, Smartphone, Check, Share2, Filter, Star,
+  Terminal, Box, Zap, Cpu, GitBranch, FileText, SlidersHorizontal,
+  Workflow, ListFilter, CheckCheck
 } from 'lucide-react';
 import { roadmapService } from '../services/api';
 
@@ -17,17 +19,33 @@ const ICON_MAP = {
   Shield,
   Database,
   Smartphone,
-  Compass
+  Compass,
+  Layers,
+  Sparkles,
+  Terminal,
+  Box,
+  Zap,
+  Cpu,
+  GitBranch,
+  Workflow
 };
+
+const ROADMAP_TYPES = [
+  { id: 'All Roadmaps', label: 'All Roadmaps', icon: Compass },
+  { id: 'Role-based', label: 'Role-Based Paths', icon: Layers, desc: 'Complete career trajectories' },
+  { id: 'Skill-based', label: 'Skill & Tech Roadmaps', icon: Zap, desc: 'Frameworks, tools & languages' }
+];
 
 const CATEGORIES = [
   'All Domains',
   'Web Development',
   'AI & Data Science',
   'Cloud & DevOps',
+  'Languages & Frameworks',
   'Mobile & Software',
-  'Cybersecurity',
-  'Core CS & Placement'
+  'Databases & Architecture',
+  'Core CS & Placement',
+  'Cybersecurity'
 ];
 
 const DIFFICULTIES = ['All Levels', 'Beginner Friendly', 'Intermediate', 'Advanced'];
@@ -45,13 +63,14 @@ export default function Roadmaps() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 1. DIRECTORY VIEW: Browse All Engineering Roadmaps
+// 1. DIRECTORY VIEW: Browse All Engineering Roadmaps (like roadmap.sh)
 // ─────────────────────────────────────────────────────────────
 function RoadmapDirectory() {
   const [roadmaps, setRoadmaps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('All Roadmaps');
   const [selectedCategory, setSelectedCategory] = useState('All Domains');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All Levels');
 
@@ -69,13 +88,14 @@ function RoadmapDirectory() {
 
   useEffect(() => {
     fetchRoadmaps();
-  }, [selectedCategory, selectedDifficulty]);
+  }, [selectedType, selectedCategory, selectedDifficulty]);
 
   const fetchRoadmaps = async () => {
     setLoading(true);
     setError('');
     try {
       const params = {};
+      if (selectedType !== 'All Roadmaps') params.type = selectedType;
       if (selectedCategory !== 'All Domains') params.category = selectedCategory;
       if (selectedDifficulty !== 'All Levels') params.difficulty = selectedDifficulty;
 
@@ -90,27 +110,52 @@ function RoadmapDirectory() {
   };
 
   const filteredRoadmaps = useMemo(() => {
-    if (!search.trim()) return roadmaps;
-    const q = search.toLowerCase().trim();
-    return roadmaps.filter((r) =>
-      r.title.toLowerCase().includes(q) ||
-      r.subtitle.toLowerCase().includes(q) ||
-      r.tags?.some((t) => t.toLowerCase().includes(q)) ||
-      r.careerPaths?.some((cp) => cp.toLowerCase().includes(q))
-    );
-  }, [roadmaps, search]);
+    return roadmaps.filter((r) => {
+      // Type filter
+      if (selectedType !== 'All Roadmaps' && r.roadmapType && r.roadmapType !== selectedType) {
+        return false;
+      }
+      // Search filter
+      if (!search.trim()) return true;
+      const q = search.toLowerCase().trim();
+      return (
+        r.title?.toLowerCase().includes(q) ||
+        r.subtitle?.toLowerCase().includes(q) ||
+        r.category?.toLowerCase().includes(q) ||
+        r.tags?.some((t) => t.toLowerCase().includes(q)) ||
+        r.careerPaths?.some((cp) => cp.toLowerCase().includes(q))
+      );
+    });
+  }, [roadmaps, search, selectedType]);
+
+  const countsByType = useMemo(() => {
+    const roleCount = roadmaps.filter((r) => r.roadmapType === 'Role-based').length;
+    const skillCount = roadmaps.filter((r) => r.roadmapType === 'Skill-based').length;
+    return {
+      all: roadmaps.length,
+      role: roleCount,
+      skill: skillCount
+    };
+  }, [roadmaps]);
 
   return (
     <div className="animate-fade-in pb-20">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6 sm:p-10 text-white mb-10 shadow-2xl border border-indigo-900/40">
+      {/* Hero Header Inspired by roadmap.sh Community Blueprints */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6 sm:p-10 text-white mb-8 shadow-2xl border border-indigo-900/40">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-80 h-80 rounded-full bg-blue-500/15 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 mb-4 backdrop-blur-md">
-            <Compass size={13} className="text-indigo-400" />
-            <span>ENGINEERING & CAREER ROADMAPS</span>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 backdrop-blur-md">
+              <Compass size={13} className="text-indigo-400" />
+              <span>COMMUNITY ROADMAPS & CURRICULUMS</span>
+            </span>
+
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/10 text-slate-300 backdrop-blur-md">
+              <Sparkles size={11} className="text-amber-400" />
+              <span>roadmap.sh Blueprint Format</span>
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-white mb-4">
@@ -118,7 +163,7 @@ function RoadmapDirectory() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal mb-8">
-            Step-by-step career roadmaps crafted with industry research. Track your progress milestone by milestone, build resume-worthy capstone projects, and prepare for top tier-1 tech roles.
+            Step-by-step career and skill pathways inspired by industry standards. Track your mastery topic by topic, learn with official documentation and curated tutorials, and build resume-worthy capstone projects.
           </p>
 
           {/* Search Bar */}
@@ -130,11 +175,50 @@ function RoadmapDirectory() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search roadmaps (e.g. AI/ML, React, Backend, System Design, DevOps)..."
+              placeholder="Search by role, framework, or skill (e.g. React, Docker, Python, Full Stack, Go)..."
               className="w-full h-13 pl-11 pr-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white/15 focus:border-indigo-400 focus:outline-none transition shadow-lg"
             />
           </div>
         </div>
+      </div>
+
+      {/* Role-based vs Skill-based Toggle (roadmap.sh feature) */}
+      <div className="flex flex-wrap items-center gap-2 mb-6 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-fit">
+        {ROADMAP_TYPES.map((t) => {
+          const isSelected = selectedType === t.id;
+          const Icon = t.icon;
+          const count =
+            t.id === 'All Roadmaps'
+              ? countsByType.all
+              : t.id === 'Role-based'
+              ? countsByType.role
+              : countsByType.skill;
+
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setSelectedType(t.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/80 dark:border-slate-700'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Icon size={15} />
+              <span>{t.label}</span>
+              {count > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                  isSelected
+                    ? 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                }`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Category Pills & Difficulty Filter */}
@@ -202,7 +286,12 @@ function RoadmapDirectory() {
           <p className="text-xs text-slate-400 mb-4">Try clearing your search query or switching categories.</p>
           <button
             type="button"
-            onClick={() => { setSearch(''); setSelectedCategory('All Domains'); setSelectedDifficulty('All Levels'); }}
+            onClick={() => {
+              setSearch('');
+              setSelectedType('All Roadmaps');
+              setSelectedCategory('All Domains');
+              setSelectedDifficulty('All Levels');
+            }}
             className="btn-primary text-xs py-2 px-4"
           >
             Reset All Filters
@@ -226,13 +315,20 @@ function RoadmapDirectory() {
                 <div className={`h-1.5 w-full bg-gradient-to-r ${r.color || 'from-indigo-600 to-blue-500'} absolute top-0 inset-x-0`} />
 
                 <div>
-                  {/* Category & Badge */}
+                  {/* Category, Type & Difficulty Badges */}
                   <div className="flex items-center justify-between gap-2 mb-4 pt-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-900/40">
-                      {r.category}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-900/40">
+                        {r.category}
+                      </span>
+                      {r.roadmapType && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md">
+                          {r.roadmapType === 'Role-based' ? 'Role Path' : 'Skill Blueprint'}
+                        </span>
+                      )}
+                    </div>
 
-                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md shrink-0">
                       {r.difficulty}
                     </span>
                   </div>
@@ -278,7 +374,7 @@ function RoadmapDirectory() {
                   )}
                 </div>
 
-                {/* Footer with Stats, Salary & Progress */}
+                {/* Footer with Duration, Salary & Progress */}
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
                   <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
                     <div className="flex items-center gap-1.5">
@@ -314,7 +410,7 @@ function RoadmapDirectory() {
                     </span>
 
                     <span className="text-[11px] text-slate-400 font-medium">
-                      {r.totalStages || 4} Stages
+                      {r.totalStages || 4} Stages • {r.totalNodes || 10}+ Topics
                     </span>
                   </div>
                 </div>
@@ -336,6 +432,14 @@ function RoadmapDetail({ slug, onBack }) {
   const [error, setError] = useState('');
   const [activeNode, setActiveNode] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [exportedChecklist, setExportedChecklist] = useState(false);
+
+  // View mode: 'flowchart' (roadmap.sh graph style) or 'syllabus' (structured list)
+  const [viewMode, setViewMode] = useState('flowchart');
+
+  // Topic search & importance filter inside this roadmap
+  const [topicFilter, setTopicFilter] = useState('');
+  const [importanceFilter, setImportanceFilter] = useState('All');
 
   // Student Completed Nodes Set
   const [completedNodeIds, setCompletedNodeIds] = useState(new Set());
@@ -401,6 +505,28 @@ function RoadmapDetail({ slug, onBack }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleExportChecklist = () => {
+    if (!roadmap) return;
+    let md = `# Study Roadmap: ${roadmap.title}\n`;
+    md += `**Domain:** ${roadmap.category} | **Difficulty:** ${roadmap.difficulty} | **Est. Time:** ${roadmap.estimatedDuration}\n\n`;
+    md += `### Syllabus Checklist\n`;
+
+    roadmap.stages?.forEach((stage, sIdx) => {
+      md += `\n#### ${stage.title}\n`;
+      stage.nodes?.forEach((node) => {
+        const done = completedNodeIds.has(node.id) ? '[x]' : '[ ]';
+        md += `- ${done} **${node.title}** (${node.importance || 'Recommended'})\n`;
+        if (node.skills?.length) {
+          md += `  * Competencies: ${node.skills.join(', ')}\n`;
+        }
+      });
+    });
+
+    navigator.clipboard.writeText(md);
+    setExportedChecklist(true);
+    setTimeout(() => setExportedChecklist(false), 2500);
+  };
+
   if (loading) {
     return (
       <div className="py-24 flex flex-col items-center justify-center gap-3">
@@ -428,10 +554,34 @@ function RoadmapDetail({ slug, onBack }) {
   const progressPercent = totalNodesCount > 0 ? Math.round((completedCount / totalNodesCount) * 100) : 0;
   const IconComponent = ICON_MAP[roadmap.icon] || Compass;
 
+  // Filter nodes inside stages based on search & importance
+  const filteredStages = roadmap.stages?.map((stage) => {
+    const nodes = stage.nodes?.filter((node) => {
+      // Importance filter
+      if (importanceFilter === 'Crucial' && node.importance !== 'Crucial') return false;
+      if (importanceFilter === 'Incomplete' && completedNodeIds.has(node.id)) return false;
+      if (importanceFilter === 'Mastered' && !completedNodeIds.has(node.id)) return false;
+
+      // Text search
+      if (!topicFilter.trim()) return true;
+      const q = topicFilter.toLowerCase().trim();
+      return (
+        node.title?.toLowerCase().includes(q) ||
+        node.description?.toLowerCase().includes(q) ||
+        node.skills?.some((s) => s.toLowerCase().includes(q))
+      );
+    }) || [];
+
+    return {
+      ...stage,
+      filteredNodes: nodes
+    };
+  }) || [];
+
   return (
     <div className="animate-fade-in pb-24">
-      {/* Top Breadcrumb & Share */}
-      <div className="flex items-center justify-between gap-4 mb-6">
+      {/* Top Breadcrumb & Share / Export Actions */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <button
           type="button"
           onClick={onBack}
@@ -443,24 +593,41 @@ function RoadmapDetail({ slug, onBack }) {
           <span className="text-indigo-600 dark:text-indigo-400 font-extrabold truncate max-w-xs">{roadmap.title}</span>
         </button>
 
-        <button
-          type="button"
-          onClick={handleShare}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-        >
-          {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
-          <span>{copied ? 'Link Copied!' : 'Share Roadmap'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportChecklist}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            title="Export full roadmap checklist as markdown"
+          >
+            {exportedChecklist ? <CheckCheck size={14} className="text-emerald-500" /> : <FileText size={14} />}
+            <span>{exportedChecklist ? 'Checklist Copied!' : 'Export Checklist'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          >
+            {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+            <span>{copied ? 'Link Copied!' : 'Share Roadmap'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Roadmap Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6 sm:p-8 text-white mb-8 border border-indigo-900/50 shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-6 sm:p-8 text-white mb-6 border border-indigo-900/50 shadow-xl">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
                 {roadmap.category}
               </span>
+              {roadmap.roadmapType && (
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-slate-300">
+                  {roadmap.roadmapType}
+                </span>
+              )}
               <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-slate-300">
                 {roadmap.difficulty}
               </span>
@@ -531,12 +698,78 @@ function RoadmapDetail({ slug, onBack }) {
         </div>
       </div>
 
-      {/* Main Grid: Interactive Stage Timeline (Left 2 cols) & Detail Drawer (Right 1 col) */}
+      {/* Roadmap Controls: Search Topics, Filter Status & View Switcher */}
+      <div className="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        {/* Topic search inside roadmap */}
+        <div className="relative flex-1 max-w-md">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Search size={15} />
+          </div>
+          <input
+            type="text"
+            value={topicFilter}
+            onChange={(e) => setTopicFilter(e.target.value)}
+            placeholder="Search topics in this curriculum..."
+            className="w-full h-9 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium focus:outline-none focus:border-indigo-500 transition"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {['All', 'Crucial', 'Incomplete', 'Mastered'].map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setImportanceFilter(f)}
+              className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                importanceFilter === f
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              {f} Topics
+            </button>
+          ))}
+        </div>
+
+        {/* View Mode Toggle: Flowchart (roadmap.sh style) vs Syllabus */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode('flowchart')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+              viewMode === 'flowchart'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Workflow size={13} />
+            <span>Flowchart View</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('syllabus')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+              viewMode === 'syllabus'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <ListFilter size={13} />
+            <span>Syllabus View</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Grid: Interactive Stage Timeline (Left 7 cols) & Detail Drawer (Right 5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Stages & Nodes Flow (7 Columns) */}
         <div className="lg:col-span-7 space-y-8">
-          {roadmap.stages?.map((stage, stageIdx) => (
-            <div key={stage.id || stageIdx} className="glass-card p-5 sm:p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800">
+          {filteredStages.map((stage, stageIdx) => (
+            <div
+              key={stage.id || stageIdx}
+              className="glass-card p-5 sm:p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800 relative overflow-hidden"
+            >
               {/* Stage Header */}
               <div className="flex items-center justify-between mb-2">
                 <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -556,74 +789,137 @@ function RoadmapDetail({ slug, onBack }) {
                 </p>
               )}
 
-              {/* Node Cards inside Stage */}
-              <div className="space-y-2.5">
-                {stage.nodes?.map((node) => {
-                  const isCompleted = completedNodeIds.has(node.id);
-                  const isSelected = activeNode?.id === node.id;
+              {/* If no nodes match filter */}
+              {stage.filteredNodes.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-850 rounded-2xl">
+                  No topics in this stage match your current filter.
+                </div>
+              ) : viewMode === 'flowchart' ? (
+                /* Flowchart View: roadmap.sh Visual Path with connecting vertical lines */
+                <div className="relative pl-6 space-y-4 before:content-[''] before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-indigo-200 dark:before:bg-indigo-900/60">
+                  {stage.filteredNodes.map((node, nodeIdx) => {
+                    const isCompleted = completedNodeIds.has(node.id);
+                    const isSelected = activeNode?.id === node.id;
 
-                  return (
-                    <div
-                      key={node.id}
-                      onClick={() => setActiveNode(node)}
-                      className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between gap-3 ${
-                        isSelected
-                          ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-xs'
-                          : isCompleted
-                          ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20'
-                          : 'border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850 hover:border-indigo-300 dark:hover:border-indigo-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {/* Checkbox */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleNodeCompletion(node.id);
-                          }}
-                          className={`w-6 h-6 rounded-lg flex items-center justify-center transition shrink-0 ${
+                    return (
+                      <div key={node.id} className="relative">
+                        {/* Node connector dot */}
+                        <div
+                          className={`absolute -left-6 top-3.5 w-3 h-3 rounded-full border-2 transition-all ${
                             isCompleted
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'border-2 border-slate-300 dark:border-slate-600 hover:border-emerald-500'
+                              ? 'bg-emerald-500 border-white dark:border-slate-900 ring-2 ring-emerald-500/20'
+                              : isSelected
+                              ? 'bg-indigo-600 border-white dark:border-slate-900 ring-2 ring-indigo-500/30'
+                              : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'
                           }`}
-                          title={isCompleted ? 'Mark as incomplete' : 'Mark as mastered'}
-                        >
-                          {isCompleted && <Check size={14} strokeWidth={3} />}
-                        </button>
+                        />
 
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs sm:text-sm font-bold truncate ${
-                              isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
-                            }`}>
-                              {node.title}
-                            </span>
+                        {/* Node Card */}
+                        <div
+                          onClick={() => setActiveNode(node)}
+                          className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between gap-3 ${
+                            isSelected
+                              ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-xs'
+                              : isCompleted
+                              ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20'
+                              : 'border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850 hover:border-indigo-300 dark:hover:border-indigo-700'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Checkbox */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleNodeCompletion(node.id);
+                              }}
+                              className={`w-6 h-6 rounded-lg flex items-center justify-center transition shrink-0 ${
+                                isCompleted
+                                  ? 'bg-emerald-600 text-white shadow-xs'
+                                  : 'border-2 border-slate-300 dark:border-slate-600 hover:border-emerald-500'
+                              }`}
+                              title={isCompleted ? 'Mark as incomplete' : 'Mark as mastered'}
+                            >
+                              {isCompleted && <Check size={14} strokeWidth={3} />}
+                            </button>
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs sm:text-sm font-bold truncate ${
+                                  isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
+                                }`}>
+                                  {node.title}
+                                </span>
+                              </div>
+
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                                {node.skills?.slice(0, 3).join(' • ')}
+                              </span>
+                            </div>
                           </div>
 
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                            {node.skills?.slice(0, 3).join(' • ')}
-                          </span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              node.importance === 'Crucial'
+                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/60'
+                                : node.importance === 'Recommended'
+                                ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                            }`}>
+                              {node.importance}
+                            </span>
+
+                            <ChevronRight size={16} className={isSelected ? 'text-indigo-600' : 'text-slate-300 dark:text-slate-600'} />
+                          </div>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                /* Syllabus View: Compact list */
+                <div className="space-y-2">
+                  {stage.filteredNodes.map((node) => {
+                    const isCompleted = completedNodeIds.has(node.id);
+                    const isSelected = activeNode?.id === node.id;
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          node.importance === 'Crucial'
-                            ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/60'
-                            : node.importance === 'Recommended'
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
-                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                        }`}>
+                    return (
+                      <div
+                        key={node.id}
+                        onClick={() => setActiveNode(node)}
+                        className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between gap-3 ${
+                          isSelected
+                            ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40'
+                            : isCompleted
+                            ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/10'
+                            : 'border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850 hover:border-indigo-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleNodeCompletion(node.id);
+                            }}
+                            className={`w-5 h-5 rounded flex items-center justify-center transition shrink-0 ${
+                              isCompleted ? 'bg-emerald-600 text-white' : 'border border-slate-300'
+                            }`}
+                          >
+                            {isCompleted && <Check size={12} strokeWidth={3} />}
+                          </button>
+                          <span className={`text-xs font-bold truncate ${isCompleted ? 'line-through text-slate-400' : 'text-slate-800 dark:text-white'}`}>
+                            {node.title}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 shrink-0 font-medium">
                           {node.importance}
                         </span>
-
-                        <ChevronRight size={16} className={isSelected ? 'text-indigo-600' : 'text-slate-300 dark:text-slate-600'} />
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -758,7 +1054,8 @@ function RoadmapDetail({ slug, onBack }) {
             </div>
           ) : (
             <div className="glass-card p-8 text-center rounded-3xl border border-slate-200 dark:border-slate-800">
-              <p className="text-xs text-slate-500">Select any milestone from the left to inspect resources and projects.</p>
+              <Compass size={32} className="mx-auto text-indigo-500 mb-2 opacity-60" />
+              <p className="text-xs text-slate-500">Select any milestone topic from the left to inspect competencies, curated free resources, and capstone projects.</p>
             </div>
           )}
         </div>

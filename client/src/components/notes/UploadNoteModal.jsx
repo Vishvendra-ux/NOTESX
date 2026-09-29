@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { 
   X, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, 
-  Layers, ChevronRight, BookOpen, GraduationCap 
+  Layers, ChevronRight, BookOpen, GraduationCap, Shield 
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { hierarchyService, notesService } from '../../services/api';
@@ -42,11 +42,23 @@ export default function UploadNoteModal({
   const [tagsInput, setTagsInput] = useState('');
   const [file, setFile] = useState(null);
 
+  // Terms & Copyright confirmation
+  const [hasPermission, setHasPermission] = useState(false);
+  const [noCopyrightInfringement, setNoCopyrightInfringement] = useState(false);
+
   // Status
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Reset terms agreement when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setHasPermission(false);
+      setNoCopyrightInfringement(false);
+    }
+  }, [isOpen]);
 
   // 1. Load initial courses when modal opens
   useEffect(() => {
@@ -206,6 +218,11 @@ export default function UploadNoteModal({
 
     if (!file) {
       setError('Please choose a PDF, DOC, PPT, or Image document.');
+      return;
+    }
+
+    if (!hasPermission || !noCopyrightInfringement) {
+      setError('Please agree to both copyright and upload permission terms before uploading.');
       return;
     }
 
@@ -493,8 +510,44 @@ export default function UploadNoteModal({
             </label>
           </div>
 
+          {/* 8. Terms & Copyright Declaration */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/40 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+              <Shield size={14} className="text-indigo-600 dark:text-indigo-400" />
+              <span>Academic Integrity & Copyright Declaration</span>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              <label className="flex items-start gap-3 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={hasPermission}
+                  onChange={(e) => setHasPermission(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0"
+                  required
+                />
+                <span className="text-xs text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white leading-relaxed font-medium">
+                  I have the right/permission to upload this material.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={noCopyrightInfringement}
+                  onChange={(e) => setNoCopyrightInfringement(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0"
+                  required
+                />
+                <span className="text-xs text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white leading-relaxed font-medium">
+                  This material does not knowingly infringe someone else's copyright.
+                </span>
+              </label>
+            </div>
+          </div>
+
           {/* Action Footer */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
@@ -504,10 +557,10 @@ export default function UploadNoteModal({
             </button>
             <button
               type="submit"
-              disabled={uploading || !title.trim() || !file}
-              className="btn-primary py-2 px-6 text-xs font-bold gap-2 disabled:opacity-50 shadow-md shadow-indigo-200"
+              disabled={uploading || !title.trim() || !file || !hasPermission || !noCopyrightInfringement}
+              className="btn-primary py-2.5 px-6 text-xs font-bold gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-200 dark:shadow-none"
             >
-              <Upload size={14} /> {uploading ? 'Uploading...' : 'Publish Note'}
+              <Upload size={14} /> {uploading ? 'Uploading...' : 'Upload'}
             </button>
           </div>
         </form>
