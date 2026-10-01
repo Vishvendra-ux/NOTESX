@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const controller = require('../controllers/roadmapController');
-const { optionalProtect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
-router.get('/', controller.list);
-router.get('/categories', controller.categories);
-router.get('/:idOrSlug', optionalProtect, controller.get);
+router.get('/', protect, controller.list);
+router.get('/categories', protect, controller.categories);
+router.get('/:idOrSlug', protect, controller.get);
 
 module.exports = router;

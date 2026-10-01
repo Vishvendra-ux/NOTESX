@@ -9,6 +9,8 @@ const NoteDownload = require('../models/NoteDownload');
 const NoteReport = require('../models/NoteReport');
 const User = require('../models/User');
 
+const escapeRegex = (s) => String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // ── List Notes with Filters, Sort & Pagination ──
 exports.list = async (req, res, next) => {
   try {
@@ -38,30 +40,33 @@ exports.list = async (req, res, next) => {
     if (subjectId && subjectId !== 'all') {
       filter.subjectId = subjectId;
     } else if (subject && subject !== 'all') {
+      const safeSub = escapeRegex(subject);
       const subDoc = await Subject.findOne({
-        $or: [{ slug: subject.toLowerCase() }, { name: new RegExp(`^${subject}$`, 'i') }]
+        $or: [{ slug: subject.toLowerCase() }, { name: new RegExp(`^${safeSub}$`, 'i') }]
       });
       if (subDoc) filter.subjectId = subDoc._id;
-      else filter.subject = new RegExp(subject, 'i');
+      else filter.subject = new RegExp(safeSub, 'i');
     }
 
     // Branch Filter (by ID or name/slug)
     if (branchId && branchId !== 'all') {
       filter.branchId = branchId;
     } else if (branch && branch !== 'all') {
+      const safeBranch = escapeRegex(branch);
       const branchDoc = await Branch.findOne({
-        $or: [{ slug: branch.toLowerCase() }, { shortCode: branch.toUpperCase() }, { name: new RegExp(`^${branch}$`, 'i') }]
+        $or: [{ slug: branch.toLowerCase() }, { shortCode: branch.toUpperCase() }, { name: new RegExp(`^${safeBranch}$`, 'i') }]
       });
       if (branchDoc) filter.branchId = branchDoc._id;
-      else filter.branch = new RegExp(branch, 'i');
+      else filter.branch = new RegExp(safeBranch, 'i');
     }
 
     // Course Filter
     if (courseId && courseId !== 'all') {
       filter.courseId = courseId;
     } else if (course && course !== 'all') {
+      const safeCourse = escapeRegex(course);
       const courseDoc = await Course.findOne({
-        $or: [{ slug: course.toLowerCase() }, { name: new RegExp(`^${course}$`, 'i') }]
+        $or: [{ slug: course.toLowerCase() }, { name: new RegExp(`^${safeCourse}$`, 'i') }]
       });
       if (courseDoc) filter.courseId = courseDoc._id;
     }
@@ -84,20 +89,20 @@ exports.list = async (req, res, next) => {
 
     // Unit & Topic Filter
     if (unit && unit !== 'All Units') {
-      filter.unit = new RegExp(unit, 'i');
+      filter.unit = new RegExp(escapeRegex(unit), 'i');
     }
     if (topic) {
-      filter.topic = new RegExp(topic, 'i');
+      filter.topic = new RegExp(escapeRegex(topic), 'i');
     }
 
     // File Type Filter
     if (fileType && fileType !== 'all') {
-      filter.fileType = new RegExp(fileType, 'i');
+      filter.fileType = new RegExp(escapeRegex(fileType), 'i');
     }
 
     // Search Filter
     if (search.trim()) {
-      const q = search.trim();
+      const q = escapeRegex(search.trim());
       filter.$or = [
         { title: { $regex: q, $options: 'i' } },
         { description: { $regex: q, $options: 'i' } },
@@ -224,6 +229,18 @@ exports.create = async (req, res, next) => {
 
     if (!title || !title.trim()) {
       return res.status(400).json({ message: 'Note title is required' });
+    }
+
+    // Daily upload quota check to prevent storage and resource exhaustion
+    if (req.user && req.user.role !== 'admin') {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const recentUploadsCount = await Note.countDocuments({
+        uploaderId: req.user._id,
+        createdAt: { $gte: oneDayAgo }
+      });
+      if (recentUploadsCount >= 15) {
+        return res.status(429).json({ message: 'Daily upload quota reached (maximum 15 notes per 24 hours). Please try again tomorrow.' });
+      }
     }
 
     // ── Hierarchy Validation ──

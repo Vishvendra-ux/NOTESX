@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff, Loader2, GraduationCap } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Sparkles, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff, Loader2, GraduationCap } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -9,17 +9,19 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeDemo, setActiveDemo] = useState(null); // 'admin' | 'student' | null
+  const [activeDemo, setActiveDemo] = useState(null); // 'student' | null
 
   const { user, login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectPath = location.state?.from?.pathname || '/dashboard';
 
-  // If already logged in, redirect straight to dashboard
+  // If already logged in, redirect straight to intended page or dashboard
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true });
+      navigate(redirectPath, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectPath]);
 
   const getErrorMessage = (err) => {
     if (err.response?.data?.message) {
@@ -38,7 +40,7 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate(redirectPath);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -46,23 +48,6 @@ export default function Login() {
     }
   };
 
-  const handleInstantAdminLogin = async () => {
-    setError('');
-    setIsSubmitting(true);
-    setActiveDemo('admin');
-    setEmail('pratapsinghvishvendra6@gmail.com');
-    setPassword('Vishu@123&#');
-
-    try {
-      await login('pratapsinghvishvendra6@gmail.com', 'Vishu@123&#');
-      navigate('/dashboard');
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsSubmitting(false);
-      setActiveDemo(null);
-    }
-  };
 
   const handleInstantStudentLogin = async () => {
     setError('');
@@ -74,7 +59,7 @@ export default function Login() {
         name: 'Demo Student',
         email: 'student.demo@notesx.edu',
       });
-      navigate('/dashboard');
+      navigate(redirectPath);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -91,7 +76,7 @@ export default function Login() {
         name: 'Google Student',
         email: 'student.google@gmail.com',
       });
-      navigate('/dashboard');
+      navigate(redirectPath);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -233,26 +218,15 @@ export default function Login() {
           <p className="text-[11px] uppercase tracking-wider font-bold text-slate-400 text-center mb-2.5">
             Quick 1-Click Demo Access
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleInstantAdminLogin}
-              disabled={isSubmitting}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/70 hover:bg-indigo-100/70 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
-            >
-              <ShieldCheck size={14} className="text-indigo-600 dark:text-indigo-400" />
-              {activeDemo === 'admin' ? 'Signing in...' : 'Admin Login ⚡'}
-            </button>
-            <button
-              type="button"
-              onClick={handleInstantStudentLogin}
-              disabled={isSubmitting}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
-            >
-              <GraduationCap size={14} className="text-slate-500 dark:text-slate-400" />
-              {activeDemo === 'student' ? 'Signing in...' : 'Student Demo ⚡'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleInstantStudentLogin}
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+          >
+            <GraduationCap size={15} className="text-slate-500 dark:text-slate-400" />
+            {activeDemo === 'student' ? 'Signing in...' : 'Student Demo Access ⚡'}
+          </button>
         </div>
 
         {/* Footer Navigation */}

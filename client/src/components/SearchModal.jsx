@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { Search, Command, FileText, Building2, MessageCircle, Trophy, X } from 'lucide-react';
+import { Search, Command, FileText, Building2, MessageCircle, Trophy, X, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const results = [
   { icon: Building2, label: 'GLA University', meta: 'College · Mathura, Uttar Pradesh', to: '/colleges' },
   { icon: FileText, label: 'Process Synchronization Notes', meta: 'Operating Systems · B.Tech CSE', to: '/notes' },
+  { icon: Users, label: 'BuildTogether Developer Squads', meta: 'Find student teammates for hackathons & projects', to: '/build-together' },
   { icon: MessageCircle, label: 'BFS traversal using a queue', meta: 'Doubt · 18 answers', to: '/doubts' },
   { icon: Trophy, label: 'College Coding Battle', meta: 'Live contest · 42 min remaining', to: '/contests' },
 ];

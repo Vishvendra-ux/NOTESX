@@ -6,7 +6,7 @@ import {
   FileText, ExternalLink, ArrowRight, UserPlus, Sparkles, MessageCircle, RefreshCw,
   HelpCircle, ChevronDown, ChevronUp, Send, CheckCircle2, ThumbsUp, Trash2, ShieldAlert, ShieldCheck
 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
 const fallbackColleges = {
@@ -351,7 +351,7 @@ export default function CollegeCommunity() {
 
     const fetchData = async () => {
       try {
-        const resCollege = await axios.get(`/api/colleges/community/${slugOrId}`);
+        const resCollege = await api.get(`/colleges/community/${slugOrId}`);
         if (isMounted && resCollege.data) {
           setCollege(resCollege.data);
         }
@@ -379,7 +379,7 @@ export default function CollegeCommunity() {
       }
 
       try {
-        const resPosts = await axios.get(`/api/colleges/community/${slugOrId}/posts`);
+        const resPosts = await api.get(`/colleges/community/${slugOrId}/posts`);
         if (isMounted && resPosts.data && resPosts.data.length > 0) {
           setPosts(resPosts.data.map(p => ({ ...p, hasUpvoted: false })));
         } else {
@@ -391,7 +391,7 @@ export default function CollegeCommunity() {
       } catch (err) {}
 
       try {
-        const resEvents = await axios.get(`/api/colleges/community/${slugOrId}/events`);
+        const resEvents = await api.get(`/colleges/community/${slugOrId}/events`);
         if (isMounted && resEvents.data && resEvents.data.length > 0) {
           setEvents(resEvents.data);
         } else {
@@ -423,7 +423,7 @@ export default function CollegeCommunity() {
     };
 
     try {
-      const res = await axios.post(`/api/colleges/community/${slugOrId}/posts`, postData);
+      const res = await api.post(`/colleges/community/${slugOrId}/posts`, postData);
       if (res.data) {
         setPosts([{ ...res.data, hasUpvoted: false }, ...posts]);
       }
@@ -447,14 +447,14 @@ export default function CollegeCommunity() {
     setSubmittingPost(false);
   };
 
-  // ── ADMIN DELETE POST (MODERATION FEATURE) ──
+  // ── DELETE POST (Author or Admin Moderation) ──
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('Admin Moderation: Are you sure you want to delete this post?')) return;
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     setPosts(prevPosts => prevPosts.filter(p => (p._id !== postId && p.id !== postId)));
 
     try {
-      await axios.delete(`/api/colleges/community/posts/${postId}`);
+      await api.delete(`/colleges/community/posts/${postId}`);
     } catch (err) {
       console.warn('Backend delete notification handled');
     }
@@ -481,7 +481,7 @@ export default function CollegeCommunity() {
     }));
 
     try {
-      await axios.post(`/api/colleges/community/posts/${postId}/upvote`);
+      await api.post(`/colleges/community/posts/${postId}/upvote`);
     } catch (e) {}
   };
 

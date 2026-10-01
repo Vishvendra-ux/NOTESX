@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check } from 'lucide-react';
+import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check, Users2 } from 'lucide-react';
 import { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { notesService } from '../services/api';
@@ -127,6 +127,7 @@ export default function Navbar() {
     { name: 'GATE', path: '/gate' },
     { name: 'Doubts', path: '/doubts' },
     { name: 'Contests', path: '/contests' },
+    { name: 'BuildTogether', path: '/build-together', isNew: true, icon: Users2 },
   ];
 
   const isActive = (path) => location.pathname.startsWith(path);
@@ -156,20 +157,34 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={`relative px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                    isActive(link.path)
-                      ? 'text-indigo-700'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {link.name}
-                  {isActive(link.path) && <span className="absolute inset-x-3 -bottom-[14px] h-0.5 bg-indigo-600" />}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    className={`relative px-2.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 inline-flex items-center gap-1.5 ${
+                      isActive(link.path)
+                        ? 'text-indigo-700 font-bold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/80'
+                    }`}
+                  >
+                    {Icon && (
+                      <Icon
+                        size={15}
+                        className={isActive(link.path) ? "text-indigo-600" : "text-indigo-500/80"}
+                      />
+                    )}
+                    <span>{link.name}</span>
+                    {link.isNew && (
+                      <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full leading-none shadow-xs shadow-indigo-500/20">
+                        New
+                      </span>
+                    )}
+                    {isActive(link.path) && <span className="absolute inset-x-2 -bottom-[14px] h-0.5 bg-indigo-600 rounded-full" />}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Right Actions */}
@@ -364,20 +379,31 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="lg:hidden bg-white border-t border-slate-100 p-4 space-y-2 animate-slide-up">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-2 rounded-xl text-sm font-bold ${
-                  isActive(link.path)
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold ${
+                    isActive(link.path)
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {Icon && <Icon size={16} className="text-indigo-600" />}
+                    <span>{link.name}</span>
+                  </div>
+                  {link.isNew && (
+                    <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full leading-none">
+                      New
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
             <Link
               to="/ai-assistant"
               onClick={() => setIsOpen(false)}

@@ -7,12 +7,55 @@ require('dotenv').config();
 
 const app = express();
 
+const { generalLimiter } = require('./middleware/rateLimiter');
+
+// Allowed origins
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(s => s.trim())
+  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: true, credentials: true }));
-app.use(helmet({ crossOriginResourcePolicy: false, contentSecurityPolicy: false }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS blocked: Origin not allowed.'));
+  },
+  credentials: true
+}));
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      connectSrc: ["'self'", "http://localhost:5001", "http://localhost:5173", "https:"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"]
+    }
+  }
+}));
+
+// Serve uploads securely as downloadable attachments with strict CSP to prevent script execution
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'");
+    res.setHeader('Content-Disposition', 'attachment');
+  }
+}));
+
+// Apply general rate limiter across all /api routes
+app.use('/api', generalLimiter);
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -34,6 +77,7 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/roadmaps', require('./routes/roadmaps'));
 app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/build-together', require('./routes/buildTogether'));
 
 // Basic Route
 app.get('/', (req, res) => {

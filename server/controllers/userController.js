@@ -10,12 +10,19 @@ exports.me = async (req, res, next) => {
 
 exports.profile = async (req, res, next) => { 
   try { 
+    const username = (req.params.username || '').trim();
+    if (!username) {
+      return res.status(400).json({ message: 'Username or identifier is required' });
+    }
+
+    const safeRegex = new RegExp(`^${username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
     const user = await User.findOne({ 
       $or: [
-        { email: req.params.username }, 
-        { name: new RegExp(`^${req.params.username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+        { name: safeRegex }
       ] 
-    }).select('-password').populate('collegeId', 'name location'); 
+    })
+      .select('name bio collegeName course year semester github linkedin reputation badges profilePhoto createdAt')
+      .populate('collegeId', 'name location'); 
     
     if (!user) return res.status(404).json({ message: 'Student not found' }); 
     res.json(user); 

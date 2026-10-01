@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, ChevronRight, CircleHelp, FileText, Flame, GraduationCap, MapPin, Sparkles, Trophy, Users, Zap, Compass, Briefcase, Search } from 'lucide-react';
+import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, ChevronRight, CircleHelp, FileText, Flame, GraduationCap, MapPin, Sparkles, Trophy, Users, Zap, Compass, Briefcase, Search, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const colleges = [
@@ -240,53 +240,83 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Career Roadmaps & Job Portal ── */}
+      {/* ── Career Roadmaps, Job Portal & BuildTogether ── */}
       <section className="mx-auto max-w-[1280px] px-4 pt-20 sm:px-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Roadmaps Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-7 sm:p-8 text-white border border-indigo-900/50 shadow-xl group">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 mb-4">
-              <Compass size={14} /> Step-by-Step Learning Paths
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 p-7 text-white border border-indigo-900/50 shadow-xl group flex flex-col justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 mb-4">
+                <Compass size={14} /> Step-by-Step Paths
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white leading-tight mb-2">
+                Career Roadmaps
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
+                Master modern engineering roles with structured milestone roadmaps, curated resources, and capstone guides.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {['AI/ML', 'Full-Stack', 'DevOps', 'DSA'].map(r => (
+                  <span key={r} className="px-2.5 py-1 rounded-xl bg-white/10 text-xs font-semibold text-slate-200 border border-white/10">
+                    {r}
+                  </span>
+                ))}
+              </div>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-2">
-              Career & Tech Roadmaps
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
-              Master modern engineering roles with structured milestone roadmaps, curated free resources, and resume-ready capstone projects.
-            </p>
-            <div className="flex flex-wrap gap-2 mb-8">
-              {['AI / ML Engineer', 'Frontend (React/Next)', 'Backend (Node/Go)', 'DevOps & Cloud', 'DSA & System Design'].map(r => (
-                <span key={r} className="px-2.5 py-1 rounded-xl bg-white/10 text-xs font-semibold text-slate-200 border border-white/10">
-                  {r}
-                </span>
-              ))}
-            </div>
-            <Link to="/roadmaps" className="btn-primary inline-flex items-center gap-2 text-xs">
+            <Link to="/roadmaps" className="btn-primary inline-flex items-center justify-center gap-2 text-xs w-full">
               <span>Explore Roadmaps</span>
               <ArrowRight size={14} />
             </Link>
           </div>
 
           {/* Jobs Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-7 sm:p-8 text-white border border-blue-900/50 shadow-xl group">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 mb-4">
-              <Briefcase size={14} /> Freshers & Internships
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-7 text-white border border-blue-900/50 shadow-xl group flex flex-col justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 mb-4">
+                <Briefcase size={14} /> Freshers & Internships
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white leading-tight mb-2">
+                College Job Portal
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
+                Verified software engineering roles, high-stipend summer internships, and graduate trainee openings for campus students.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {['Google', 'Microsoft', 'Swiggy', 'Amazon'].map(c => (
+                  <span key={c} className="px-2.5 py-1 rounded-xl bg-white/10 text-xs font-semibold text-slate-200 border border-white/10">
+                    💼 {c}
+                  </span>
+                ))}
+              </div>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-2">
-              College Job Portal
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
-              Verified software engineering roles, high-stipend summer internships, and graduate trainee opportunities for 2024, 2025 & 2026 batches.
-            </p>
-            <div className="flex flex-wrap gap-2 mb-8">
-              {['Google', 'Microsoft', 'Swiggy', 'Razorpay', 'Cred', 'Amazon'].map(c => (
-                <span key={c} className="px-2.5 py-1 rounded-xl bg-white/10 text-xs font-semibold text-slate-200 border border-white/10">
-                  💼 {c}
-                </span>
-              ))}
-            </div>
-            <Link to="/jobs" className="btn-primary inline-flex items-center gap-2 text-xs">
+            <Link to="/jobs" className="btn-primary inline-flex items-center justify-center gap-2 text-xs w-full">
               <span>Browse Job Openings</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* BuildTogether Card */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-950 via-slate-900 to-indigo-950 p-7 text-white border border-purple-900/50 shadow-xl group flex flex-col justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-400/30 mb-4">
+                <Rocket size={14} className="text-pink-400" /> Student Collaboration
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white leading-tight mb-2">
+                BuildTogether
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
+                Assemble project teams, recruit student developers for national hackathons, and build startup MVPs together.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {['SIH 2026', 'Capstone Builds', 'Open Source', 'Startup MVP'].map(s => (
+                  <span key={s} className="px-2.5 py-1 rounded-xl bg-purple-500/15 text-xs font-semibold text-purple-200 border border-purple-400/20">
+                    ✨ {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <Link to="/build-together" className="btn-primary inline-flex items-center justify-center gap-2 text-xs w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+              <span>Assemble & Build</span>
               <ArrowRight size={14} />
             </Link>
           </div>

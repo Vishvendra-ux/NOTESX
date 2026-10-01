@@ -4,17 +4,25 @@ const bcrypt = require('bcryptjs');
 const seedAdminUser = async () => {
   try {
     const User = require('../models/User');
-    const adminEmail = 'pratapsinghvishvendra6@gmail.com';
-    const adminPass = 'Vishu@123&#';
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPass = process.env.ADMIN_PASSWORD;
 
-    // Delete existing admin user to ensure clean hash alignment
-    await User.deleteMany({ email: adminEmail });
+    // Do not seed or reset credentials if environment variables are not supplied
+    if (!adminEmail || !adminPass) {
+      return;
+    }
+
+    // Do not overwrite or delete existing users
+    const existingAdmin = await User.findOne({ role: 'admin' });
+    if (existingAdmin) {
+      return;
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(adminPass, salt);
 
     const admin = await User.create({
-      name: 'Vishvendra Pratap Singh',
+      name: process.env.ADMIN_NAME || 'System Admin',
       email: adminEmail,
       password: hashedPassword,
       role: 'admin',
@@ -23,7 +31,7 @@ const seedAdminUser = async () => {
       isVerified: true
     });
 
-    console.log(`✅ Admin Account Cleanly Created & Ready for Sign-in: ${admin.email}`);
+    console.log(`✅ Admin Account Initialized: ${admin.email}`);
   } catch (err) {
     console.error('Error seeding admin user:', err.message);
   }

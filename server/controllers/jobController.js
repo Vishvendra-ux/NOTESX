@@ -1,6 +1,8 @@
 const Job = require('../models/Job');
 const JobApplication = require('../models/JobApplication');
 
+const escapeRegex = (s) => String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // @desc    List all jobs with rich search, filters & pagination
 // @route   GET /api/jobs
 // @access  Public
@@ -22,7 +24,7 @@ exports.list = async (req, res, next) => {
     const query = { isActive: true };
 
     if (search && search.trim()) {
-      const s = search.trim();
+      const s = escapeRegex(search.trim());
       query.$or = [
         { title: { $regex: s, $options: 'i' } },
         { company: { $regex: s, $options: 'i' } },
@@ -53,7 +55,7 @@ exports.list = async (req, res, next) => {
     }
 
     if (location && location !== 'All') {
-      query.location = { $regex: location, $options: 'i' };
+      query.location = { $regex: escapeRegex(location), $options: 'i' };
     }
 
     // Sort options
@@ -64,8 +66,9 @@ exports.list = async (req, res, next) => {
       sortOption = { createdAt: 1 };
     }
 
-    const skip = (Math.max(1, parseInt(page, 10)) - 1) * parseInt(limit, 10);
-    const take = parseInt(limit, 10);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const take = Math.min(50, Math.max(1, parseInt(limit, 10) || 12));
+    const skip = (pageNum - 1) * take;
 
     const [jobs, total] = await Promise.all([
       Job.find(query)
@@ -191,6 +194,10 @@ exports.create = async (req, res, next) => {
       allowDirectApply,
       deadline
     } = req.body;
+
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'recruiter')) {
+      return res.status(403).json({ message: 'Access denied. Only recruiters and administrators can post jobs.' });
+    }
 
     if (!title || !company || !salary || !description) {
       return res.status(400).json({ message: 'Title, company, salary, and description are required.' });

@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const controller = require('../controllers/noteController');
 const { protect } = require('../middleware/authMiddleware');
+const { uploadLimiter } = require('../middleware/rateLimiter');
 
 // Multer Storage Configuration
 const storage = multer.diskStorage({
@@ -36,7 +37,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
   storage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB limit
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15 MB limit
   fileFilter
 });
 
@@ -49,7 +50,7 @@ router.get('/', controller.list);
 router.get('/:id', controller.get);
 
 // ── Upload Note ──
-router.post('/', protect, upload.single('file'), controller.create);
+router.post('/', protect, uploadLimiter, upload.single('file'), controller.create);
 
 // ── Interactions: Download, Bookmark, Report, Reviews ──
 router.post('/:id/download', controller.download);

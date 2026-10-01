@@ -40,6 +40,10 @@ const communityPostSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  upvotedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   commentsCount: {
     type: Number,
     default: 0,

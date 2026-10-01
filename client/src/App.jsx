@@ -17,6 +17,7 @@ import Profile from './pages/Profile';
 import AIAssistantPage from './pages/AIAssistantPage';
 import Roadmaps from './pages/Roadmaps';
 import Jobs from './pages/Jobs';
+import BuildTogether from './pages/BuildTogether';
 
 function App() {
   return (
@@ -28,14 +29,14 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/roadmaps" element={<Roadmaps />} />
-            <Route path="/roadmaps/:id" element={<Roadmaps />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/jobs/:id" element={<Jobs />} />
 
             {/* Protected Routes (Must be logged in) */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/roadmaps" element={<Roadmaps />} />
+              <Route path="/roadmaps/:id" element={<Roadmaps />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<Jobs />} />
               <Route path="/colleges" element={<Colleges />} />
               <Route path="/colleges/:id" element={<CollegeCommunity />} />
               <Route path="/notes" element={<Notes />} />
@@ -57,6 +58,8 @@ function App() {
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/settings" element={<Profile />} />
               <Route path="/ai-assistant" element={<AIAssistantPage />} />
+              <Route path="/build-together" element={<BuildTogether />} />
+              <Route path="/buildtogether" element={<BuildTogether />} />
               <Route path="/admin" element={<Dashboard />} />
             </Route>
           </Route>

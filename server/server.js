@@ -4,6 +4,22 @@ const connectDB = require('./config/db');
 // Connect to database
 connectDB();
 
+const INSECURE_SECRETS = [
+  'supersecretjwtkey_replace_in_production',
+  'secret',
+  'jwtsecret',
+  '123456'
+];
+
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || INSECURE_SECRETS.includes(process.env.JWT_SECRET)) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: A cryptographically strong JWT_SECRET (at least 32 characters) is required in production.');
+    process.exit(1);
+  } else {
+    console.warn('⚠️  SECURITY WARNING: Using placeholder or weak JWT_SECRET in development. Set a strong secret in .env before deploying to production.');
+  }
+}
+
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {

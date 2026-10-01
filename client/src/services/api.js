@@ -85,3 +85,13 @@ export const jobService = {
   myApplications: () => api.get('/jobs/my/applications'),
 };
 
+export const buildTogetherService = {
+  list: (params) => api.get('/build-together', { params }),
+  get: (id) => api.get(`/build-together/${id}`),
+  create: (data) => api.post('/build-together', data),
+  apply: (id, data) => api.post(`/build-together/${id}/apply`, data),
+  toggleUpvote: (id) => api.post(`/build-together/${id}/upvote`),
+  manageApplication: (id, appId, data) => api.patch(`/build-together/${id}/applications/${appId}`, data),
+  delete: (id) => api.delete(`/build-together/${id}`),
+};
+

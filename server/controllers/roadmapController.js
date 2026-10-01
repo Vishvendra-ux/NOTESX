@@ -1,5 +1,7 @@
 const Roadmap = require('../models/Roadmap');
 
+const escapeRegex = (s) => String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // @desc    List all roadmaps with filters & search
 // @route   GET /api/roadmaps
 // @access  Public
@@ -20,12 +22,13 @@ exports.list = async (req, res, next) => {
       query.difficulty = difficulty;
     }
 
-    if (tag) {
-      query.tags = { $in: [new RegExp(tag, 'i')] };
+    if (tag && tag.trim()) {
+      const safeTag = escapeRegex(tag.trim());
+      query.tags = { $in: [new RegExp(safeTag, 'i')] };
     }
 
     if (search && search.trim()) {
-      const s = search.trim();
+      const s = escapeRegex(search.trim());
       query.$or = [
         { title: { $regex: s, $options: 'i' } },
         { subtitle: { $regex: s, $options: 'i' } },
