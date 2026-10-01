@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, BookOpen, ListChecks, Lightbulb, Route, BarChart3, Plus, FileText, ArrowRight, Loader2, Compass } from 'lucide-react';
+import { Sparkles, Send, BookOpen, ListChecks, Lightbulb, Route, BarChart3, Plus, FileText, ArrowRight, Loader2, Compass, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { aiService } from '../services/api';
 
@@ -8,7 +8,8 @@ const actions = [
   [ListChecks, 'Banker’s Algorithm Example', 'Safe state matrices and deadlock avoidance'],
   [Lightbulb, 'BCNF vs 3NF Normalization', 'Key differences and dependency preservation'],
   [Route, 'AI / ML Career Roadmap', 'Milestones, math foundations, and project specs'],
-  [BarChart3, 'CPU Scheduling Gantt Charts', 'SJF, FCFS, and Round Robin calculations']
+  [BarChart3, 'CPU Scheduling Gantt Charts', 'SJF, FCFS, and Round Robin calculations'],
+  [Compass, 'Cache Memory & Virtual Addressing', 'Direct-mapped vs associative cache and page tables']
 ];
 
 const recentTopics = [
@@ -139,21 +140,25 @@ export default function AIAssistantPage() {
 
         <button 
           onClick={() => setMessages([])}
-          className="mt-6 flex w-full items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2.5 text-xs font-semibold hover:bg-white/15 transition-colors"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/15 transition-colors cursor-pointer"
         >
           <Plus size={16} /> New learning session
         </button>
 
         <div className="mt-8">
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Popular Study Topics</p>
-          <div className="mt-2 space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Popular Study Topics</p>
+          <div className="mt-3 space-y-2">
             {recentTopics.map((item) => (
               <button
                 key={item}
                 onClick={() => handleSendQuery(item)}
-                className="w-full rounded-lg px-2.5 py-2 text-left text-xs text-slate-300 hover:bg-white/10 transition-colors truncate"
+                className="group flex w-full items-center justify-between gap-2.5 rounded-xl border border-white/5 bg-white/5 px-3 py-2.5 text-left text-xs font-medium text-slate-300 hover:border-indigo-500/40 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
               >
-                {item}
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shrink-0 group-hover:scale-125 transition-transform" />
+                  <span className="truncate">{item}</span>
+                </span>
+                <ChevronRight size={14} className="shrink-0 text-slate-500 group-hover:text-indigo-300 group-hover:translate-x-0.5 transition-all" />
               </button>
             ))}
           </div>
@@ -180,19 +185,19 @@ export default function AIAssistantPage() {
               <p className="max-w-xl text-sm leading-6 text-slate-500">
                 Choose a starter topic below or ask about any concept, algorithm, or past question from your curriculum. Answers are directly matched with course notes uploaded on NOTESX.
               </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-6 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
                 {actions.map(([Icon, title, desc]) => (
                   <button
                     key={title}
                     onClick={() => handleSendQuery(title)}
-                    className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/50 group"
+                    className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:shadow-xs group cursor-pointer"
                   >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-indigo-100 text-indigo-600 transition group-hover:scale-105">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-100 text-indigo-600 transition group-hover:scale-105">
                       <Icon size={17} />
                     </span>
                     <div>
-                      <b className="block text-sm text-slate-900 group-hover:text-indigo-600 transition-colors">{title}</b>
-                      <small className="mt-1 block text-xs text-slate-500">{desc}</small>
+                      <b className="block text-sm text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">{title}</b>
+                      <small className="mt-1 block text-xs text-slate-500 leading-relaxed">{desc}</small>
                     </div>
                   </button>
                 ))}
@@ -280,23 +285,32 @@ export default function AIAssistantPage() {
         </div>
 
         {/* Input Footer */}
-        <form onSubmit={handleFormSubmit} className="border-t border-slate-100 p-4 bg-white shrink-0">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 focus-within:border-indigo-500 focus-within:bg-white transition-all">
+        <form onSubmit={handleFormSubmit} className="border-t border-slate-200/80 p-4 sm:p-5 bg-gradient-to-b from-white to-slate-50/70 shrink-0">
+          <div className="relative flex items-center gap-2 rounded-2xl border-2 border-indigo-200/80 bg-white p-2 shadow-lg shadow-indigo-950/5 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+            <span className="pl-2 text-indigo-600 shrink-0">
+              <Sparkles size={18} />
+            </span>
             <input 
               value={text} 
               onChange={(e) => setText(e.target.value)} 
               disabled={loading}
-              className="min-w-0 flex-1 bg-transparent px-3 py-1.5 text-sm outline-none placeholder-slate-400 text-slate-900" 
+              className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-sm font-medium outline-none placeholder-slate-400 text-slate-900" 
               placeholder="Ask anything about course notes, algorithms, or exam syllabus..."
+              aria-label="Ask study assistant question"
             />
             <button 
               type="submit"
               disabled={!text.trim() || loading}
-              className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm disabled:opacity-40" 
-              aria-label="Send"
+              className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-600/20 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" 
+              aria-label="Send message"
             >
-              <Send size={16} />
+              <span>Ask</span>
+              <Send size={15} />
             </button>
+          </div>
+          <div className="mt-2 flex items-center justify-between px-1 text-[11px] text-slate-400">
+            <span>Powered by NOTESX verified campus documents</span>
+            <span className="hidden sm:inline">Press Enter ↵ to ask</span>
           </div>
         </form>
       </section>
