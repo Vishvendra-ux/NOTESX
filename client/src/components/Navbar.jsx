@@ -175,13 +175,17 @@ export default function Navbar() {
                         className={isActive(link.path) ? "text-indigo-600" : "text-indigo-500/80"}
                       />
                     )}
-                    <span>{link.name}</span>
+                    <span className="relative">
+                      {link.name}
+                      {isActive(link.path) && (
+                        <span className="absolute inset-x-0 -bottom-[14px] h-0.5 bg-indigo-600 rounded-full" />
+                      )}
+                    </span>
                     {link.isNew && (
                       <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full leading-none shadow-xs shadow-indigo-500/20">
                         New
                       </span>
                     )}
-                    {isActive(link.path) && <span className="absolute inset-x-2 -bottom-[14px] h-0.5 bg-indigo-600 rounded-full" />}
                   </Link>
                 );
               })}

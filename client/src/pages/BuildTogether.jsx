@@ -182,7 +182,7 @@ export default function BuildTogether() {
     setBookingError('');
 
     try {
-      const res = await buildTogetherService.apply(selectedProject._id, {
+      await buildTogetherService.apply(selectedProject._id, {
         slotNumber: selectedSlotForBooking.slotNumber,
         roleApplied: selectedSlotForBooking.roleTitle,
         applicantPhoneOrContact: bookingForm.contact,
@@ -318,13 +318,14 @@ export default function BuildTogether() {
           <div className="absolute bottom-0 left-1/3 -mb-20 w-72 h-72 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-indigo-300 text-xs font-bold tracking-wide uppercase mb-4">
+            {/* Issue 3 fix: Natural Title Case without uppercase */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-indigo-300 text-xs font-bold tracking-wide mb-4">
               <Ticket size={14} className="text-amber-400" />
               <span>Project Seat Booking System</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight mb-4">
-              Pitch your vision. <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">Book your team seats.</span>
+              Pitch your vision. <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-200">Book your team seats.</span>
             </h1>
 
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
@@ -340,7 +341,7 @@ export default function BuildTogether() {
                   }
                   setIsPitchModalOpen(true);
                 }}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm font-bold shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-600/30 transition cursor-pointer"
               >
                 <Plus size={18} />
                 <span>Pitch a Project & Open Seats</span>
@@ -348,37 +349,37 @@ export default function BuildTogether() {
 
               <a
                 href="#browse-projects"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold backdrop-blur-sm transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs sm:text-sm font-semibold backdrop-blur-sm transition cursor-pointer"
               >
                 <Rocket size={17} className="text-indigo-300" />
                 <span>Find an Open Seat</span>
               </a>
             </div>
 
-            {/* Ticket Booking Workflow Steps */}
+            {/* Ticket Booking Workflow Steps (Issue 4 fix: text-xs instead of 11px) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8 pt-6 border-t border-white/10">
               <div className="rounded-2xl bg-white/5 border border-white/10 p-3.5 backdrop-blur-xs">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/30 text-[10px] font-black text-indigo-300">1</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/30 text-xs font-bold text-indigo-300">1</span>
                   <p className="text-xs font-bold text-white">Select an Open Seat</p>
                 </div>
-                <p className="text-[11px] leading-relaxed text-slate-300">Browse live pitches and click on any open seat (Frontend, Backend, ML, UI/UX).</p>
+                <p className="text-xs leading-relaxed text-slate-300">Browse live pitches and click on any open seat (Frontend, Backend, ML, UI/UX).</p>
               </div>
 
               <div className="rounded-2xl bg-white/5 border border-white/10 p-3.5 backdrop-blur-xs">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-500/30 text-[10px] font-black text-purple-300">2</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/30 text-xs font-bold text-indigo-300">2</span>
                   <p className="text-xs font-bold text-white">Send Collaborator Details</p>
                 </div>
-                <p className="text-[11px] leading-relaxed text-slate-300">Submit your WhatsApp/Discord contact, GitHub portfolio, and pitch to the project pitcher.</p>
+                <p className="text-xs leading-relaxed text-slate-300">Submit your WhatsApp/Discord contact, GitHub portfolio, and pitch to the project pitcher.</p>
               </div>
 
               <div className="rounded-2xl bg-white/5 border border-white/10 p-3.5 backdrop-blur-xs">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/30 text-[10px] font-black text-emerald-300">3</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">3</span>
                   <p className="text-xs font-bold text-white">Pitcher Verifies & Fills Seat</p>
                 </div>
-                <p className="text-[11px] leading-relaxed text-slate-300">Pitcher reviews your application, approves it, and the seat is permanently filled with your badge!</p>
+                <p className="text-xs leading-relaxed text-slate-300">Pitcher reviews your application, approves it, and the seat is permanently filled with your badge!</p>
               </div>
             </div>
           </div>
@@ -391,47 +392,48 @@ export default function BuildTogether() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab('explore')}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'explore'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
-                <Rocket size={15} />
+                <Rocket size={14} />
                 <span>Explore Pitches</span>
               </button>
               {user && (
                 <>
                   <button
                     onClick={() => setActiveTab('my-projects')}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                       activeTab === 'my-projects'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white shadow-xs'
                         : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
                     <span>My Pitches ({myProjectsCount})</span>
                     {pendingApplicationsCount > 0 && (
-                      <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-800 animate-pulse">
-                        {pendingApplicationsCount} to review
+                      <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
+                        {pendingApplicationsCount}
                       </span>
                     )}
                   </button>
                   <button
                     onClick={() => setActiveTab('applied')}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                       activeTab === 'applied'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white shadow-xs'
                         : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
-                    <Ticket size={15} />
+                    <Ticket size={14} />
                     <span>My Booked Seats ({myBookedOrAppliedCount})</span>
                   </button>
                 </>
               )}
             </div>
 
+            {/* Issue 24 fix: Solid primary button matching hero CTA */}
             <button
               onClick={() => {
                 if (!user) {
@@ -440,23 +442,23 @@ export default function BuildTogether() {
                 }
                 setIsPitchModalOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition cursor-pointer ml-auto"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer ml-auto"
             >
               <Plus size={15} />
               <span>Pitch New Project</span>
             </button>
           </div>
 
-          {/* Search and Dropdown Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-            <div className="md:col-span-6 relative flex items-center">
-              <Search size={17} className="absolute left-3.5 text-slate-400 pointer-events-none" />
+          {/* Issue 25 fix: Standardized heights, rounded corners, and aligned grid layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+            <div className="lg:col-span-6 relative flex items-center">
+              <Search size={16} className="absolute left-3.5 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search projects by name, role (Frontend, ML), tech (React, PyTorch), or college..."
-                className="w-full h-11 pl-10 pr-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium focus:bg-white focus:border-indigo-600 focus:outline-none transition"
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-900 focus:bg-white focus:border-indigo-600 focus:outline-none transition"
               />
               {search && (
                 <button onClick={() => setSearch('')} className="absolute right-3 text-slate-400 hover:text-slate-600">
@@ -465,11 +467,11 @@ export default function BuildTogether() {
               )}
             </div>
 
-            <div className="md:col-span-3">
+            <div className="lg:col-span-3">
               <select
                 value={selectedGoal}
                 onChange={e => setSelectedGoal(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:border-indigo-600 focus:outline-none transition"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:border-indigo-600 focus:outline-none transition"
               >
                 {TARGET_GOALS.map(goal => (
                   <option key={goal} value={goal}>{goal}</option>
@@ -477,11 +479,11 @@ export default function BuildTogether() {
               </select>
             </div>
 
-            <div className="md:col-span-3">
+            <div className="lg:col-span-3">
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:border-indigo-600 focus:outline-none transition"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:border-indigo-600 focus:outline-none transition"
               >
                 <option value="All">All Seat Status</option>
                 <option value="Looking for Members">Seats Available (Open)</option>
@@ -497,7 +499,7 @@ export default function BuildTogether() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-slate-900 text-white shadow-xs'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
@@ -509,9 +511,28 @@ export default function BuildTogether() {
           </div>
         </div>
 
+        {/* Issue 19 fix: Semantic H2 section heading preserving H1 -> H2 -> H3 outline */}
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              {activeTab === 'my-projects' ? 'My Pitched Projects' : activeTab === 'applied' ? 'My Booked Seats & Applications' : 'Explore Project Pitches'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+              {activeTab === 'my-projects'
+                ? 'Projects you pitched. Review collaborator requests and manage team seats.'
+                : activeTab === 'applied'
+                ? 'Projects where you reserved a collaboration seat or submitted an application.'
+                : 'Browse student project teams, select an open seat, and collaborate.'}
+            </p>
+          </div>
+          <span className="text-xs font-bold text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+            {displayedProjects.length} {displayedProjects.length === 1 ? 'project' : 'projects'}
+          </span>
+        </div>
+
         {/* ── PROJECT CARDS GRID ── */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(n => (
               <div key={n} className="bg-white rounded-3xl p-6 border border-slate-200/80 animate-pulse">
                 <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
@@ -527,7 +548,7 @@ export default function BuildTogether() {
           </div>
         ) : error ? (
           <div className="rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center shadow-sm">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-rose-600">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-rose-700">
               <AlertCircle size={24} />
             </div>
             <h3 className="text-base font-bold text-slate-900">Projects didn’t load</h3>
@@ -547,7 +568,7 @@ export default function BuildTogether() {
             <h3 className="text-lg font-bold text-slate-900 mb-1">
               {activeTab === 'my-projects' ? 'You haven’t pitched a project yet' : activeTab === 'applied' ? 'No seat reservations yet' : 'No projects found'}
             </h3>
-            <p className="text-slate-500 text-xs sm:text-sm mb-5">
+            <p className="text-slate-600 text-xs sm:text-sm mb-5 leading-relaxed">
               {activeTab === 'applied'
                 ? 'Explore pitches with open collaboration seats, select an available seat, and send your details to the pitcher!'
                 : activeTab === 'my-projects'
@@ -573,7 +594,7 @@ export default function BuildTogether() {
                   setIsPitchModalOpen(true);
                 }
               }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-600/20 transition cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer"
             >
               {activeTab === 'applied'
                 ? <><Rocket size={16} /> Explore Open Seats</>
@@ -599,17 +620,12 @@ export default function BuildTogether() {
                   {/* Card Header Top */}
                   <div className="p-6 pb-4 flex-1">
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider ${
-                        project.targetGoal === 'Hackathon Squad'
-                          ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                          : project.targetGoal === 'Startup MVP'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                      }`}>
+                      {/* Issue 9 fix: text-xs on goal badge */}
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
                         {project.targetGoal}
                       </span>
 
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                         !isFull
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : project.status === 'Completed'
@@ -623,14 +639,15 @@ export default function BuildTogether() {
                           </>
                         ) : (
                           <>
-                            <CheckCircle2 size={12} />
+                            <CheckCircle2 size={12} className="text-emerald-600" />
                             <span>All {totalSlots} Seats Filled</span>
                           </>
                         )}
                       </span>
                     </div>
 
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1 mb-1.5">
+                    {/* Issue 21 fix: line-clamp-2 with min height so full titles display cleanly without single-line ellipsis */}
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3rem] mb-1.5">
                       {project.title}
                     </h3>
 
@@ -638,72 +655,60 @@ export default function BuildTogether() {
                       {project.tagline || project.description}
                     </p>
 
-                    {/* ── TICKET SEAT BOOKING MINI-MAP ── */}
-                    <div className="bg-slate-50/90 rounded-2xl p-3 border border-slate-200/70 mb-4">
-                      <div className="flex items-center justify-between text-[11px] font-extrabold text-slate-600 uppercase tracking-wider mb-2">
-                        <span className="flex items-center gap-1 text-indigo-600">
-                          <Ticket size={13} />
+                    {/* 
+                      Issues 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 23 fix:
+                      Replaced cramped 2x2 grid with a clean, scannable Collaboration Seats overview.
+                      - Uses readable text-xs (no 10px text)
+                      - Shows full role names without truncation
+                      - Eliminates visual density and clutter
+                      - Removes 9px faux Book/Fill buttons
+                    */}
+                    <div className="bg-slate-50/90 rounded-2xl p-3.5 border border-slate-200/70 mb-4">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
+                        <span className="flex items-center gap-1.5 text-indigo-700">
+                          <Ticket size={14} />
                           <span>Collaboration Seats</span>
                         </span>
-                        <span className="text-slate-400">
-                          {reservedSlots.length}/{totalSlots} Booked
+                        <span className="text-slate-600">
+                          {reservedSlots.length}/{totalSlots} Filled
                         </span>
                       </div>
 
-                      {/* Seat Chips Grid */}
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {slots.slice(0, 4).map((slot) => {
-                          const isBooked = slot.status === 'reserved';
-                          const isLead = slot.slotNumber === 1;
-
-                          return (
-                            <div
-                              key={slot.slotNumber}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isBooked && !project.isCreator) {
-                                  openBookingModalForSlot(project, slot);
-                                } else {
-                                  setSelectedProject(project);
-                                }
-                              }}
-                              className={`p-2 rounded-xl text-left border transition cursor-pointer flex items-center justify-between gap-1.5 ${
-                                isBooked
-                                  ? isLead
-                                    ? 'bg-purple-50/80 border-purple-200 text-purple-900'
-                                    : 'bg-slate-100 border-slate-200 text-slate-700'
-                                  : 'bg-emerald-50/70 border-emerald-200 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300'
-                              }`}
-                              title={isBooked ? `Filled by ${slot.filledBy?.name || 'Verified Teammate'}` : `Click to book Seat #${slot.slotNumber}`}
-                            >
-                              <div className="min-w-0 flex items-center gap-1.5">
-                                <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center shrink-0 ${
-                                  isBooked ? 'bg-slate-700 text-white' : 'bg-emerald-600 text-white'
-                                }`}>
-                                  {slot.slotNumber}
-                                </span>
-                                <div className="min-w-0">
-                                  <p className="text-[10px] font-bold truncate">
-                                    {slot.roleTitle}
-                                  </p>
-                                  <p className="text-[9px] text-slate-500 truncate">
-                                    {isBooked ? (slot.filledBy?.name || 'Booked') : '🟢 Available'}
-                                  </p>
-                                </div>
-                              </div>
-                              <span className={`text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 ${
-                                isBooked ? 'bg-slate-200 text-slate-700' : 'bg-emerald-200 text-emerald-900'
-                              }`}>
-                                {isBooked ? 'Fill' : 'Book'}
-                              </span>
-                            </div>
-                          );
-                        })}
+                      {/* Visual segmented capacity bar */}
+                      <div className="flex gap-1.5 mb-2.5">
+                        {slots.map((slot) => (
+                          <div
+                            key={slot.slotNumber}
+                            className={`h-2 flex-1 rounded-full transition-all ${
+                              slot.status === 'reserved' ? 'bg-indigo-600' : 'bg-emerald-400'
+                            }`}
+                            title={`Seat #${slot.slotNumber}: ${slot.roleTitle} (${slot.status === 'reserved' ? 'Filled' : 'Open'})`}
+                          />
+                        ))}
                       </div>
 
-                      {slots.length > 4 && (
-                        <p className="text-[10px] text-center text-slate-400 mt-1.5 font-medium">
-                          +{slots.length - 4} more seats available in project details
+                      {/* Open Roles Badges */}
+                      {availableSlots.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {availableSlots.slice(0, 3).map((slot) => (
+                            <span
+                              key={slot.slotNumber}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <span>Seat {slot.slotNumber}: {slot.roleTitle}</span>
+                            </span>
+                          ))}
+                          {availableSlots.length > 3 && (
+                            <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold">
+                              +{availableSlots.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-600 flex items-center gap-1.5">
+                          <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                          <span>All collaborator seats verified and confirmed</span>
                         </p>
                       )}
                     </div>
@@ -711,12 +716,12 @@ export default function BuildTogether() {
                     {/* Tech Stack Chips */}
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {project.techStack?.slice(0, 4).map((tech, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded-lg bg-indigo-50/70 text-indigo-700 text-[10px] font-bold">
+                        <span key={idx} className="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold">
                           #{tech}
                         </span>
                       ))}
                       {project.techStack?.length > 4 && (
-                        <span className="px-1.5 py-0.5 rounded-lg bg-slate-50 text-slate-500 text-[10px]">
+                        <span className="px-1.5 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-xs">
                           +{project.techStack.length - 4}
                         </span>
                       )}
@@ -738,30 +743,30 @@ export default function BuildTogether() {
                         <p className="text-xs font-bold text-slate-900 truncate">
                           {project.creatorName}
                         </p>
-                        <p className="text-[10px] text-slate-500 truncate">
+                        <p className="text-xs text-slate-600 truncate">
                           {project.creatorCollege || 'Campus Pitcher'}
                         </p>
                       </div>
                     </div>
 
-                    {/* Actions */}
+                    {/* Actions: standardized button styles */}
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleToggleUpvote(project._id)}
                         className={`p-2 rounded-xl border transition cursor-pointer flex items-center gap-1 text-xs font-bold ${
                           project.hasUpvoted
-                            ? 'bg-rose-50 border-rose-200 text-rose-600'
-                            : 'bg-white border-slate-200 text-slate-600 hover:text-rose-500'
+                            ? 'bg-rose-50 border-rose-200 text-rose-700'
+                            : 'bg-white border-slate-200 text-slate-600 hover:text-rose-700'
                         }`}
                         title="Upvote project"
                       >
-                        <Heart size={14} className={project.hasUpvoted ? 'fill-rose-500' : ''} />
+                        <Heart size={14} className={project.hasUpvoted ? 'fill-rose-600 text-rose-600' : ''} />
                         <span>{project.upvotesCount || 0}</span>
                       </button>
 
                       <button
                         onClick={() => setSelectedProject(project)}
-                        className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold transition shadow-sm cursor-pointer flex items-center gap-1"
                       >
                         <span>View Seats</span>
                         <ChevronRight size={14} />
@@ -789,7 +794,7 @@ export default function BuildTogether() {
             {/* Header info */}
             <div className="mb-6">
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-purple-50 text-purple-700 border border-purple-200">
+                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
                   {selectedProject.targetGoal}
                 </span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700">
@@ -830,11 +835,11 @@ export default function BuildTogether() {
                 <div>
                   <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                     <span>{selectedProject.creatorName}</span>
-                    <span className="px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-800 rounded-full font-bold">
+                    <span className="px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-full font-bold">
                       👑 Project Pitcher
                     </span>
                   </p>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-slate-600 font-medium">
                     {selectedProject.creatorCollege}
                   </p>
                 </div>
@@ -866,7 +871,7 @@ export default function BuildTogether() {
                 {selectedProject.isCreator && (
                   <button
                     onClick={() => handleDeleteProject(selectedProject._id)}
-                    className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 transition cursor-pointer text-xs font-bold flex items-center gap-1"
+                    className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition cursor-pointer text-xs font-bold flex items-center gap-1"
                     title="Delete project"
                   >
                     <Trash2 size={15} />
@@ -878,7 +883,7 @@ export default function BuildTogether() {
 
             {/* Description */}
             <div className="mb-6">
-              <h4 className="text-xs uppercase font-extrabold tracking-wider text-slate-400 mb-2">
+              <h4 className="text-xs uppercase font-bold tracking-wider text-slate-600 mb-2">
                 About The Project Vision
               </h4>
               <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line bg-slate-50 border border-slate-100 rounded-2xl p-4">
@@ -888,7 +893,7 @@ export default function BuildTogether() {
 
             {/* Tech Stack */}
             <div className="mb-6">
-              <h4 className="text-xs uppercase font-extrabold tracking-wider text-slate-400 mb-2">
+              <h4 className="text-xs uppercase font-bold tracking-wider text-slate-600 mb-2">
                 Tech Stack Required
               </h4>
               <div className="flex flex-wrap gap-2">
@@ -908,7 +913,7 @@ export default function BuildTogether() {
                     <Ticket size={18} />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-white">
+                    <h3 className="text-sm sm:text-base font-bold text-white">
                       Collaboration Seat Map & Booking Deck
                     </h3>
                     <p className="text-xs text-slate-300">
@@ -917,7 +922,7 @@ export default function BuildTogether() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-[11px] font-bold">
+                <div className="flex items-center gap-3 text-xs font-bold">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                     <span>Available Seat</span>
@@ -944,39 +949,38 @@ export default function BuildTogether() {
                   return (
                     <div
                       key={slot.slotNumber}
-                      className={`relative rounded-2xl p-4.5 border transition-all ${
+                      className={`relative rounded-2xl p-4 border transition-all ${
                         isBooked
                           ? isLead
-                            ? 'bg-purple-950/40 border-purple-500/40 text-white'
+                            ? 'bg-indigo-950/40 border-indigo-500/40 text-white'
                             : 'bg-slate-800/60 border-slate-700/60 text-white'
                           : 'bg-emerald-950/30 border-emerald-500/40 text-white hover:border-emerald-400 hover:bg-emerald-950/50'
                       }`}
                     >
-                      {/* Ticket Notch effect decoration */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                          <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider ${
                             isBooked ? 'bg-white/10 text-slate-300' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                           }`}>
                             SEAT #{slot.slotNumber < 10 ? `0${slot.slotNumber}` : slot.slotNumber}
                           </span>
                           {isLead && (
-                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/30 text-purple-200">
+                            <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-indigo-500/30 text-indigo-200">
                               👑 Lead Pitcher
                             </span>
                           )}
                         </div>
 
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
                           isBooked
                             ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                             : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         }`}>
-                          {isBooked ? '🔴 Filled Seat' : '🟢 Open for Booking'}
+                          {isBooked ? 'Filled Seat' : 'Open for Booking'}
                         </span>
                       </div>
 
-                      <h4 className="text-sm font-extrabold text-white mb-1">
+                      <h4 className="text-sm font-bold text-white mb-1">
                         {slot.roleTitle}
                       </h4>
 
@@ -984,7 +988,7 @@ export default function BuildTogether() {
                       {slot.skillsRequired?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3.5">
                           {slot.skillsRequired.map((skill, sIdx) => (
-                            <span key={sIdx} className="px-2 py-0.5 rounded text-[10px] font-semibold bg-white/10 text-slate-300">
+                            <span key={sIdx} className="px-2 py-0.5 rounded text-xs font-medium bg-white/10 text-slate-300">
                               {skill}
                             </span>
                           ))}
@@ -995,7 +999,7 @@ export default function BuildTogether() {
                       {isBooked ? (
                         <div className="pt-2.5 border-t border-white/10 flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shrink-0">
                               {slot.filledBy?.avatar ? (
                                 <img src={slot.filledBy.avatar} alt="" className="w-full h-full object-cover rounded-full" />
                               ) : (
@@ -1007,14 +1011,14 @@ export default function BuildTogether() {
                                 <span>{slot.filledBy?.name || 'Verified Teammate'}</span>
                                 <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
                               </p>
-                              <p className="text-[10px] text-slate-400 truncate">
+                              <p className="text-xs text-slate-400 truncate">
                                 {slot.filledBy?.college || 'Engineering Campus'}
                               </p>
                             </div>
                           </div>
 
                           {isCurrentUserOccupant ? (
-                            <span className="px-2.5 py-1 rounded-xl bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-[10px] font-bold shrink-0">
+                            <span className="px-2.5 py-1 rounded-xl bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-bold shrink-0">
                               Your Seat 🎉
                             </span>
                           ) : slot.filledBy?.github ? (
@@ -1031,26 +1035,26 @@ export default function BuildTogether() {
                         </div>
                       ) : (
                         <div className="pt-2.5 border-t border-white/10 flex items-center justify-between gap-2">
-                          <p className="text-[11px] text-emerald-300/90 font-medium">
-                            Seat available for assignment
+                          <p className="text-xs text-emerald-300 font-medium">
+                            Seat open for assignment
                           </p>
 
                           {selectedProject.isCreator ? (
-                            <span className="text-[10px] font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg">
+                            <span className="text-xs font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg">
                               Awaiting Applicant
                             </span>
                           ) : userAppForThisSlot ? (
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                               userAppForThisSlot.status === 'declined'
                                 ? 'bg-rose-500/20 text-rose-300'
-                                : 'bg-amber-500/20 text-amber-300 animate-pulse'
+                                : 'bg-amber-500/20 text-amber-300'
                             }`}>
-                              {userAppForThisSlot.status === 'declined' ? 'Request Declined' : '🟡 Under Pitcher Review'}
+                              {userAppForThisSlot.status === 'declined' ? 'Request Declined' : 'Under Review'}
                             </span>
                           ) : (
                             <button
                               onClick={() => openBookingModalForSlot(selectedProject, slot)}
-                              className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-black transition shadow-md shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98]"
+                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
                             >
                               <Ticket size={13} />
                               <span>Book Seat #{slot.slotNumber}</span>
@@ -1076,7 +1080,7 @@ export default function BuildTogether() {
                       <h4 className="text-sm font-bold text-slate-900">
                         Pitcher Verification Desk: Seat Applications ({selectedProject.applications?.length || 0})
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-600">
                         Review collaborator credentials and contact info. Approve to fill their requested seat!
                       </p>
                     </div>
@@ -1087,7 +1091,7 @@ export default function BuildTogether() {
                   <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-center">
                     <Clock size={24} className="text-slate-400 mx-auto mb-2" />
                     <p className="text-xs font-bold text-slate-700">No collaborator applications yet</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-600 mt-0.5">
                       When students apply for your open seats, their verification requests will appear here for your approval.
                     </p>
                   </div>
@@ -1102,22 +1106,22 @@ export default function BuildTogether() {
                             <div>
                               <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                                 <span>{app.applicantName}</span>
-                                <span className="text-slate-500 font-normal">({app.applicantCollege || 'Student'})</span>
+                                <span className="text-slate-600 font-normal">({app.applicantCollege || 'Student'})</span>
                               </p>
-                              <p className="text-[11px] font-semibold text-indigo-600">
+                              <p className="text-xs font-semibold text-indigo-600">
                                 Applied for: <span className="font-bold">Seat #{app.slotNumber || '?'}: {app.slotRole || app.roleApplied}</span>
                               </p>
                             </div>
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                              app.status === 'accepted' ? 'bg-emerald-100 text-emerald-800' :
-                              app.status === 'declined' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
+                              app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
+                              app.status === 'declined' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                             }`}>
                               {app.status === 'accepted' ? '✓ Seat Assigned & Filled' : app.status}
                             </span>
                           </div>
 
                           {/* Applicant contact details */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600 bg-white p-3 rounded-xl border border-slate-100 mb-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-100 mb-2">
                             <div>
                               <span className="font-bold text-slate-700">Direct Contact: </span>
                               <span>{app.applicantPhoneOrContact || app.applicantEmail || 'Not provided'}</span>
@@ -1155,7 +1159,7 @@ export default function BuildTogether() {
                               </button>
                               <button
                                 onClick={() => handleManageApplication(selectedProject._id, app._id, 'decline')}
-                                className="px-3.5 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold transition cursor-pointer"
+                                className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition cursor-pointer"
                               >
                                 Decline
                               </button>
@@ -1173,15 +1177,15 @@ export default function BuildTogether() {
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
               <button
                 onClick={() => handleToggleUpvote(selectedProject._id)}
-                className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-rose-500 cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-rose-700 cursor-pointer"
               >
-                <Heart size={16} className={selectedProject.hasUpvoted ? 'fill-rose-500 text-rose-500' : ''} />
+                <Heart size={16} className={selectedProject.hasUpvoted ? 'fill-rose-600 text-rose-700' : ''} />
                 <span>{selectedProject.upvotesCount || 0} students interested</span>
               </button>
 
               <button
                 onClick={() => setSelectedProject(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold transition cursor-pointer"
               >
                 Close View
               </button>
@@ -1207,13 +1211,13 @@ export default function BuildTogether() {
                 <Ticket size={24} />
               </div>
               <div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800">
+                <span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-emerald-100 text-emerald-700">
                   Seat #{selectedSlotForBooking.slotNumber} Reservation
                 </span>
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-0.5">
                   {selectedSlotForBooking.roleTitle}
                 </h3>
-                <p className="text-xs text-slate-500 truncate max-w-xs">
+                <p className="text-xs text-slate-600 truncate max-w-xs">
                   Pitcher: {selectedProject.creatorName} ({selectedProject.creatorCollege})
                 </p>
               </div>
@@ -1221,12 +1225,12 @@ export default function BuildTogether() {
 
             {bookingSuccess ? (
               <div className="py-8 text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-3">
                   <CheckCircle2 size={36} />
                 </div>
                 <h4 className="text-lg font-bold text-slate-900">Seat Request Sent!</h4>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto mt-1 leading-relaxed">
-                  Your details have been submitted to <span className="font-bold">{selectedProject.creatorName}</span>. Once verified and approved, Seat #{selectedSlotForBooking.slotNumber} will be marked as filled by you!
+                  Your details have been submitted to <span className="font-bold text-slate-900">{selectedProject.creatorName}</span>. Once verified and approved, Seat #{selectedSlotForBooking.slotNumber} will be marked as filled by you!
                 </p>
               </div>
             ) : (
@@ -1270,7 +1274,7 @@ export default function BuildTogether() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                     <span>Direct Contact (WhatsApp / Discord / Phone) *</span>
-                    <span className="text-[10px] text-slate-400 font-normal">For pitcher to reach you</span>
+                    <span className="text-xs text-slate-400 font-normal">For pitcher to reach you</span>
                   </label>
                   <input
                     type="text"
@@ -1327,14 +1331,14 @@ export default function BuildTogether() {
                   <button
                     type="button"
                     onClick={() => setIsBookingModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingBooking}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                   >
                     <Ticket size={14} />
                     <span>{isSubmittingBooking ? 'Submitting Request...' : `Submit Seat #${selectedSlotForBooking.slotNumber} Request`}</span>
@@ -1363,7 +1367,7 @@ export default function BuildTogether() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Pitch a Project & Open Seats</h2>
-                <p className="text-xs text-slate-500">You will hold Seat #1 (Lead). Add seats for other developers to book.</p>
+                <p className="text-xs text-slate-600">You will hold Seat #1 (Lead). Add seats for other developers to book.</p>
               </div>
             </div>
 
@@ -1509,7 +1513,7 @@ export default function BuildTogether() {
                           <button
                             type="button"
                             onClick={() => handleRemoveRoleRow(idx)}
-                            className="p-2 text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                            className="p-2 text-slate-400 hover:text-rose-700 transition cursor-pointer"
                             aria-label="Remove role"
                           >
                             <X size={16} />
@@ -1572,14 +1576,14 @@ export default function BuildTogether() {
                 <button
                   type="button"
                   onClick={() => setIsPitchModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingPitch}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold shadow-md shadow-indigo-600/25 transition cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer disabled:opacity-50"
                 >
                   {isSubmittingPitch ? 'Publishing...' : 'Publish Pitch & Open Booking Slots 🚀'}
                 </button>
