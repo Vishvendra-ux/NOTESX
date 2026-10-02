@@ -37,11 +37,36 @@ const seedAdminUser = async () => {
   }
 };
 
+const seedDemoStudentUser = async () => {
+  try {
+    const User = require('../models/User');
+    const existing = await User.findOne({ email: 'student.demo@notesx.edu' });
+    if (!existing) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('student123', salt);
+      await User.create({
+        name: 'Demo Student',
+        email: 'student.demo@notesx.edu',
+        password: hashedPassword,
+        role: 'student',
+        collegeName: 'GLA University',
+        course: 'B.Tech CSE',
+        year: '3rd Year',
+        isVerified: true
+      });
+      console.log('✅ Demo Student Account Initialized: student.demo@notesx.edu');
+    }
+  } catch (err) {
+    console.error('Error seeding demo student user:', err.message);
+  }
+};
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     await seedAdminUser();
+    await seedDemoStudentUser();
   } catch (error) {
     console.error(`Error: ${error.message}`);
     process.exit(1);

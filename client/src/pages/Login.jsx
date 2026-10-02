@@ -55,17 +55,28 @@ export default function Login() {
     setActiveDemo('student');
 
     try {
-      await loginWithGoogle({
-        name: 'Demo Student',
-        email: 'student.demo@notesx.edu',
-      });
+      await login('student.demo@notesx.edu', 'student123');
       navigate(redirectPath);
     } catch (err) {
-      setError(getErrorMessage(err));
+      try {
+        await loginWithGoogle({
+          name: 'Demo Student',
+          email: 'student.demo@notesx.edu',
+        });
+        navigate(redirectPath);
+      } catch (gErr) {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setIsSubmitting(false);
       setActiveDemo(null);
     }
+  };
+
+  const handleFillDemoCredentials = () => {
+    setEmail('student.demo@notesx.edu');
+    setPassword('student123');
+    setError('');
   };
 
   const handleGoogleSignIn = async () => {
@@ -218,15 +229,25 @@ export default function Login() {
           <p className="text-[11px] uppercase tracking-wider font-bold text-slate-400 text-center mb-2.5">
             Quick 1-Click Demo Access
           </p>
-          <button
-            type="button"
-            onClick={handleInstantStudentLogin}
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
-          >
-            <GraduationCap size={15} className="text-slate-500 dark:text-slate-400" />
-            {activeDemo === 'student' ? 'Signing in...' : 'Student Demo Access ⚡'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleInstantStudentLogin}
+              disabled={isSubmitting}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/80 hover:bg-indigo-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+            >
+              <GraduationCap size={15} className="text-indigo-600 dark:text-indigo-400" />
+              {activeDemo === 'student' ? 'Signing in...' : '1-Click Student Login ⚡'}
+            </button>
+            <button
+              type="button"
+              onClick={handleFillDemoCredentials}
+              className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
+              title="Fill student.demo@notesx.edu / student123"
+            >
+              Auto-fill Form
+            </button>
+          </div>
         </div>
 
         {/* Footer Navigation */}

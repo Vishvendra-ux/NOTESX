@@ -147,11 +147,15 @@ const googleLogin = async (req, res) => {
       }
     }
 
-    // In development mode only: allow explicit demo student account ONLY, NEVER allow impersonating arbitrary or admin accounts!
+    // In development mode only: allow explicit demo student accounts ONLY, NEVER allow impersonating arbitrary or admin accounts!
     if (!verifiedEmail) {
-      if (process.env.NODE_ENV !== 'production' && email && email.toLowerCase().trim() === 'student.demo@notesx.edu') {
-        verifiedEmail = 'student.demo@notesx.edu';
-        verifiedName = verifiedName || 'Demo Student';
+      const isDevDemo = process.env.NODE_ENV !== 'production' && email && (
+        email.toLowerCase().trim() === 'student.demo@notesx.edu' ||
+        email.toLowerCase().trim() === 'student.google@gmail.com'
+      );
+      if (isDevDemo) {
+        verifiedEmail = email.toLowerCase().trim();
+        verifiedName = verifiedName || (verifiedEmail === 'student.demo@notesx.edu' ? 'Demo Student' : 'Google Student');
       } else {
         return res.status(401).json({
           message: 'Valid Google identity credential token is required. Account impersonation is strictly prohibited.'
