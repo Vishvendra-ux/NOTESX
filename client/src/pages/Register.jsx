@@ -62,10 +62,10 @@ export default function Register() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-14rem)] flex items-center justify-center py-6 px-4 sm:px-6">
+    <div className="relative min-h-[calc(100vh-14rem)] flex items-center justify-center py-6 px-4 sm:px-6 overflow-hidden">
       {/* Background Decorative Ambient Glows */}
-      <div className="absolute top-1/4 -left-20 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/4 -left-16 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-1/4 -right-16 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
 
       <div className="w-full max-w-[430px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-indigo-950/5 relative overflow-hidden animate-slide-up">
         {/* Top Accent Gradient Bar */}
@@ -91,7 +91,7 @@ export default function Register() {
           type="button"
           onClick={handleGoogleSignUp}
           disabled={isSubmitting}
-          className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all duration-150 shadow-sm hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60 mb-5"
+          className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-sm font-semibold transition shadow-xs cursor-pointer disabled:opacity-60 mb-5"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -105,7 +105,7 @@ export default function Register() {
         {/* Divider */}
         <div className="relative flex items-center justify-center mb-5">
           <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
-          <span className="bg-white dark:bg-slate-900 px-3 text-[11px] uppercase tracking-wider font-semibold text-slate-400 shrink-0">
+          <span className="bg-white dark:bg-slate-900 px-3 text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500 shrink-0">
             or register with email
           </span>
           <div className="border-t border-slate-200 dark:border-slate-800 w-full" />

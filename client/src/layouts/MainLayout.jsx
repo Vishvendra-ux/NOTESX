@@ -6,6 +6,7 @@ import { Home, Compass, Target, MessageCircle, UserRound } from 'lucide-react';
 
 function MobileBottomNav() {
   const { pathname } = useLocation();
+  if (pathname === '/login' || pathname === '/register') return null;
   const items = [[Home, 'Home', '/'], [Compass, 'Explore', '/colleges'], [Target, 'GATE', '/gate'], [MessageCircle, 'Community', '/doubts'], [UserRound, 'Profile', '/profile']];
   return <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Mobile navigation">{items.map(([Icon,label,to]) => { const on = to === '/' ? pathname === '/' : pathname.startsWith(to); return <Link key={label} to={to} className={`flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-semibold ${on ? 'text-indigo-600' : 'text-slate-500'}`}><Icon size={19} strokeWidth={on ? 2.5 : 2}/>{label}</Link>; })}</nav>;
 }

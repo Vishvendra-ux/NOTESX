@@ -138,6 +138,42 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
+  if (isAuthPage) {
+    const isLoginPage = location.pathname === '/login';
+    return (
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-[68px]">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 rounded-xl bg-[#273aab] flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none group-hover:scale-105 transition-transform duration-200">
+                <Sparkles size={18} />
+              </div>
+              <span className="font-extrabold text-[17px] tracking-[-.04em] text-slate-900 dark:text-white">
+                NOTE<span className="text-indigo-600">SX</span>
+              </span>
+            </Link>
+
+            {/* Contextual Action */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
+                {isLoginPage ? "Don't have an account?" : 'Already have an account?'}
+              </span>
+              <Link
+                to={isLoginPage ? '/register' : '/login'}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-semibold transition shadow-xs"
+              >
+                {isLoginPage ? 'Get Started' : 'Sign In'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <>
       <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
