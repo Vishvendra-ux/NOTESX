@@ -30,9 +30,10 @@ export default function GatePracticeViewer({ subjectId, topicId, topicTitle, res
       try {
         const url = `/api/gate/questions?subjectId=${subjectId}&topicId=${topicId || 'all'}`;
         const res = await axios.get(import.meta.env.VITE_API_URL + url.replace('/api', ''));
-        setQuestions(res.data);
+        setQuestions(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error('Failed to fetch GATE questions', err);
+        setQuestions([]);
       } finally {
         setLoading(false);
       }
