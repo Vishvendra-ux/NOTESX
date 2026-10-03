@@ -45,12 +45,17 @@ export default function Gate() {
   const [actionError, setActionError] = useState('');
   const [busyTopic, setBusyTopic] = useState('');
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectedSubjectForPyqs, setSelectedSubjectForPyqs] = useState(null);
   const [showPyqsForTopic, setShowPyqsForTopic] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState('All subjects');
   const [query, setQuery] = useState('');
   const [showTestBuilder, setShowTestBuilder] = useState(false);
   const [testSession, setTestSession] = useState(null);
+  const [resumeState, setResumeState] = useState(() => {
+    const saved = localStorage.getItem('gate_pyq_resume');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const loadProgress = async () => {
     setLoading(true);
@@ -110,6 +115,36 @@ export default function Gate() {
 
   return (
     <main className="animate-fade-in pb-14">
+      {resumeState && (
+        <section className="mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/40 dark:border-indigo-800">
+            <div>
+              <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Resume Practice</p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                Continue GATE PYQs: {resumeState.topicTitle}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const subject = gateSubjects.find(s => s.id === resumeState.subjectId);
+                if (resumeState.topicId) {
+                  const topic = subject?.topics.find(t => t.id === resumeState.topicId);
+                  if (topic) {
+                    setSelectedTopic({ ...topic, subject });
+                    setShowPyqsForTopic(true);
+                  }
+                } else if (subject) {
+                  setSelectedSubjectForPyqs(subject);
+                  setShowPyqsForTopic(true);
+                }
+              }}
+              className="whitespace-nowrap px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm flex items-center gap-2 transition"
+            >
+              Resume Practice <ArrowRight size={16} />
+            </button>
+          </div>
+        </section>
+      )}
       <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#f5f7ff] via-[#f3f4ff] to-[#eeeaff] p-6 shadow-sm ring-1 ring-indigo-100 sm:p-9 lg:p-10 dark:from-slate-900 dark:via-indigo-950/50 dark:to-violet-950/40 dark:ring-slate-700">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl" />
         <div aria-hidden="true" className="pointer-events-none absolute bottom-0 right-[22%] -z-10 h-40 w-40 rounded-full bg-fuchsia-300/20 blur-3xl" />
@@ -162,10 +197,20 @@ export default function Gate() {
                 <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">{subject.phase}</p><h3 className="mt-1 min-h-[3rem] text-lg font-extrabold leading-snug text-slate-900 dark:text-white">{subject.name}</h3><p className="mt-1 min-h-6 text-sm text-slate-500 dark:text-slate-400">{subject.note}</p>
                 <div className="mt-4 flex items-center justify-between text-xs"><span className="font-semibold text-slate-500">Prep progress</span><span className="font-extrabold text-slate-800 dark:text-slate-200">{subjectPercent}% <span className="font-medium text-slate-400">· {subjectCompleted}/{subject.topics.length} done</span></span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-full rounded-full transition-all ${subjectPercent === 100 ? 'bg-emerald-400' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`} style={{ width: `${subjectPercent}%` }} /></div>
                 <button aria-expanded={isOpen} onClick={() => setExpanded(isOpen ? null : subject.id)} className="mt-4 flex w-full items-center justify-between border-t border-slate-100 pt-3 text-sm font-bold text-indigo-700 transition hover:text-indigo-500 dark:border-slate-800 dark:text-indigo-300"><span>{isOpen ? 'Hide topics' : `Explore ${subject.topics.length} topics`}</span>{isOpen ? <ChevronDown size={16} className="rotate-180 transition" /> : <ChevronRight size={16} className="transition group-hover:translate-x-0.5" />}</button>
-                {isOpen && <div className="mt-3 space-y-2">{subject.topics.map((topic) => {
-                  const entry = progressByTopic.get(topic.id);
-                  return <button key={topic.id} onClick={() => { setSelectedTopic({ ...topic, subject }); setActionError(''); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5 text-left transition hover:border-indigo-200 hover:bg-indigo-50/70 dark:border-slate-800 dark:bg-slate-800/70 dark:hover:border-indigo-400/30 dark:hover:bg-indigo-400/10"><span className="min-w-0"><span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-100">{topic.title}</span><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-500"><Clock3 size={11} /> {topic.minutes} min</span></span><TopicStatus entry={entry} /></button>;
-                })}</div>}
+                {isOpen && (
+                  <div className="mt-3 space-y-2">
+                    {subject.topics.map((topic) => {
+                      const entry = progressByTopic.get(topic.id);
+                      return <button key={topic.id} onClick={() => { setSelectedTopic({ ...topic, subject }); setActionError(''); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5 text-left transition hover:border-indigo-200 hover:bg-indigo-50/70 dark:border-slate-800 dark:bg-slate-800/70 dark:hover:border-indigo-400/30 dark:hover:bg-indigo-400/10"><span className="min-w-0"><span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-100">{topic.title}</span><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-500"><Clock3 size={11} /> {topic.minutes} min</span></span><TopicStatus entry={entry} /></button>;
+                    })}
+                    <button 
+                      onClick={() => { setSelectedSubjectForPyqs(subject); setShowPyqsForTopic(true); }} 
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 text-indigo-700 font-bold text-xs hover:bg-indigo-100 transition dark:bg-indigo-900/20 dark:border-indigo-800/50 dark:text-indigo-300 dark:hover:bg-indigo-900/40"
+                    >
+                      <FileQuestion size={14} /> Practice full {subject.name} PYQs <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
                 {subjectActive && <p className="mt-3 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">You have study activity in this subject.</p>}
               </article>;
             })}
@@ -212,6 +257,19 @@ export default function Gate() {
           )}
         </section>
       </div>}
+
+      {selectedSubjectForPyqs && showPyqsForTopic && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) { setSelectedSubjectForPyqs(null); setShowPyqsForTopic(false); } }}>
+          <section role="dialog" aria-modal="true" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
+            <GatePyqViewer 
+              subjectId={selectedSubjectForPyqs.id} 
+              topicId={null} 
+              topicTitle={`All ${selectedSubjectForPyqs.name} Topics`}
+              onBack={() => { setSelectedSubjectForPyqs(null); setShowPyqsForTopic(false); }}
+            />
+          </section>
+        </div>
+      )}
     </main>
   );
 }

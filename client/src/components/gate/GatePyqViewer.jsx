@@ -3,12 +3,21 @@ import { gatePyqs } from '../../data/gatePyqs';
 import { CheckCircle2, XCircle, ArrowLeft, Lightbulb, FileQuestion } from 'lucide-react';
 
 export default function GatePyqViewer({ subjectId, topicId, topicTitle, onBack }) {
-  const pyqs = gatePyqs.filter(q => q.subjectId === subjectId && q.topicId === topicId);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const pyqs = gatePyqs.filter(q => q.subjectId === subjectId && (!topicId || q.topicId === topicId));
+  const storageKey = `gate_pyq_answers_${subjectId}_${topicId || 'all'}`;
+  
+  const [selectedAnswers, setSelectedAnswers] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : {};
+  });
   const [showExplanation, setShowExplanation] = useState({});
 
   const handleSelectOption = (qId, option) => {
-    setSelectedAnswers(prev => ({ ...prev, [qId]: option }));
+    const updated = { ...selectedAnswers, [qId]: option };
+    setSelectedAnswers(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    // Save a global resume state
+    localStorage.setItem('gate_pyq_resume', JSON.stringify({ subjectId, topicId, topicTitle, qId }));
   };
 
   const toggleExplanation = (qId) => {
