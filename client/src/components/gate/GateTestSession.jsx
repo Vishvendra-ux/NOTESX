@@ -33,10 +33,10 @@ export default function GateTestSession({ test, onExit }) {
   }, [answers, result, test._id]);
 
   useEffect(() => {
-    if (result || submitting || submitError) return undefined;
+    if (result || submitting) return undefined;
     const timer = window.setInterval(() => setRemainingSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
     return () => window.clearInterval(timer);
-  }, [result, submitError, submitting]);
+  }, [result, submitting]);
 
   useEffect(() => {
     if (remainingSeconds <= 0 && !result && !submitting && !submitError) submit();
@@ -50,7 +50,7 @@ export default function GateTestSession({ test, onExit }) {
     <section className="glass-card relative mt-6 overflow-hidden p-5 sm:p-7" aria-label="Custom GATE test">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-5 dark:border-slate-700">
         <div><p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">{result ? 'Test submitted' : 'Custom practice test'}</p><h2 className="mt-1 text-2xl font-black">{test.title}</h2><p className="mt-1 text-sm text-slate-500">{test.description}</p></div>
-        <div className="flex items-center gap-3"><div className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 font-mono text-lg font-black ${remainingSeconds < 60 && !result ? 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100'}`}><Clock3 size={17} />{formatTime(remainingSeconds)}</div><button type="button" onClick={onExit} aria-label="Close test" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><XCircle size={19} /></button></div>
+        <div className="flex items-center gap-3"><div className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 font-mono text-lg font-black ${remainingSeconds < 60 && !result ? 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100'}`}><Clock3 size={17} />{formatTime(remainingSeconds)}</div><button type="button" onClick={onExit} disabled={submitting} aria-label="Close test" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-50 dark:hover:bg-slate-700"><XCircle size={19} /></button></div>
       </div>
 
       {result && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-400/20 dark:bg-emerald-950/30"><div><p className="text-sm font-bold text-emerald-800 dark:text-emerald-200">Score: {result.score} / {result.totalMarks}</p><p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{result.correctCount} correct · {result.attemptedCount} answered · {result.accuracy}% accuracy</p></div><button type="button" onClick={onExit} className="btn-primary px-4 py-2">Finish review</button></div>}
@@ -65,7 +65,7 @@ export default function GateTestSession({ test, onExit }) {
             const optionStyle = currentResult
               ? isCorrect ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-100' : isWrongSelection ? 'border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-100' : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
               : selected ? 'border-indigo-300 bg-indigo-50 text-indigo-900 dark:border-indigo-400/30 dark:bg-indigo-400/10 dark:text-indigo-100' : 'border-slate-200 text-slate-700 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-indigo-400/30';
-            return <button key={`${question._id}-${optionIndex}`} type="button" disabled={Boolean(result) || submitting} onClick={() => selectAnswer(question._id, optionIndex)} aria-pressed={selected} className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left text-sm transition ${optionStyle}`}><span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border text-xs font-bold ${selected ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-slate-300 text-slate-500 dark:border-slate-600'}`}>{String.fromCharCode(65 + optionIndex)}</span><span className="pt-0.5">{option}</span>{currentResult && isCorrect && <CheckCircle2 size={17} className="ml-auto shrink-0 text-emerald-600" />}</button>;
+            return <button key={`${question._id}-${optionIndex}`} type="button" disabled={Boolean(result) || submitting || remainingSeconds === 0} onClick={() => selectAnswer(question._id, optionIndex)} aria-pressed={selected} className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left text-sm transition ${optionStyle}`}><span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border text-xs font-bold ${selected ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-slate-300 text-slate-500 dark:border-slate-600'}`}>{String.fromCharCode(65 + optionIndex)}</span><span className="pt-0.5">{option}</span>{currentResult && isCorrect && <CheckCircle2 size={17} className="ml-auto shrink-0 text-emerald-600" />}</button>;
           })}</div>
           {currentResult?.explanation && <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm leading-6 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><strong className="text-slate-800 dark:text-white">Explanation: </strong>{currentResult.explanation}</div>}
         </div>

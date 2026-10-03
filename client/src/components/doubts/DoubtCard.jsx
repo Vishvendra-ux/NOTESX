@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown, Check, MessageSquare, Eye, Bookmark, Share2, Tag } from 'lucide-react';
+import { ChevronUp, ChevronDown, Check, MessageSquare, Eye, Bookmark, Share2, Tag, Edit3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -226,6 +226,14 @@ export default function DoubtCard({
             >
               <Bookmark size={14} className={doubt.isBookmarked ? 'fill-amber-500' : ''} />
             </button>
+            <Link
+              to={`/doubts/${doubt._id}#answer`}
+              onClick={(e) => e.stopPropagation()}
+              className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-100 dark:border-indigo-800"
+            >
+              <Edit3 size={12} />
+              Answer
+            </Link>
           </div>
         </div>
       </div>

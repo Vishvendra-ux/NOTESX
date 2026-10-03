@@ -9,7 +9,7 @@ import { gateService } from '../services/api';
 
 const GateTestBuilder = lazy(() => import('../components/gate/GateTestBuilder'));
 const GateTestSession = lazy(() => import('../components/gate/GateTestSession'));
-const GatePyqViewer = lazy(() => import('../components/gate/GatePyqViewer'));
+const GatePracticeViewer = lazy(() => import('../components/gate/GatePracticeViewer'));
 
 const colorTokens = {
   violet: 'text-violet-600 bg-violet-50 dark:bg-violet-400/10 dark:text-violet-300',
@@ -28,6 +28,17 @@ const colorTokens = {
 const actionLabel = {
   in_progress: 'In progress',
   completed: 'Completed',
+};
+
+const readStoredJson = (key, fallback) => {
+  try {
+    const saved = window.localStorage.getItem(key);
+    if (!saved) return fallback;
+    const value = JSON.parse(saved);
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : fallback;
+  } catch {
+    return fallback;
+  }
 };
 
 function TopicStatus({ entry }) {
@@ -52,10 +63,7 @@ export default function Gate() {
   const [query, setQuery] = useState('');
   const [showTestBuilder, setShowTestBuilder] = useState(false);
   const [testSession, setTestSession] = useState(null);
-  const [resumeState, setResumeState] = useState(() => {
-    const saved = localStorage.getItem('gate_pyq_resume');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [resumeState, setResumeState] = useState(() => readStoredJson('gate_pyq_resume', null));
 
   const loadProgress = async () => {
     setLoading(true);
@@ -73,11 +81,17 @@ export default function Gate() {
   useEffect(() => { loadProgress(); }, []);
 
   useEffect(() => {
-    if (!selectedTopic) return undefined;
-    const onKeyDown = (event) => { if (event.key === 'Escape') setSelectedTopic(null); };
+    if (!selectedTopic && !selectedSubjectForPyqs) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedTopic(null);
+        setSelectedSubjectForPyqs(null);
+        setShowPyqsForTopic(false);
+      }
+    };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedTopic]);
+  }, [selectedTopic, selectedSubjectForPyqs]);
 
   const progressByTopic = useMemo(() => new Map((progress?.topics || []).map((entry) => [entry.topicId, entry])), [progress]);
   const visibleSubjects = useMemo(() => gateSubjects.filter((subject) => {
@@ -119,29 +133,41 @@ export default function Gate() {
         <section className="mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/40 dark:border-indigo-800">
             <div>
-              <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Resume Practice</p>
+              <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Resume practice</p>
               <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                Continue GATE PYQs: {resumeState.topicTitle}
+                Continue practice: {resumeState.topicTitle}
               </p>
             </div>
-            <button
-              onClick={() => {
-                const subject = gateSubjects.find(s => s.id === resumeState.subjectId);
-                if (resumeState.topicId) {
-                  const topic = subject?.topics.find(t => t.id === resumeState.topicId);
-                  if (topic) {
-                    setSelectedTopic({ ...topic, subject });
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  const subject = gateSubjects.find((item) => item.id === resumeState.subjectId);
+                  if (resumeState.topicId) {
+                    const topic = subject?.topics.find((item) => item.id === resumeState.topicId);
+                    if (topic) {
+                      setSelectedTopic({ ...topic, subject });
+                      setShowPyqsForTopic(true);
+                    }
+                  } else if (subject) {
+                    setSelectedSubjectForPyqs(subject);
                     setShowPyqsForTopic(true);
                   }
-                } else if (subject) {
-                  setSelectedSubjectForPyqs(subject);
-                  setShowPyqsForTopic(true);
-                }
-              }}
-              className="whitespace-nowrap px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm flex items-center gap-2 transition"
-            >
-              Resume Practice <ArrowRight size={16} />
-            </button>
+                }}
+                className="whitespace-nowrap px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm flex items-center gap-2 transition"
+              >
+                Resume practice <ArrowRight size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  try { window.localStorage.removeItem('gate_pyq_resume'); } catch { /* Storage may be unavailable. */ }
+                  setResumeState(null);
+                }}
+                className="whitespace-nowrap rounded-xl border border-indigo-200 px-3 py-2 text-sm font-bold text-indigo-700 transition hover:bg-white dark:border-indigo-700 dark:text-indigo-200 dark:hover:bg-indigo-950/50"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -154,7 +180,8 @@ export default function Gate() {
               <Sparkles size={14} /> GATE CS · 2027
             </div>
             <h1 className="mb-3 max-w-[15ch] text-4xl font-black leading-[1.04] tracking-[-0.045em] text-slate-950 sm:text-5xl dark:text-white">Your next big idea starts with one topic.</h1>
-            <p className="max-w-xl text-base leading-7 text-slate-600 sm:text-lg dark:text-slate-300">Eleven subjects. A syllabus you can work through one topic at a time. Start a topic, mark it complete, and watch your preparation take shape.</p>
+            <p className="max-w-xl text-base leading-7 text-slate-600 sm:text-lg dark:text-slate-300">Ten CS syllabus sections plus General Aptitude. Work through the topics one at a time, track your progress, and practise with the questions available in the bank.</p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">The official CS paper is 180 minutes, 65 questions and 100 marks, with MCQ, MSQ and NAT questions. Custom tests here use available MCQs. <a href="https://gate2027.iitm.ac.in/question_paper_pattern" target="_blank" rel="noreferrer" className="font-semibold text-indigo-600 underline underline-offset-2 dark:text-indigo-300">See the official exam pattern ↗</a></p>
             <div className="mt-6 flex flex-wrap gap-3">
               <button onClick={() => { setShowTestBuilder((open) => !open); setTestSession(null); }} className="btn-primary gap-2 px-5 py-3"><Play size={16} fill="currentColor" />Customize a test</button>
               <button onClick={() => nextTopic && setSelectedTopic(findTopic(nextTopic.id))} disabled={!nextTopic || loading} className="btn-secondary gap-2 px-5 py-3 disabled:cursor-not-allowed disabled:opacity-50">{nextTopic && progressByTopic.get(nextTopic.id)?.status === 'in_progress' ? 'Continue your topic' : 'Start your next topic'} <ArrowRight size={16} /></button>
@@ -207,7 +234,7 @@ export default function Gate() {
                       onClick={() => { setSelectedSubjectForPyqs(subject); setShowPyqsForTopic(true); }} 
                       className="mt-2 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 text-indigo-700 font-bold text-xs hover:bg-indigo-100 transition dark:bg-indigo-900/20 dark:border-indigo-800/50 dark:text-indigo-300 dark:hover:bg-indigo-900/40"
                     >
-                      <FileQuestion size={14} /> Practice full {subject.name} PYQs <ArrowRight size={14} />
+                      <FileQuestion size={14} /> Practice {subject.name} questions <ArrowRight size={14} />
                     </button>
                   </div>
                 )}
@@ -227,14 +254,18 @@ export default function Gate() {
       </section>
 
       {selectedTopic && <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) { setSelectedTopic(null); setShowPyqsForTopic(false); } }}>
-        <section role="dialog" aria-modal="true" aria-labelledby="gate-topic-title" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
+        <section role="dialog" aria-modal="true" aria-labelledby={showPyqsForTopic ? 'gate-pyq-title' : 'gate-topic-title'} className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
           {showPyqsForTopic ? (
-            <GatePyqViewer 
-              subjectId={selectedTopic.subject.id} 
-              topicId={selectedTopic.id} 
-              topicTitle={selectedTopic.title}
-              onBack={() => setShowPyqsForTopic(false)}
-            />
+            <Suspense fallback={<p className="p-6 text-sm font-semibold text-slate-500">Loading practice questions…</p>}>
+              <GatePracticeViewer
+                subjectId={selectedTopic.subject.id}
+                topicId={selectedTopic.id}
+                topicTitle={selectedTopic.title}
+                resumeQuestionId={resumeState?.topicId === selectedTopic.id ? resumeState.qId : null}
+                onResumeChange={setResumeState}
+                onBack={() => setShowPyqsForTopic(false)}
+              />
+            </Suspense>
           ) : (
             <>
               <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">{selectedTopic.subject.name} · Topic guide</p><h2 id="gate-topic-title" className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white">{selectedTopic.title}</h2></div><button aria-label="Close topic" onClick={() => { setSelectedTopic(null); setShowPyqsForTopic(false); }} className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"><X size={20} /></button></div>
@@ -246,7 +277,7 @@ export default function Gate() {
                 <p className="text-xs leading-5 text-slate-500">Your progress follows you across visits when you’re signed in.</p>
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => setShowPyqsForTopic(true)} className="btn-secondary gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 border-indigo-200">
-                    <FileQuestion size={15} /> Practice PYQs
+                    <FileQuestion size={15} /> Practice questions
                   </button>
                   {!progressByTopic.has(selectedTopic.id) && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'start')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <Play size={15} fill="currentColor" />} Start topic</button>}
                   {progressByTopic.get(selectedTopic.id)?.status === 'in_progress' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'complete')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Mark complete</button>}
@@ -260,13 +291,17 @@ export default function Gate() {
 
       {selectedSubjectForPyqs && showPyqsForTopic && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) { setSelectedSubjectForPyqs(null); setShowPyqsForTopic(false); } }}>
-          <section role="dialog" aria-modal="true" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
-            <GatePyqViewer 
-              subjectId={selectedSubjectForPyqs.id} 
-              topicId={null} 
-              topicTitle={`All ${selectedSubjectForPyqs.name} Topics`}
-              onBack={() => { setSelectedSubjectForPyqs(null); setShowPyqsForTopic(false); }}
-            />
+          <section role="dialog" aria-modal="true" aria-labelledby="gate-pyq-title" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
+            <Suspense fallback={<p className="p-6 text-sm font-semibold text-slate-500">Loading practice questions…</p>}>
+              <GatePracticeViewer
+                subjectId={selectedSubjectForPyqs.id}
+                topicId={null}
+                topicTitle={`All ${selectedSubjectForPyqs.name} Topics`}
+                resumeQuestionId={resumeState?.subjectId === selectedSubjectForPyqs.id && !resumeState.topicId ? resumeState.qId : null}
+                onResumeChange={setResumeState}
+                onBack={() => { setSelectedSubjectForPyqs(null); setShowPyqsForTopic(false); }}
+              />
+            </Suspense>
           </section>
         </div>
       )}

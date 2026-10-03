@@ -22,6 +22,38 @@ exports.create = async (req, res, next) => { try { const test = await Test.creat
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const normalizeAnswers = (answers) => {
+  if (answers && typeof answers.entries === 'function') return Object.fromEntries(answers.entries());
+  return answers && typeof answers === 'object' && !Array.isArray(answers) ? answers : {};
+};
+
+const gradeAnswers = (questions, answers) => {
+  let score = 0;
+  let correctCount = 0;
+  let attemptedCount = 0;
+  const results = questions.map((question) => {
+    const questionId = question._id.toString();
+    const answer = answers[questionId];
+    const isAnswered = answer !== undefined;
+    const isCorrect = isAnswered && answer === question.correctAnswer;
+    if (isAnswered) attemptedCount += 1;
+    if (isCorrect) {
+      correctCount += 1;
+      score += question.marks || 1;
+    } else if (isAnswered) {
+      score -= question.negativeMarks || 0;
+    }
+    return {
+      questionId,
+      selectedAnswer: isAnswered ? answer : null,
+      correctAnswer: question.correctAnswer,
+      isCorrect,
+      explanation: question.explanation || '',
+    };
+  });
+  return { results, score, correctCount, attemptedCount };
+};
+
 exports.customize = async (req, res, next) => {
   try {
     const {
@@ -40,8 +72,10 @@ exports.customize = async (req, res, next) => {
     if (!['Any', 'Easy', 'Medium', 'Hard'].includes(difficulty)) {
       return res.status(400).json({ message: 'Choose a supported difficulty.' });
     }
-    if (!Array.isArray(topicTerms) || topicTerms.length > 300 || !Array.isArray(topicLabels) || topicLabels.length > 30) {
-      return res.status(400).json({ message: 'The topic selection is too large.' });
+    if (typeof subjectName !== 'string' || !subjectName.trim() || subjectName.trim().length > 100
+      || !Array.isArray(topicTerms) || topicTerms.length > 400
+      || !Array.isArray(topicLabels) || topicLabels.length > 100) {
+      return res.status(400).json({ message: 'The test scope is invalid or too large.' });
     }
 
     const filter = { type: 'MCQ', correctAnswer: { $type: 'number' }, options: { $exists: true, $ne: [] } };
@@ -50,22 +84,27 @@ exports.customize = async (req, res, next) => {
       .filter((term) => typeof term === 'string')
       .map((term) => term.trim().slice(0, 100))
       .filter(Boolean))];
-    if (safeTerms.length) {
-      const stopWords = new Set(['about', 'after', 'and', 'basic', 'basics', 'from', 'into', 'other', 'system', 'systems', 'their', 'these', 'through', 'using', 'with', 'data', 'design']);
-      const words = safeTerms.flatMap((term) => term.match(/[a-z0-9]{5,}/gi) || [])
-        .filter((word) => !stopWords.has(word.toLowerCase()));
-      const searchableTerms = [...new Set([...safeTerms, ...words])].slice(0, 500);
-      filter.topic = { $in: searchableTerms.map((term) => new RegExp(escapeRegex(term), 'i')) };
+    if (!safeTerms.length) {
+      return res.status(400).json({ message: 'Choose at least one GATE topic for this practice test.' });
     }
+    const stopWords = new Set(['about', 'after', 'and', 'basic', 'basics', 'from', 'into', 'other', 'system', 'systems', 'their', 'these', 'through', 'using', 'with', 'data', 'design']);
+    const words = safeTerms.flatMap((term) => term.match(/[a-z0-9]{5,}/gi) || [])
+      .filter((word) => !stopWords.has(word.toLowerCase()));
+    const searchableTerms = [...new Set([...safeTerms, ...words])].slice(0, 500);
+    filter.topic = { $in: searchableTerms.map((term) => new RegExp(escapeRegex(term), 'i')) };
 
-    const pool = await Question.find(filter)
+    const pool = (await Question.find(filter)
       .select('questionText options correctAnswer explanation topic difficulty type marks negativeMarks')
       .limit(500)
-      .lean();
+      .lean())
+      .filter((question) => Number.isInteger(question.correctAnswer)
+        && question.correctAnswer >= 0
+        && Array.isArray(question.options)
+        && question.correctAnswer < question.options.length);
     const count = Number(questionCount);
     if (pool.length < count) {
       const scope = subjectName === 'All subjects' ? 'the question bank' : `${subjectName}`;
-      return res.status(422).json({ message: `Only ${pool.length} matching MCQ${pool.length === 1 ? '' : 's'} are available for ${scope}. Choose a broader topic, easier filters, or a smaller test.` });
+      return res.status(422).json({ message: `Only ${pool.length} matching MCQ${pool.length === 1 ? '' : 's'} are available for ${scope}. Select a different subject, relax the difficulty, or choose fewer questions.` });
     }
 
     // Shuffle a bounded pool so repeated custom tests vary for the student.
@@ -105,31 +144,36 @@ exports.submit = async (req, res, next) => {
   try {
     const test = await Test.findOne({ _id: req.params.id, creatorId: req.user._id }).populate('questions');
     if (!test) return res.status(404).json({ message: 'Test not found' });
-    const answers = req.body.answers || {};
-    let score = 0;
-    let correctCount = 0;
-    let attemptedCount = 0;
-    const results = test.questions.map((question) => {
-      const answer = answers[question._id.toString()];
-      const isAnswered = answer !== undefined && answer !== null && answer !== '';
-      const isCorrect = isAnswered && Number(answer) === question.correctAnswer;
-      if (isAnswered) attemptedCount += 1;
-      if (isCorrect) {
-        correctCount += 1;
-        score += question.marks || 1;
-      } else if (isAnswered) {
-        score -= question.negativeMarks || 0;
+    const previousAttempt = await TestAttempt.findOne({ userId: req.user._id, testId: test._id, status: 'Completed' });
+    if (previousAttempt) {
+      const answers = normalizeAnswers(previousAttempt.answers);
+      const grade = gradeAnswers(test.questions, answers);
+      const accuracy = grade.attemptedCount ? Math.round((grade.correctCount / grade.attemptedCount) * 100) : 0;
+      return res.json({
+        attempt: previousAttempt,
+        ...grade,
+        totalMarks: test.totalMarks,
+        accuracy,
+      });
+    }
+
+    const submittedAnswers = req.body?.answers;
+    if (!submittedAnswers || typeof submittedAnswers !== 'object' || Array.isArray(submittedAnswers)) {
+      return res.status(400).json({ message: 'Submit an answers object to finish this test.' });
+    }
+    const questionsById = new Map(test.questions.map((question) => [question._id.toString(), question]));
+    const answers = {};
+    for (const [questionId, answer] of Object.entries(submittedAnswers)) {
+      const question = questionsById.get(questionId);
+      if (!question || !Number.isInteger(answer) || answer < 0 || answer >= question.options.length) {
+        return res.status(400).json({ message: 'One or more answers are invalid for this test.' });
       }
-      return {
-        questionId: question._id.toString(),
-        selectedAnswer: isAnswered ? Number(answer) : null,
-        correctAnswer: question.correctAnswer,
-        isCorrect,
-        explanation: question.explanation || '',
-      };
-    });
-    const attempt = await TestAttempt.create({ userId: req.user._id, testId: test._id, answers, score, status: 'Completed', endTime: new Date() });
-    const accuracy = attemptedCount ? Math.round((correctCount / attemptedCount) * 100) : 0;
-    res.status(201).json({ attempt, results, score, totalMarks: test.totalMarks, correctCount, attemptedCount, accuracy });
+      answers[questionId] = answer;
+    }
+
+    const grade = gradeAnswers(test.questions, answers);
+    const attempt = await TestAttempt.create({ userId: req.user._id, testId: test._id, answers, score: grade.score, status: 'Completed', endTime: new Date() });
+    const accuracy = grade.attemptedCount ? Math.round((grade.correctCount / grade.attemptedCount) * 100) : 0;
+    res.status(201).json({ attempt, ...grade, totalMarks: test.totalMarks, accuracy });
   } catch (error) { next(error); }
 };

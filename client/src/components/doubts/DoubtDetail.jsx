@@ -605,14 +605,25 @@ export default function DoubtDetail() {
           {/* Answers Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <span>{answers.length} {answers.length === 1 ? 'Answer' : 'Answers'}</span>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                  {answers.length} {answers.length === 1 ? 'Answer' : 'Answers'}
+                </h2>
                 {doubt.hasAcceptedAnswer && (
                   <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200">
                     Solved
                   </span>
                 )}
-              </h2>
+              </div>
+              <button
+                onClick={() => {
+                  document.getElementById('answer')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5 shadow-sm"
+              >
+                <Edit3 size={12} />
+                Write Answer
+              </button>
             </div>
 
             {/* Answer Cards List */}
@@ -801,7 +812,7 @@ export default function DoubtDetail() {
           </div>
 
           {/* Your Answer Composer (GATE Overflow style) */}
-          <div className="glass-card p-5 sm:p-7 border border-slate-200/90 dark:border-slate-800">
+          <div id="answer" className="glass-card p-5 sm:p-7 border border-slate-200/90 dark:border-slate-800 scroll-mt-24">
             <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-1.5 flex items-center gap-2">
               <Edit3 size={18} className="text-indigo-600" />
               Your Solution / Answer

@@ -1,20 +1,18 @@
-export const gatePyqs = [
+export const gatePracticeQuestions = [
   {
     id: "pyq_ds_1",
     subjectId: "programming-data-structures",
     topicId: "pds-trees",
-    year: 2021,
-    question: "Consider a complete binary tree with 7 nodes. Let A denote the set of first 3 elements obtained by performing Breadth-First Search (BFS) starting from the root. Let B denote the set of first 3 elements obtained by performing Depth-First Search (DFS) starting from the root. The value of |A ∩ B| is:",
+    question: "Consider a complete binary tree with 7 nodes. Both traversals visit the left child before the right child. Let A denote the set of the first 3 nodes visited by breadth-first search (BFS) from the root, and B the set of the first 3 nodes visited by depth-first search (DFS) from the root. What is |A ∩ B|?",
     options: ["1", "2", "3", "0"],
-    correctAnswer: "1",
-    explanation: "In a complete binary tree, BFS visits the root (say node 1), then its children (nodes 2 and 3). DFS visits the root (1), then its left child (2), then its left grandchild (4). A = {1, 2, 3} and B = {1, 2, 4}. The intersection A ∩ B = {1, 2}. Thus, the size of the intersection is 2.",
+    correctAnswer: "2",
+    explanation: "BFS visits the root, then its left and right children: A = {1, 2, 3}. DFS visits the root, its left child, then that child's left child: B = {1, 2, 4}. Their intersection is {1, 2}, so |A ∩ B| = 2.",
     marks: 2
   },
   {
     id: "pyq_algo_1",
     subjectId: "algorithms",
-    topicId: "algo-asymptotic",
-    year: 2022,
+    topicId: "algo-analysis",
     question: "Which one of the following is true? Let f(n) = n log n and g(n) = n^(1.5).",
     options: ["f(n) = O(g(n))", "g(n) = O(f(n))", "f(n) = Θ(g(n))", "f(n) = Ω(g(n))"],
     correctAnswer: "f(n) = O(g(n))",
@@ -24,8 +22,7 @@ export const gatePyqs = [
   {
     id: "pyq_os_1",
     subjectId: "operating-systems",
-    topicId: "os-process",
-    year: 2020,
+    topicId: "os-processes",
     question: "Consider a system with 3 processes that share 4 instances of the same resource type. Each process can request a maximum of K instances. Resource instances can be requested and released only one at a time. The largest value of K that will always avoid deadlock is:",
     options: ["1", "2", "3", "4"],
     correctAnswer: "2",
@@ -36,7 +33,6 @@ export const gatePyqs = [
     id: "pyq_dbms_1",
     subjectId: "databases",
     topicId: "dbms-sql",
-    year: 2019,
     question: "Which of the following is NOT a superkey in a relational schema with attributes V, W, X, Y, Z and primary key VY?",
     options: ["VXYZ", "VWXZ", "VWXY", "VWXYZ"],
     correctAnswer: "VWXZ",
@@ -46,8 +42,7 @@ export const gatePyqs = [
   {
     id: "pyq_cn_1",
     subjectId: "computer-networks",
-    topicId: "cn-routing",
-    year: 2018,
+    topicId: "net-ip-addressing",
     question: "In an IPv4 datagram, the M bit is 0, the value of HLEN is 10, the value of total length is 400 and the fragment offset value is 300. The position of the datagram, the sequence numbers of the first and the last bytes of the payload, respectively are:",
     options: [
       "Last fragment, 2400 and 2789", 
@@ -62,8 +57,7 @@ export const gatePyqs = [
   {
     id: "pyq_toc_1",
     subjectId: "theory-of-computation",
-    topicId: "toc-regular",
-    year: 2017,
+    topicId: "toc-regular-languages",
     question: "Which of the following regular expressions represents the language: the set of all binary strings having two consecutive 0s and two consecutive 1s?",
     options: [
       "(0+1)* 0011 (0+1)* + (0+1)* 1100 (0+1)*",
@@ -79,7 +73,6 @@ export const gatePyqs = [
     id: "pyq_math_1",
     subjectId: "engineering-mathematics",
     topicId: "math-linear-algebra",
-    year: 2016,
     question: "The value of x for which the matrix [ [x, 1], [1, x] ] has zero as an eigenvalue is",
     options: ["1", "-1", "0", "1 or -1"],
     correctAnswer: "1 or -1",
@@ -90,7 +83,6 @@ export const gatePyqs = [
     id: "pyq_dl_1",
     subjectId: "digital-logic",
     topicId: "logic-boolean-algebra",
-    year: 2021,
     question: "The minterm expansion of f(P,Q,R) = PQ + QR' + PR' is:",
     options: [
       "m2 + m4 + m6 + m7",
@@ -105,8 +97,7 @@ export const gatePyqs = [
   {
     id: "pyq_ds_2",
     subjectId: "programming-data-structures",
-    topicId: "pds-arrays",
-    year: 2023,
+    topicId: "pds-arrays-lists",
     question: "Consider an array A = [10, 20, 30, 40, 50]. The number of comparisons made by binary search to find 40 is:",
     options: ["1", "2", "3", "4"],
     correctAnswer: "2",
@@ -117,7 +108,6 @@ export const gatePyqs = [
     id: "pyq_algo_2",
     subjectId: "algorithms",
     topicId: "algo-graphs",
-    year: 2019,
     question: "In a directed acyclic graph with n vertices and m edges, what is the time complexity to find the longest path between any two vertices?",
     options: ["O(n log n)", "O(n + m)", "O(n^2)", "NP-Hard"],
     correctAnswer: "O(n + m)",

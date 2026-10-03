@@ -17,11 +17,12 @@ export default function GateTestBuilder({ subjects, onTestStarted, onClose }) {
 
   const selectedSubject = subjects.find((subject) => subject.id === subjectId);
   const chosenTopics = useMemo(() => {
+    if (subjectId === 'all') return subjects.flatMap((subject) => subject.topics);
     if (!selectedSubject) return [];
     return selectedTopicIds.length
       ? selectedSubject.topics.filter((topic) => selectedTopicIds.includes(topic.id))
       : selectedSubject.topics;
-  }, [selectedSubject, selectedTopicIds]);
+  }, [selectedSubject, selectedTopicIds, subjectId, subjects]);
 
   const toggleTopic = (topicId) => {
     setSelectedTopicIds((current) => current.includes(topicId)
@@ -38,7 +39,7 @@ export default function GateTestBuilder({ subjects, onTestStarted, onClose }) {
       const response = await testService.customize({
         subjectName: selectedSubject?.name || 'All subjects',
         topicTerms,
-        topicLabels: chosenTopics.map((topic) => topic.title),
+        topicLabels: selectedSubject ? chosenTopics.map((topic) => topic.title) : [],
         difficulty: difficulty === 'Any difficulty' ? 'Any' : difficulty,
         questionCount: Number(questionCount),
         duration: Number(duration),
