@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { gatePracticeQuestions } from '../../data/gatePracticeQuestions';
+import axios from 'axios';
 import { CheckCircle2, XCircle, ArrowLeft, Lightbulb, FileQuestion, RotateCcw } from 'lucide-react';
 
 const readStoredAnswers = (key) => {
@@ -17,20 +17,37 @@ const storeJson = (key, value) => {
 };
 
 export default function GatePracticeViewer({ subjectId, topicId, topicTitle, resumeQuestionId, onResumeChange, onBack }) {
-  const questions = gatePracticeQuestions.filter((question) => question.subjectId === subjectId && (!topicId || question.topicId === topicId));
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const storageKey = `gate_pyq_answers_${subjectId}_${topicId || 'all'}`;
 
   const [selectedAnswers, setSelectedAnswers] = useState(() => readStoredAnswers(storageKey));
   const [showExplanation, setShowExplanation] = useState({});
 
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      setLoading(true);
+      try {
+        const url = `/api/gate/questions?subjectId=${subjectId}&topicId=${topicId || 'all'}`;
+        const res = await axios.get(import.meta.env.VITE_API_URL + url.replace('/api', ''));
+        setQuestions(res.data);
+      } catch (err) {
+        console.error('Failed to fetch GATE questions', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuestions();
+  }, [subjectId, topicId]);
+
   useEffect(() => { storeJson(storageKey, selectedAnswers); }, [storageKey, selectedAnswers]);
 
   useEffect(() => {
-    if (!resumeQuestionId) return;
+    if (!resumeQuestionId || loading || questions.length === 0) return;
     window.setTimeout(() => {
       document.getElementById(`gate-pyq-${resumeQuestionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 0);
-  }, [resumeQuestionId]);
+    }, 100);
+  }, [resumeQuestionId, loading, questions]);
 
   const handleSelectOption = (qId, option) => {
     setSelectedAnswers((current) => ({ ...current, [qId]: option }));
@@ -51,6 +68,15 @@ export default function GatePracticeViewer({ subjectId, topicId, topicTitle, res
   const toggleExplanation = (qId) => {
     setShowExplanation(prev => ({ ...prev, [qId]: !prev[qId] }));
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+        <p className="text-slate-500 font-medium">Loading previous year questions...</p>
+      </div>
+    );
+  }
 
   if (questions.length === 0) {
     return (
@@ -97,9 +123,10 @@ export default function GatePracticeViewer({ subjectId, topicId, topicTitle, res
                 </span>
               </div>
               
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-5 leading-relaxed">
-                {question.question}
-              </p>
+              <div 
+                className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-5 leading-relaxed prose dark:prose-invert max-w-none gate-math-content"
+                dangerouslySetInnerHTML={{ __html: question.question }}
+              />
 
               <div className="space-y-2.5 mb-4">
                 {question.options.map((opt, i) => {
@@ -152,9 +179,10 @@ export default function GatePracticeViewer({ subjectId, topicId, topicTitle, res
                       <p className="text-xs leading-relaxed text-indigo-900 dark:text-indigo-200">
                         <span className="font-bold">Correct answer:</span> {question.correctAnswer}
                       </p>
-                      <p className="text-xs leading-relaxed text-indigo-800 dark:text-indigo-300 mt-2">
-                        {question.explanation}
-                      </p>
+                      <div 
+                        className="text-xs leading-relaxed text-indigo-800 dark:text-indigo-300 mt-2 prose dark:prose-invert max-w-none gate-math-content"
+                        dangerouslySetInnerHTML={{ __html: question.explanation }}
+                      />
                     </div>
                   )}
                 </div>

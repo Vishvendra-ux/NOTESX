@@ -1,0 +1,14 @@
+[
+  {
+    "examCategory": "GATE CSE",
+    "examYear": "GATE 2024",
+    "subjectName": "Algorithms",
+    "topic": "Asymptotic Notation",
+    "questionType": "MCQ",
+    "marks": 2,
+    "questionHtml": "<p>What is the time complexity of quicksort in the worst case?</p>",
+    "options": ["O(n)", "O(n log n)", "O(n^2)", "O(log n)"],
+    "correctAnswer": "O(n^2)",
+    "explanationHtml": "<p>Worst case occurs when the array is already sorted and we pick the smallest/largest element as pivot.</p>"
+  }
+]
