@@ -5,17 +5,10 @@ const controller = require('../controllers/noteController');
 const { protect } = require('../middleware/authMiddleware');
 const { uploadLimiter } = require('../middleware/rateLimiter');
 
+const { getStorage } = require('../middleware/uploadMiddleware');
+
 // Multer Storage Configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'uploads'));
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-    cb(null, `${Date.now()}-${base}${ext}`);
-  }
-});
+const storage = getStorage('notes');
 
 // Strict File Security Filter (Reject executables, accept only safe educational formats)
 const fileFilter = (req, file, cb) => {

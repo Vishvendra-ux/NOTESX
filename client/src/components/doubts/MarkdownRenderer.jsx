@@ -261,8 +261,16 @@ function renderInlineFormatting(text) {
     // Link [text](url)
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (linkMatch) {
+      const url = linkMatch[2].trim();
+      // Anti-XSS: only allow http, https, mailto, and relative paths
+      const isSafeUrl = /^(https?:\/\/|mailto:|tel:|\/|#)/i.test(url);
+      
+      if (!isSafeUrl) {
+        return <span key={index} className="text-slate-500 italic">[{linkMatch[1]} (blocked link)]</span>;
+      }
+
       return (
-        <a key={index} href={linkMatch[2]} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+        <a key={index} href={url} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
           {linkMatch[1]}
         </a>
       );

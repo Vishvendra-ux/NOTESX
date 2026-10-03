@@ -66,7 +66,7 @@ exports.uploadResume = async (req, res, next) => {
       return res.status(400).json({ message: 'Please upload a valid resume file (PDF, DOC, DOCX)' });
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const fileUrl = req.file.path && req.file.path.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`;
     const user = await User.findById(req.user._id);
 
     if (!user) {

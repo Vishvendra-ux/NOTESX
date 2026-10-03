@@ -28,4 +28,7 @@ const ProjectMessageSchema = new mongoose.Schema({
   }
 });
 
+// Indexing for faster retrieval within a specific project room
+ProjectMessageSchema.index({ project: 1, createdAt: 1 });
+
 module.exports = mongoose.model('ProjectMessage', ProjectMessageSchema);

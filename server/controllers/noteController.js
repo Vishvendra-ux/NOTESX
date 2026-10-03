@@ -304,7 +304,7 @@ exports.create = async (req, res, next) => {
       topic: topic || '',
       tags: parsedTags,
       uploaderId: req.user._id,
-      fileUrl: `/uploads/${req.file.filename}`,
+      fileUrl: req.file.path && req.file.path.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`,
       fileType: normType,
       fileSize: req.file.size,
       status: 'approved', // Auto-approved so students see their uploaded notes immediately

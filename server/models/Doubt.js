@@ -50,4 +50,15 @@ doubtSchema.pre('save', function() {
   }
 });
 
+// Add text indexing for optimized searching
+doubtSchema.index({
+  title: 'text',
+  description: 'text',
+  subjectName: 'text',
+  topic: 'text',
+  tags: 'text'
+}, {
+  weights: { title: 10, tags: 8, subjectName: 5, topic: 5, description: 1 }
+});
+
 module.exports = mongoose.model('Doubt', doubtSchema);

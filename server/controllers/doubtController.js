@@ -22,16 +22,9 @@ exports.list = async (req, res, next) => {
 
     const query = {};
 
-    // Text search
+    // Text search (Optimized using MongoDB $text index instead of COLLSCAN $regex)
     if (search && search.trim()) {
-      const s = search.trim();
-      query.$or = [
-        { title: { $regex: s, $options: 'i' } },
-        { description: { $regex: s, $options: 'i' } },
-        { topic: { $regex: s, $options: 'i' } },
-        { tags: { $in: [new RegExp(s, 'i')] } },
-        { subjectName: { $regex: s, $options: 'i' } }
-      ];
+      query.$text = { $search: search.trim() };
     }
 
     // Filter by Subject

@@ -39,7 +39,10 @@ export default function ProjectWorkspace() {
 
         // Initialize Socket.io
         const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
-        socketRef.current = io(socketUrl);
+        const token = localStorage.getItem('token');
+        socketRef.current = io(socketUrl, {
+          auth: { token }
+        });
 
         socketRef.current.emit('join_project', id);
 

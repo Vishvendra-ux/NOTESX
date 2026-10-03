@@ -6,10 +6,7 @@ const controller = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const { uploadLimiter } = require('../middleware/rateLimiter');
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const { getStorage } = require('../middleware/uploadMiddleware');
 
 const ALLOWED_RESUME_EXTS = ['.pdf', '.doc', '.docx'];
 const ALLOWED_RESUME_MIMES = [
@@ -18,14 +15,7 @@ const ALLOWED_RESUME_MIMES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 ];
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-    cb(null, `resume-${Date.now()}-${base}${ext}`);
-  }
-});
+const storage = getStorage('resumes');
 
 const upload = multer({
   storage,
