@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check, Users2 } from 'lucide-react';
+import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check, Users2, Gamepad2, MessageCircle, Trophy } from 'lucide-react';
 import { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { notesService } from '../services/api';
@@ -32,6 +32,8 @@ export default function Navbar() {
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState(false);
   const [notificationRefresh, setNotificationRefresh] = useState(0);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef(null);
   const notificationPanelRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -117,20 +119,46 @@ export default function Navbar() {
 
   useEffect(() => {
     setNotificationsOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
-  const navLinks = [
+  useEffect(() => {
+    if (!moreOpen) return undefined;
+    const handlePointerDown = (event) => {
+      if (!moreRef.current?.contains(event.target)) setMoreOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setMoreOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [moreOpen]);
+
+  // Core destinations stay in the bar; secondary ones live under "More" to keep it uncluttered.
+  const primaryLinks = [
     { name: 'Colleges', path: '/colleges' },
     { name: 'Notes', path: '/notes' },
     { name: 'Roadmaps', path: '/roadmaps' },
     { name: 'Jobs', path: '/jobs' },
     { name: 'GATE', path: '/gate' },
-    { name: 'Doubts', path: '/doubts' },
-    { name: 'Contests', path: '/contests' },
-    { name: 'BuildTogether', path: '/build-together', isNew: true, icon: Users2 },
   ];
 
+  const moreLinks = [
+    { name: 'Doubts', path: '/doubts', icon: MessageCircle, description: 'Ask and answer study questions' },
+    { name: 'Contests', path: '/contests', icon: Trophy, description: 'Compete and climb the leaderboard' },
+    { name: 'BuildTogether', path: '/build-together', isNew: true, icon: Users2, description: 'Find teammates for projects' },
+    { name: 'Games', path: '/games', isNew: true, icon: Gamepad2, description: 'Take a quick study break' },
+  ];
+
+  // Full list is still used by the mobile menu
+  const navLinks = [...primaryLinks, ...moreLinks];
+
   const isActive = (path) => location.pathname.startsWith(path);
+  const moreActive = moreLinks.some((link) => isActive(link.path));
 
   const handleLogout = () => {
     logout();
@@ -192,63 +220,93 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1">
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className={`relative px-2.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 inline-flex items-center gap-1.5 ${
-                      isActive(link.path)
-                        ? 'text-indigo-700 font-bold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/80'
-                    }`}
+            <div className="hidden lg:flex items-center gap-0.5 xl:gap-1 flex-1 justify-center min-w-0 px-2">
+              {primaryLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  aria-current={isActive(link.path) ? 'page' : undefined}
+                  className={`relative px-2.5 xl:px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 whitespace-nowrap ${
+                    isActive(link.path)
+                      ? 'text-indigo-700 font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/80'
+                  }`}
+                >
+                  <span className="relative">
+                    {link.name}
+                    {isActive(link.path) && (
+                      <span className="absolute inset-x-0 -bottom-[14px] h-0.5 bg-indigo-600 rounded-full" />
+                    )}
+                  </span>
+                </Link>
+              ))}
+
+              {/* More dropdown */}
+              <div className="relative" ref={moreRef}>
+                <button
+                  type="button"
+                  onClick={() => setMoreOpen((open) => !open)}
+                  aria-expanded={moreOpen}
+                  aria-haspopup="menu"
+                  className={`inline-flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                    moreOpen || moreActive
+                      ? 'text-indigo-700 bg-indigo-50'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/80'
+                  }`}
+                >
+                  More
+                  <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {moreOpen && (
+                  <div
+                    role="menu"
+                    className="absolute left-1/2 -translate-x-1/2 top-full z-50 mt-3 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/10 animate-slide-up"
                   >
-                    {Icon && (
-                      <Icon
-                        size={15}
-                        className={isActive(link.path) ? "text-indigo-600" : "text-indigo-500/80"}
-                      />
-                    )}
-                    <span className="relative">
-                      {link.name}
-                      {isActive(link.path) && (
-                        <span className="absolute inset-x-0 -bottom-[14px] h-0.5 bg-indigo-600 rounded-full" />
-                      )}
-                    </span>
-                    {link.isNew && (
-                      <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full leading-none shadow-xs shadow-indigo-500/20">
-                        New
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+                    {moreLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <Link
+                          key={link.name}
+                          to={link.path}
+                          role="menuitem"
+                          aria-current={isActive(link.path) ? 'page' : undefined}
+                          className={`flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors ${
+                            isActive(link.path) ? 'bg-indigo-50' : 'hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                            <Icon size={16} aria-hidden="true" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                              {link.name}
+                              {link.isNew && (
+                                <span className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-2 py-0.5 text-xs font-bold leading-none text-white">
+                                  New
+                                </span>
+                              )}
+                            </span>
+                            <span className="block text-xs text-slate-500">{link.description}</span>
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Right Actions */}
-            <div className="hidden lg:flex items-center space-x-3">
-              {location.pathname === '/colleges' ? (
-                <button 
-                  onClick={() => setSearchOpen(true)} 
-                  className="p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 hover:border-indigo-200 hover:text-indigo-600 hover:bg-white transition-all shadow-sm"
-                  aria-label="Global quick search (⌘K)"
-                  title="Global quick search (⌘K)"
-                >
-                  <Search size={16} aria-hidden="true" />
-                </button>
-              ) : (
-                <button 
-                  onClick={() => setSearchOpen(true)} 
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 hover:border-indigo-200"
-                  aria-label="Search"
-                >
-                  <Search size={16} />
-                  <span>Search</span>
-                  <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
-                </button>
-              )}
+            <div className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2 xl:p-2.5 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition"
+                aria-label="Search (⌘K)"
+                title="Search (⌘K)"
+              >
+                <Search size={18} aria-hidden="true" />
+              </button>
 
               {user ? (
                 <>
@@ -342,16 +400,16 @@ export default function Navbar() {
                   <div className="relative">
                     <button 
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
+                      className="flex items-center gap-2 xl:gap-2.5 p-1 xl:p-1.5 xl:pr-3 rounded-xl border border-transparent xl:border-slate-200 xl:bg-slate-50 hover:bg-slate-100 transition"
                     >
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-xs font-bold text-white shadow-xs">
                         {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                       </div>
-                      <div className="text-left leading-tight">
+                      <div className="hidden xl:block text-left leading-tight">
                         <b className="block text-xs font-bold text-slate-900 truncate max-w-[110px]">{user.name || 'Student'}</b>
                         <span className="text-[10px] text-indigo-600 font-bold capitalize">{user.role || 'Student'}</span>
                       </div>
-                      <ChevronDown size={14} className="text-slate-400" />
+                      <ChevronDown size={14} className="hidden xl:block text-slate-400" />
                     </button>
 
                     {dropdownOpen && (

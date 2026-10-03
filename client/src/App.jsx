@@ -18,6 +18,8 @@ import AIAssistantPage from './pages/AIAssistantPage';
 import Roadmaps from './pages/Roadmaps';
 import Jobs from './pages/Jobs';
 import BuildTogether from './pages/BuildTogether';
+import ProjectWorkspace from './pages/ProjectWorkspace';
+import Games from './pages/Games';
 
 function App() {
   return (
@@ -59,7 +61,10 @@ function App() {
               <Route path="/settings" element={<Profile />} />
               <Route path="/ai-assistant" element={<AIAssistantPage />} />
               <Route path="/build-together" element={<BuildTogether />} />
+              <Route path="/build-together/:id/workspace" element={<ProjectWorkspace />} />
               <Route path="/buildtogether" element={<BuildTogether />} />
+              <Route path="/games" element={<Games />} />
+              <Route path="/games/:gameId" element={<Games />} />
               <Route path="/admin" element={<Dashboard />} />
             </Route>
           </Route>

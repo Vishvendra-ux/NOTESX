@@ -862,3 +862,32 @@ exports.delete = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get messages for a project
+// @route   GET /api/build-together/:id/messages
+// @access  Private (only members)
+exports.getMessages = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    // Optional: Check if user is a member or creator
+    const project = await ProjectCollab.findById(id);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    
+    const isMember = project.members.some(m => m.userId && m.userId.equals(req.user._id));
+    const isCreator = project.creatorId.equals(req.user._id);
+    
+    if (!isMember && !isCreator && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only team members can view the project chat' });
+    }
+
+    const ProjectMessage = require('../models/ProjectMessage');
+    const messages = await ProjectMessage.find({ project: id }).sort({ createdAt: 1 });
+    
+    res.json(messages);
+  } catch (error) {
+    next(error);
+  }
+};

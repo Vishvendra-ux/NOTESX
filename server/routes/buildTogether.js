@@ -11,4 +11,6 @@ router.post('/:id/upvote', protect, controller.toggleUpvote);
 router.patch('/:id/applications/:appId', protect, controller.manageApplication);
 router.delete('/:id', protect, controller.delete);
 
+router.get('/:id/messages', protect, controller.getMessages);
+
 module.exports = router;

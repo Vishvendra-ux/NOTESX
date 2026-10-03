@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Users, Plus, Search, Rocket, Sparkles, Code2, GitBranch, MessageSquare,
   Heart, CheckCircle2, X, ChevronRight, UserPlus, Check, ArrowRight, AlertCircle, Trash2,
@@ -1183,12 +1184,23 @@ export default function BuildTogether() {
                 <span>{selectedProject.upvotesCount || 0} students interested</span>
               </button>
 
-              <button
-                onClick={() => setSelectedProject(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold transition cursor-pointer"
-              >
-                Close View
-              </button>
+              <div className="flex items-center gap-2">
+                {(selectedProject.isCreator || selectedProject.isMember) && (
+                  <Link
+                    to={`/build-together/${selectedProject._id}/workspace`}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold transition shadow-sm flex items-center gap-1.5"
+                  >
+                    <MessageSquare size={16} />
+                    Open Team Workspace
+                  </Link>
+                )}
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold transition cursor-pointer"
+                >
+                  Close View
+                </button>
+              </div>
             </div>
           </div>
         </div>
