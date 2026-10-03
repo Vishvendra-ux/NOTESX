@@ -2,13 +2,14 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CheckCircle2, ChevronDown,
   ChevronRight, Clock3, Flame, LoaderCircle, Play, RotateCcw, Search, Sparkles,
-  Target, X,
+  Target, X, FileQuestion
 } from 'lucide-react';
 import { gatePhases, gateSubjects, gateTopicCount } from '../data/gateSyllabus';
 import { gateService } from '../services/api';
 
 const GateTestBuilder = lazy(() => import('../components/gate/GateTestBuilder'));
 const GateTestSession = lazy(() => import('../components/gate/GateTestSession'));
+const GatePyqViewer = lazy(() => import('../components/gate/GatePyqViewer'));
 
 const colorTokens = {
   violet: 'text-violet-600 bg-violet-50 dark:bg-violet-400/10 dark:text-violet-300',
@@ -44,6 +45,7 @@ export default function Gate() {
   const [actionError, setActionError] = useState('');
   const [busyTopic, setBusyTopic] = useState('');
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [showPyqsForTopic, setShowPyqsForTopic] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState('All subjects');
   const [query, setQuery] = useState('');
@@ -179,18 +181,35 @@ export default function Gate() {
         </aside>
       </section>
 
-      {selectedTopic && <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedTopic(null); }}>
+      {selectedTopic && <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) { setSelectedTopic(null); setShowPyqsForTopic(false); } }}>
         <section role="dialog" aria-modal="true" aria-labelledby="gate-topic-title" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7 dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">{selectedTopic.subject.name} · Topic guide</p><h2 id="gate-topic-title" className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white">{selectedTopic.title}</h2></div><button aria-label="Close topic" onClick={() => setSelectedTopic(null)} className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"><X size={20} /></button></div>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">{selectedTopic.goal}</p>
-          <div className="mt-5 flex flex-wrap items-center gap-2"><TopicStatus entry={progressByTopic.get(selectedTopic.id)} /><span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Clock3 size={12} /> {selectedTopic.minutes} min suggested</span></div>
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-800/60"><h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Study checklist</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Work through these ideas, then mark the topic complete.</p><ul className="mt-4 space-y-3">{selectedTopic.concepts.map((concept) => <li key={concept} className="flex gap-3 text-sm leading-5 text-slate-700 dark:text-slate-200"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-indigo-200 bg-white text-indigo-600 dark:border-indigo-400/30 dark:bg-slate-900 dark:text-indigo-300"><Check size={12} /></span>{concept}</li>)}</ul></div>
-          {actionError && <p role="alert" className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:border-rose-400/20 dark:bg-rose-950/30 dark:text-rose-200">{actionError}</p>}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5 dark:border-slate-800"><p className="text-xs leading-5 text-slate-500">Your progress follows you across visits when you’re signed in.</p><div className="flex flex-wrap gap-2">
-            {!progressByTopic.has(selectedTopic.id) && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'start')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <Play size={15} fill="currentColor" />} Start topic</button>}
-            {progressByTopic.get(selectedTopic.id)?.status === 'in_progress' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'complete')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Mark complete</button>}
-            {progressByTopic.get(selectedTopic.id)?.status === 'completed' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'reopen')} disabled={busyTopic === selectedTopic.id} className="btn-secondary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <RotateCcw size={15} />} Reopen topic</button>}
-          </div></div>
+          {showPyqsForTopic ? (
+            <GatePyqViewer 
+              subjectId={selectedTopic.subject.id} 
+              topicId={selectedTopic.id} 
+              topicTitle={selectedTopic.title}
+              onBack={() => setShowPyqsForTopic(false)}
+            />
+          ) : (
+            <>
+              <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">{selectedTopic.subject.name} · Topic guide</p><h2 id="gate-topic-title" className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl dark:text-white">{selectedTopic.title}</h2></div><button aria-label="Close topic" onClick={() => { setSelectedTopic(null); setShowPyqsForTopic(false); }} className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"><X size={20} /></button></div>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">{selectedTopic.goal}</p>
+              <div className="mt-5 flex flex-wrap items-center gap-2"><TopicStatus entry={progressByTopic.get(selectedTopic.id)} /><span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Clock3 size={12} /> {selectedTopic.minutes} min suggested</span></div>
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-800/60"><h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Study checklist</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Work through these ideas, then mark the topic complete.</p><ul className="mt-4 space-y-3">{selectedTopic.concepts.map((concept) => <li key={concept} className="flex gap-3 text-sm leading-5 text-slate-700 dark:text-slate-200"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-indigo-200 bg-white text-indigo-600 dark:border-indigo-400/30 dark:bg-slate-900 dark:text-indigo-300"><Check size={12} /></span>{concept}</li>)}</ul></div>
+              {actionError && <p role="alert" className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:border-rose-400/20 dark:bg-rose-950/30 dark:text-rose-200">{actionError}</p>}
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+                <p className="text-xs leading-5 text-slate-500">Your progress follows you across visits when you’re signed in.</p>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => setShowPyqsForTopic(true)} className="btn-secondary gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 border-indigo-200">
+                    <FileQuestion size={15} /> Practice PYQs
+                  </button>
+                  {!progressByTopic.has(selectedTopic.id) && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'start')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <Play size={15} fill="currentColor" />} Start topic</button>}
+                  {progressByTopic.get(selectedTopic.id)?.status === 'in_progress' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'complete')} disabled={busyTopic === selectedTopic.id} className="btn-primary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Mark complete</button>}
+                  {progressByTopic.get(selectedTopic.id)?.status === 'completed' && <button onClick={() => updateTopic(selectedTopic, selectedTopic.subject, 'reopen')} disabled={busyTopic === selectedTopic.id} className="btn-secondary gap-2 px-4 py-2.5 disabled:opacity-60">{busyTopic === selectedTopic.id ? <LoaderCircle size={16} className="animate-spin" /> : <RotateCcw size={15} />} Reopen topic</button>}
+                </div>
+              </div>
+            </>
+          )}
         </section>
       </div>}
     </main>
