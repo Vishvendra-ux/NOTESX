@@ -1,9 +1,10 @@
+const path = require('path');
 const mongoose = require('mongoose');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const College = require('./models/College');
-const CommunityPost = require('./models/CommunityPost');
-const CampusEvent = require('./models/CampusEvent');
+const College = require('../models/College');
+const CommunityPost = require('../models/CommunityPost');
+const CampusEvent = require('../models/CampusEvent');
 
 const collegesToSeed = [
   {

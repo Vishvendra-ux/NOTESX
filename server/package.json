@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "seed:community": "node scripts/seedCommunityData.js",
+    "seed:notes": "node scripts/seedNotesHierarchy.js",
+    "seed:doubts": "node scripts/seedGateDoubts.js",
+    "seed:jobs": "node scripts/seedJobs.js",
+    "seed:roadmaps": "node scripts/seedRoadmaps.js",
+    "seed:build": "node scripts/seedBuildTogether.js",
+    "db:migrate": "node scripts/migrateDatabaseDesign.js"
   },
   "keywords": [],
   "author": "",
