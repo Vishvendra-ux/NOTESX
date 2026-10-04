@@ -6,6 +6,13 @@ const Answer = require('../models/Answer');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
 
+// SAFETY: destructive reset. Refuses to run in production or without an explicit flag.
+if (process.env.NODE_ENV === 'production' || process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+  console.error('Refusing to run: this script DELETES existing data. Re-run in development with ALLOW_DESTRUCTIVE_SEED=true');
+  process.exit(1);
+}
+
+
 const seedDoubts = async () => {
   try {
     console.log('Connecting to MongoDB...');

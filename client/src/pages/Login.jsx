@@ -120,8 +120,8 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Google One-Click Sign In */}
-        <button
+        {/* Google One-Click Sign In (dev stub only - not a verified Google credential) */}
+        {import.meta.env.DEV && (<button
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
@@ -134,7 +134,7 @@ export default function Login() {
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
           </svg>
           Continue with Google
-        </button>
+        </button>)}
 
         {/* Divider */}
         <div className="relative flex items-center justify-center mb-5">
@@ -224,8 +224,8 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Quick Demo Access Bar */}
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+        {/* Quick Demo Access Bar (development only) */}
+        {import.meta.env.DEV && (<div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
           <p className="text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500 text-center mb-2.5">
             Quick Demo Access
           </p>
@@ -248,7 +248,7 @@ export default function Login() {
               Auto-fill Form
             </button>
           </div>
-        </div>
+        </div>)}
 
         {/* Footer Navigation */}
         <p className="mt-5 text-center text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">

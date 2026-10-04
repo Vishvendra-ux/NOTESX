@@ -65,6 +65,6 @@ const branchSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-branchSchema.index({ courseId: 1, slug: 1 });
+branchSchema.index({ courseId: 1, slug: 1 }, { unique: true });
 
 module.exports = mongoose.model('Branch', branchSchema);

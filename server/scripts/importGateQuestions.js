@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const GateQuestion = require('../models/GateQuestion');
@@ -46,8 +47,21 @@ const importData = async () => {
 
     console.log(`⏳ Importing ${formattedData.length} questions...`);
     
-    // Insert into DB
-    await GateQuestion.insertMany(formattedData);
+    // Idempotent upsert keyed by a stable hash of the question identity
+    const ops = formattedData.map(q => {
+      const sourceKey = crypto.createHash('sha1')
+        .update([q.subjectId, q.topicId, q.examYear, q.questionHtml].join('|'))
+        .digest('hex');
+      return {
+        updateOne: {
+          filter: { sourceKey },
+          update: { $set: { ...q, sourceKey } },
+          upsert: true
+        }
+      };
+    });
+    const result = await GateQuestion.bulkWrite(ops, { ordered: false });
+    console.log(`   inserted: ${result.upsertedCount}, updated: ${result.modifiedCount}`);
     
     console.log('✅ Data Imported Successfully!');
     process.exit();

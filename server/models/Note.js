@@ -109,6 +109,9 @@ const noteSchema = new mongoose.Schema({
 
 noteSchema.index({ subjectId: 1, status: 1 });
 noteSchema.index({ branchId: 1, semesterNumber: 1 });
+noteSchema.index({ status: 1, createdAt: -1 });
+noteSchema.index({ subjectId: 1, status: 1, createdAt: -1 });
+noteSchema.index({ uploaderId: 1, createdAt: -1 });
 noteSchema.index({ title: 'text', description: 'text', topic: 'text', tags: 'text' });
 
 module.exports = mongoose.model('Note', noteSchema);

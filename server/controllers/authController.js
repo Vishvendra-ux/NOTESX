@@ -139,6 +139,7 @@ const googleLogin = async (req, res) => {
           const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(rawToken)}`);
           if (resp.ok) {
             const data = await resp.json();
+            if (process.env.GOOGLE_CLIENT_ID && data.aud !== process.env.GOOGLE_CLIENT_ID) throw new Error('aud mismatch');
             verifiedEmail = data.email ? data.email.toLowerCase().trim() : null;
             verifiedName = data.name || verifiedName;
             verifiedPicture = data.picture || verifiedPicture;
@@ -149,7 +150,7 @@ const googleLogin = async (req, res) => {
 
     // In development mode only: allow explicit demo student accounts ONLY, NEVER allow impersonating arbitrary or admin accounts!
     if (!verifiedEmail) {
-      const isDevDemo = process.env.NODE_ENV !== 'production' && email && (
+      const isDevDemo = process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEMO_USER === 'true' && email && (
         email.toLowerCase().trim() === 'student.demo@notesx.edu' ||
         email.toLowerCase().trim() === 'student.google@gmail.com'
       );

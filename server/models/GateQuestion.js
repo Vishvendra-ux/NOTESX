@@ -18,10 +18,14 @@ const GateQuestionSchema = new mongoose.Schema({
   correctAnswer: { type: String, required: true },
   explanationHtml: { type: String },
 
+  // Stable identity so re-running an import updates instead of duplicating
+  sourceKey: { type: String },
+
   createdAt: { type: Date, default: Date.now }
 });
 
 // Index for fast querying by subject and topic
-GateQuestionSchema.index({ subjectId: 1, topicId: 1 });
+GateQuestionSchema.index({ subjectId: 1, topicId: 1, examYear: -1 });
+GateQuestionSchema.index({ sourceKey: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('GateQuestion', GateQuestionSchema);

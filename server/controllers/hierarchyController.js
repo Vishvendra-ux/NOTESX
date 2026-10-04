@@ -193,8 +193,8 @@ exports.getYears = async (req, res, next) => {
       years.push({
         yearNumber: yr,
         name: yrName,
-        subjectsCount: subjectsCount > 0 ? subjectsCount : 6,
-        notesCount: notesCount > 0 ? notesCount : Math.floor(Math.random() * 80) + 20
+        subjectsCount,
+        notesCount
       });
     }
 

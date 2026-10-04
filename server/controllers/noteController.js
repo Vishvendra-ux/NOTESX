@@ -155,7 +155,7 @@ exports.get = async (req, res, next) => {
       { $inc: { views: 1 } },
       { returnDocument: 'after' }
     )
-      .populate('uploaderId', 'name email profilePhoto collegeName course reputation badges')
+      .populate('uploaderId', 'name profilePhoto collegeName course reputation badges')
       .populate('subjectId', 'name code credits')
       .populate('branchId', 'name shortCode icon color')
       .populate('courseId', 'name durationYears');
@@ -309,9 +309,9 @@ exports.create = async (req, res, next) => {
       fileSize: req.file.size,
       status: 'approved', // Auto-approved so students see their uploaded notes immediately
       college: req.user.collegeName || 'Engineering Campus',
-      ratingAverage: 5.0,
-      ratingCount: 1,
-      downloadCount: 1,
+      ratingAverage: 0,
+      ratingCount: 0,
+      downloadCount: 0,
       views: 1
     });
 

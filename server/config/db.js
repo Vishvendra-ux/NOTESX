@@ -66,7 +66,10 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     await seedAdminUser();
-    await seedDemoStudentUser();
+    // Shared demo login is development-only; never created in production.
+    if (process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEMO_USER === 'true') {
+      await seedDemoStudentUser();
+    }
   } catch (error) {
     console.error(`Error: ${error.message}`);
     process.exit(1);

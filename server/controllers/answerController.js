@@ -27,11 +27,7 @@ exports.create = async (req, res, next) => {
     // Reward answerer
     await User.findByIdAndUpdate(req.user._id, { $inc: { reputation: 10 } });
 
-    // Update Doubt answersCount and activity timestamp
-    await Doubt.findByIdAndUpdate(doubtId, {
-      $inc: { answersCount: 1 },
-      lastActivityAt: new Date()
-    });
+    // answersCount / lastActivityAt are updated by the Answer post('save') hook
 
     const populated = await Answer.findById(answer._id)
       .populate('answererId', 'name profilePhoto reputation badges collegeName');

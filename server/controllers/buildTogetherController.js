@@ -80,6 +80,60 @@ function ensureBookingSlots(project) {
 }
 
 // Seed realistic sample collaboration projects if database is empty
+const ProjectApplication = require('../models/ProjectApplication');
+const Reaction = require('../models/Reaction');
+const Notification = require('../models/Notification');
+
+// Build the per-viewer view of a project list. Applications (which hold the
+// applicants' email / contact details) are only attached for the project's
+// creator / admin; every other viewer only ever sees their own application.
+async function decorateProjects(projects, user) {
+  const userIdStr = user ? user._id.toString() : null;
+  const isAdmin = user?.role === 'admin';
+  let appsByProject = new Map();
+  let upvotedIds = new Set();
+
+  if (user && projects.length) {
+    const ids = projects.map(p => p._id);
+    const ownedIds = projects
+      .filter(p => isAdmin || p.creatorId?.toString() === userIdStr)
+      .map(p => p._id);
+
+    const [apps, reactions] = await Promise.all([
+      ProjectApplication.find({
+        projectId: { $in: ids },
+        $or: [{ projectId: { $in: ownedIds } }, { applicantId: user._id }]
+      }).sort({ appliedAt: -1 }).lean(),
+      Reaction.find({ targetType: 'project', targetId: { $in: ids }, userId: user._id, kind: 'upvote' })
+        .select('targetId').lean()
+    ]);
+
+    apps.forEach(a => {
+      const key = a.projectId.toString();
+      if (!appsByProject.has(key)) appsByProject.set(key, []);
+      appsByProject.get(key).push(a);
+    });
+    upvotedIds = new Set(reactions.map(r => r.targetId.toString()));
+  }
+
+  return projects.map(p => {
+    const key = p._id.toString();
+    const isCreator = !!userIdStr && p.creatorId?.toString() === userIdStr;
+    const applications = appsByProject.get(key) || [];
+    const mine = userIdStr ? applications.find(a => a.applicantId?.toString() === userIdStr) : null;
+    return {
+      ...p,
+      bookingSlots: ensureBookingSlots(p),
+      applications: (isCreator || isAdmin) ? applications : (mine ? [mine] : []),
+      hasUpvoted: upvotedIds.has(key),
+      isCreator,
+      isMember: userIdStr ? !!p.members?.some(m => m.userId?.toString() === userIdStr) : false,
+      hasApplied: !!mine,
+      myApplication: mine || null
+    };
+  });
+}
+
 async function seedDefaultProjectsIfEmpty() {
   try {
     const count = await ProjectCollab.countDocuments();
@@ -336,8 +390,6 @@ async function seedDefaultProjectsIfEmpty() {
 // @access  Public
 exports.list = async (req, res, next) => {
   try {
-    await seedDefaultProjectsIfEmpty();
-
     const {
       search = '',
       category,
@@ -405,19 +457,7 @@ exports.list = async (req, res, next) => {
       ProjectCollab.countDocuments(query)
     ]);
 
-    const userIdStr = req.user ? req.user._id.toString() : null;
-    const formatted = projects.map(p => {
-      const slots = ensureBookingSlots(p);
-      return {
-        ...p,
-        bookingSlots: slots,
-        hasUpvoted: userIdStr ? p.upvotes?.some(id => id.toString() === userIdStr) : false,
-        isCreator: userIdStr ? (p.creatorId?.toString() === userIdStr) : false,
-        isMember: userIdStr ? p.members?.some(m => m.userId?.toString() === userIdStr) : false,
-        hasApplied: userIdStr ? p.applications?.some(a => a.applicantId?.toString() === userIdStr) : false,
-        myApplication: userIdStr ? p.applications?.find(a => a.applicantId?.toString() === userIdStr) : null
-      };
-    });
+    const formatted = await decorateProjects(projects, req.user);
 
     res.json({
       projects: formatted,
@@ -444,18 +484,8 @@ exports.get = async (req, res, next) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    const slots = ensureBookingSlots(project);
-    const userIdStr = req.user ? req.user._id.toString() : null;
-
-    res.json({
-      ...project,
-      bookingSlots: slots,
-      hasUpvoted: userIdStr ? project.upvotes?.some(id => id.toString() === userIdStr) : false,
-      isCreator: userIdStr ? (project.creatorId?.toString() === userIdStr) : false,
-      isMember: userIdStr ? project.members?.some(m => m.userId?.toString() === userIdStr) : false,
-      hasApplied: userIdStr ? project.applications?.some(a => a.applicantId?.toString() === userIdStr) : false,
-      myApplication: userIdStr ? project.applications?.find(a => a.applicantId?.toString() === userIdStr) : null
-    });
+    const [decorated] = await decorateProjects([project], req.user);
+    res.json(decorated);
   } catch (error) {
     next(error);
   }
@@ -585,7 +615,6 @@ exports.create = async (req, res, next) => {
         avatar: req.user.profilePhoto || '',
         joinedAt: new Date()
       }],
-      upvotes: [req.user._id],
       upvotesCount: 1
     });
 
@@ -632,19 +661,18 @@ exports.apply = async (req, res, next) => {
       return res.status(400).json({ message: 'You are already a confirmed member of this project squad' });
     }
 
-    // Check if user already has a pending application
-    const existingPending = project.applications.find(
-      a => a.applicantId && a.applicantId.equals(req.user._id) && a.status === 'pending'
-    );
+    const existingPending = await ProjectApplication.exists({
+      projectId: project._id, applicantId: req.user._id, status: 'pending'
+    });
     if (existingPending) {
       return res.status(400).json({
         message: 'You already have an active pending seat request for this project awaiting the pitcher’s review.'
       });
     }
 
-    // Ensure bookingSlots exists
     if (!project.bookingSlots || project.bookingSlots.length === 0) {
       project.bookingSlots = ensureBookingSlots(project);
+      await project.save();
     }
 
     let targetSlot = null;
@@ -662,27 +690,42 @@ exports.apply = async (req, res, next) => {
       ) || project.bookingSlots.find(s => s.status === 'available');
     }
 
-    project.applications.push({
-      slotNumber: targetSlot ? targetSlot.slotNumber : undefined,
-      slotRole: targetSlot ? targetSlot.roleTitle : roleApplied.trim(),
-      applicantId: req.user._id,
-      applicantName: req.user.name,
-      applicantCollege: req.user.collegeName || 'Campus Student',
-      applicantEmail: req.user.email,
-      applicantPhoneOrContact: applicantPhoneOrContact ? applicantPhoneOrContact.trim() : '',
-      applicantAvatar: req.user.profilePhoto || '',
-      roleApplied: roleApplied.trim(),
-      skillsSummary: skillsSummary ? skillsSummary.trim() : '',
-      pitchMessage: pitchMessage.trim(),
-      portfolioOrGithub: portfolioOrGithub ? portfolioOrGithub.trim() : (req.user.github || ''),
-      status: 'pending',
-      appliedAt: new Date()
+    try {
+      await ProjectApplication.create({
+        projectId: project._id,
+        slotNumber: targetSlot ? targetSlot.slotNumber : undefined,
+        slotRole: targetSlot ? targetSlot.roleTitle : roleApplied.trim(),
+        applicantId: req.user._id,
+        applicantName: req.user.name,
+        applicantCollege: req.user.collegeName || 'Campus Student',
+        applicantEmail: req.user.email,
+        applicantPhoneOrContact: applicantPhoneOrContact ? applicantPhoneOrContact.trim() : '',
+        applicantAvatar: req.user.profilePhoto || '',
+        roleApplied: roleApplied.trim(),
+        skillsSummary: skillsSummary ? skillsSummary.trim() : '',
+        pitchMessage: pitchMessage.trim(),
+        portfolioOrGithub: portfolioOrGithub ? portfolioOrGithub.trim() : (req.user.github || ''),
+        status: 'pending'
+      });
+    } catch (err) {
+      if (err.code === 11000) {
+        return res.status(400).json({ message: 'You already have an active pending seat request for this project.' });
+      }
+      throw err;
+    }
+
+    await Notification.create({
+      userId: project.creatorId,
+      type: 'application_received',
+      title: `${req.user.name} applied for a seat in "${project.title}"`,
+      link: `/build-together`,
+      actorId: req.user._id
     });
 
-    await project.save();
+    const [decorated] = await decorateProjects([project.toObject()], req.user);
     res.json({
       message: `Collaboration request for Seat #${targetSlot ? targetSlot.slotNumber : ''} submitted to the pitcher!`,
-      project
+      project: decorated
     });
   } catch (error) {
     next(error);
@@ -704,19 +747,24 @@ exports.toggleUpvote = async (req, res, next) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    const userId = req.user._id;
-    const index = project.upvotes.indexOf(userId);
-
-    if (index === -1) {
-      project.upvotes.push(userId);
-      project.upvotesCount = (project.upvotesCount || 0) + 1;
+    const key = { targetType: 'project', targetId: project._id, userId: req.user._id, kind: 'upvote' };
+    const removed = await Reaction.findOneAndDelete(key);
+    let hasUpvoted;
+    if (removed) {
+      hasUpvoted = false;
     } else {
-      project.upvotes.splice(index, 1);
-      project.upvotesCount = Math.max(0, (project.upvotesCount || 1) - 1);
+      try {
+        await Reaction.create(key);
+        hasUpvoted = true;
+      } catch (err) {
+        if (err.code !== 11000) throw err;
+        hasUpvoted = true; // concurrent duplicate click - already upvoted
+      }
     }
-
-    await project.save();
-    res.json({ upvotesCount: project.upvotesCount, hasUpvoted: index === -1 });
+    // Recount from source of truth instead of incrementing blindly
+    const upvotesCount = await Reaction.countDocuments({ targetType: 'project', targetId: project._id, kind: 'upvote' });
+    await ProjectCollab.updateOne({ _id: project._id }, { $set: { upvotesCount } });
+    res.json({ upvotesCount, hasUpvoted });
   } catch (error) {
     next(error);
   }
@@ -747,7 +795,9 @@ exports.manageApplication = async (req, res, next) => {
       return res.status(403).json({ message: 'Only the project pitcher can review and approve collaborator seat requests' });
     }
 
-    const application = project.applications.id(appId);
+    const application = appId.match(/^[0-9a-fA-F]{24}$/)
+      ? await ProjectApplication.findOne({ _id: appId, projectId: project._id })
+      : null;
     if (!application) {
       return res.status(404).json({ message: 'Application not found' });
     }
@@ -826,11 +876,22 @@ exports.manageApplication = async (req, res, next) => {
     }
 
     await project.save();
+    await application.save();
+    await Notification.create({
+      userId: application.applicantId,
+      type: action === 'accept' ? 'application_accepted' : 'application_declined',
+      title: action === 'accept'
+        ? `You were accepted into "${project.title}"`
+        : `Your request for "${project.title}" was declined`,
+      link: '/build-together',
+      actorId: req.user._id
+    });
+    const [decoratedProject] = await decorateProjects([project.toObject()], req.user);
     res.json({
       message: action === 'accept'
         ? `Seat #${application.slotNumber || ''} assigned to ${application.applicantName}! Seat is now filled.`
         : `Application from ${application.applicantName} declined.`,
-      project
+      project: decoratedProject
     });
   } catch (error) {
     next(error);
@@ -856,7 +917,12 @@ exports.delete = async (req, res, next) => {
       return res.status(403).json({ message: 'Not authorized to delete this project' });
     }
 
-    await project.deleteOne();
+    await Promise.all([
+      project.deleteOne(),
+      ProjectApplication.deleteMany({ projectId: project._id }),
+      Reaction.deleteMany({ targetType: 'project', targetId: project._id }),
+      require('../models/ProjectMessage').deleteMany({ project: project._id })
+    ]);
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     next(error);
@@ -891,3 +957,6 @@ exports.getMessages = async (req, res, next) => {
     next(error);
   }
 };
+
+// Dev-only helper, invoked by scripts/seedBuildTogether.js (never on GET)
+exports.seedDefaultProjectsIfEmpty = seedDefaultProjectsIfEmpty;

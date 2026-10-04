@@ -79,5 +79,7 @@ const subjectSchema = new mongoose.Schema({
 
 subjectSchema.index({ branchId: 1, semesterNumber: 1 });
 subjectSchema.index({ slug: 1 });
+// A subject code is unique within a branch (only enforced when a code is set)
+subjectSchema.index({ branchId: 1, code: 1 }, { unique: true, partialFilterExpression: { code: { $type: 'string' } } });
 
 module.exports = mongoose.model('Subject', subjectSchema);

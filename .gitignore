@@ -27,3 +27,7 @@ Thumbs.db
 # Uploads directory contents except .gitkeep
 server/uploads/*
 !server/uploads/.gitkeep
+
+# scraped snapshots
+/*.html
+gate_questions_scraped.json

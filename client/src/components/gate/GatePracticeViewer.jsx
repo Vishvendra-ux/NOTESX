@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { api } from '../../services/api';
 import { CheckCircle2, XCircle, ArrowLeft, Lightbulb, FileQuestion, RotateCcw } from 'lucide-react';
 
 const readStoredAnswers = (key) => {
@@ -28,8 +28,7 @@ export default function GatePracticeViewer({ subjectId, topicId, topicTitle, res
     const fetchQuestions = async () => {
       setLoading(true);
       try {
-        const url = `/api/gate/questions?subjectId=${subjectId}&topicId=${topicId || 'all'}`;
-        const res = await axios.get(import.meta.env.VITE_API_URL + url.replace('/api', ''));
+        const res = await api.get('/gate/questions', { params: { subjectId, topicId: topicId || 'all' } });
         setQuestions(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error('Failed to fetch GATE questions', err);

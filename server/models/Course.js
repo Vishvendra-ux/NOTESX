@@ -52,6 +52,6 @@ const courseSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-courseSchema.index({ categoryId: 1, slug: 1 });
+courseSchema.index({ categoryId: 1, slug: 1 }, { unique: true });
 
 module.exports = mongoose.model('Course', courseSchema);

@@ -134,31 +134,8 @@ const ProjectCollabSchema = new mongoose.Schema({
     avatar: String,
     joinedAt: { type: Date, default: Date.now },
   }],
-  applications: [{
-    slotNumber: { type: Number },
-    slotRole: { type: String },
-    applicantId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    applicantName: String,
-    applicantCollege: String,
-    applicantEmail: String,
-    applicantPhoneOrContact: String,
-    applicantAvatar: String,
-    roleApplied: String,
-    skillsSummary: String,
-    pitchMessage: String,
-    portfolioOrGithub: String,
-    status: {
-      type: String,
-      enum: ['pending', 'accepted', 'declined'],
-      default: 'pending'
-    },
-    appliedAt: { type: Date, default: Date.now },
-    reviewedAt: { type: Date }
-  }],
-  upvotes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
+  // NOTE: applications live in the ProjectApplication collection and
+  // per-user upvotes live in the Reaction collection (unbounded relations).
   upvotesCount: {
     type: Number,
     default: 0
@@ -166,5 +143,11 @@ const ProjectCollabSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+ProjectCollabSchema.index({ createdAt: -1 });
+ProjectCollabSchema.index({ upvotesCount: -1, createdAt: -1 });
+ProjectCollabSchema.index({ creatorId: 1, createdAt: -1 });
+ProjectCollabSchema.index({ 'members.userId': 1 });
+ProjectCollabSchema.index({ status: 1, category: 1, createdAt: -1 });
 
 module.exports = mongoose.model('ProjectCollab', ProjectCollabSchema);

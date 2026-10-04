@@ -14,6 +14,13 @@ const Note = require('../models/Note');
 const Review = require('../models/Review');
 const User = require('../models/User');
 
+// SAFETY: destructive reset. Refuses to run in production or without an explicit flag.
+if (process.env.NODE_ENV === 'production' || process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+  console.error('Refusing to run: this script DELETES existing data. Re-run in development with ALLOW_DESTRUCTIVE_SEED=true');
+  process.exit(1);
+}
+
+
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/notesx';
 
 const categoriesData = [
