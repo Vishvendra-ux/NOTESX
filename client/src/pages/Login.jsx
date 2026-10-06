@@ -14,7 +14,8 @@ export default function Login() {
   const { user, login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectPath = location.state?.from?.pathname || '/dashboard';
+  const rawRedirect = location.state?.from?.pathname || '/dashboard';
+  const redirectPath = rawRedirect === '/login' ? '/dashboard' : rawRedirect;
 
   // If already logged in, redirect straight to intended page or dashboard
   useEffect(() => {
