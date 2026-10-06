@@ -71,6 +71,96 @@ const GAME_THEMES = {
     border: 'hover:border-sky-500/50',
     accent: 'text-sky-600 dark:text-sky-400',
   },
+  'ludo-king': {
+    badge: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
+    bar: 'bg-gradient-to-r from-amber-400 via-rose-500 to-red-600',
+    border: 'hover:border-red-500/50',
+    accent: 'text-red-600 dark:text-red-400',
+  },
+  cs2: {
+    badge: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    bar: 'bg-gradient-to-r from-orange-500 to-amber-600',
+    border: 'hover:border-amber-500/50',
+    accent: 'text-amber-600 dark:text-amber-400',
+  },
+  'gta-v': {
+    badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+    bar: 'bg-gradient-to-r from-emerald-500 to-green-700',
+    border: 'hover:border-emerald-500/50',
+    accent: 'text-emerald-600 dark:text-emerald-400',
+  },
+  'ea-fc': {
+    badge: 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30',
+    bar: 'bg-gradient-to-r from-teal-500 to-emerald-600',
+    border: 'hover:border-teal-500/50',
+    accent: 'text-teal-600 dark:text-teal-400',
+  },
+  'rocket-league': {
+    badge: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
+    bar: 'bg-gradient-to-r from-blue-600 to-cyan-500',
+    border: 'hover:border-blue-500/50',
+    accent: 'text-blue-600 dark:text-blue-400',
+  },
+  'brawl-stars': {
+    badge: 'bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/30',
+    bar: 'bg-gradient-to-r from-purple-500 to-pink-600',
+    border: 'hover:border-fuchsia-500/50',
+    accent: 'text-fuchsia-600 dark:text-fuchsia-400',
+  },
+  'stumble-guys': {
+    badge: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
+    bar: 'bg-gradient-to-r from-fuchsia-500 to-violet-600',
+    border: 'hover:border-purple-500/50',
+    accent: 'text-purple-600 dark:text-purple-400',
+  },
+  geoguessr: {
+    badge: 'bg-lime-500/15 text-lime-700 dark:text-lime-300 border-lime-500/30',
+    bar: 'bg-gradient-to-r from-lime-500 to-green-600',
+    border: 'hover:border-lime-500/50',
+    accent: 'text-lime-600 dark:text-lime-400',
+  },
+  'genshin-impact': {
+    badge: 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30',
+    bar: 'bg-gradient-to-r from-sky-400 to-indigo-500',
+    border: 'hover:border-sky-500/50',
+    accent: 'text-sky-600 dark:text-sky-400',
+  },
+  'apex-legends': {
+    badge: 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30',
+    bar: 'bg-gradient-to-r from-red-600 to-amber-600',
+    border: 'hover:border-red-500/50',
+    accent: 'text-red-600 dark:text-red-400',
+  },
+  roblox: {
+    badge: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30',
+    bar: 'bg-gradient-to-r from-rose-600 to-pink-500',
+    border: 'hover:border-rose-500/50',
+    accent: 'text-rose-600 dark:text-rose-400',
+  },
+  phasmophobia: {
+    badge: 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border-zinc-500/30',
+    bar: 'bg-gradient-to-r from-zinc-700 to-slate-900',
+    border: 'hover:border-zinc-500/50',
+    accent: 'text-zinc-600 dark:text-zinc-400',
+  },
+  'asphalt-9': {
+    badge: 'bg-pink-500/15 text-pink-700 dark:text-pink-300 border-pink-500/30',
+    bar: 'bg-gradient-to-r from-fuchsia-600 to-rose-600',
+    border: 'hover:border-pink-500/50',
+    accent: 'text-pink-600 dark:text-pink-400',
+  },
+  'pokemon-unite': {
+    badge: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30',
+    bar: 'bg-gradient-to-r from-amber-400 to-yellow-500',
+    border: 'hover:border-yellow-500/50',
+    accent: 'text-yellow-600 dark:text-yellow-400',
+  },
+  'league-of-legends': {
+    badge: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
+    bar: 'bg-gradient-to-r from-blue-600 to-indigo-800',
+    border: 'hover:border-indigo-500/50',
+    accent: 'text-indigo-600 dark:text-indigo-400',
+  },
 };
 
 const DEFAULT_THEME = {

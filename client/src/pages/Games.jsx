@@ -77,6 +77,7 @@ export default function Games() {
   const [selectedGameFilter, setSelectedGameFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [famousCategoryFilter, setFamousCategoryFilter] = useState('all');
 
   // Modal State
   const [isHostModalOpen, setIsHostModalOpen] = useState(false);
@@ -313,8 +314,12 @@ export default function Games() {
               Find college teammates, post your custom <strong>Room ID & Password</strong> for{' '}
               <span className="text-amber-300 font-semibold">BGMI</span>,{' '}
               <span className="text-rose-400 font-semibold">Valorant</span>,{' '}
-              <span className="text-yellow-400 font-semibold">Free Fire</span>,{' '}
-              <span className="text-emerald-300 font-semibold">Chess</span>, or jump into games together during study breaks!
+              <span className="text-red-400 font-semibold">Ludo King</span>,{' '}
+              <span className="text-emerald-400 font-semibold">GTA V</span>,{' '}
+              <span className="text-teal-300 font-semibold">EA FC</span>,{' '}
+              <span className="text-blue-400 font-semibold">Rocket League</span>,{' '}
+              <span className="text-lime-300 font-semibold">GeoGuessr</span>, or{' '}
+              <span className="text-emerald-300 font-semibold">Chess</span>!
             </p>
 
             {/* Quick Stats Banner */}
@@ -552,27 +557,98 @@ export default function Games() {
       {/* ================= TAB 2: FAMOUS GAMES CATALOG ================= */}
       {activeTab === 'famous' && (
         <section aria-labelledby="famous-games-heading" className="space-y-6">
-          <div>
-            <h2 id="famous-games-heading" className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              Famous Games Played by College Students
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-              Select any game to view its active rooms, or host a fresh custom room with your room ID and password.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 id="famous-games-heading" className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                Famous Games Played by College Students
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                Explore {famousGames.length} popular titles across competitive, sports, party, and casual genres.
+              </p>
+            </div>
+          </div>
+
+          {/* Genre Category Pills */}
+          <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
+            {[
+              { id: 'all', label: `All Games (${famousGames.length})` },
+              { id: 'Shooter', label: '🎯 Shooters & Battle Royale' },
+              { id: 'Board', label: '🎲 Board & Strategy' },
+              { id: 'Sports', label: '⚽ Sports & Racing' },
+              { id: 'OpenWorld', label: '🌍 Open World & Co-op' },
+              { id: 'Party', label: '🎉 Party & Casual' },
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setFamousCategoryFilter(cat.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  famousCategoryFilter === cat.id
+                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {famousGames.map((game) => (
-              <FamousGameCard
-                key={game.id}
-                game={game}
-                onSelectFilter={(id) => {
-                  setSelectedGameFilter(id);
-                  setActiveTab('rooms');
-                }}
-                onHostForGame={(id) => handleOpenHostModal(id)}
-              />
-            ))}
+            {famousGames
+              .filter((g) => {
+                if (famousCategoryFilter === 'all') return true;
+                if (famousCategoryFilter === 'Shooter') {
+                  return (
+                    g.category.includes('Battle Royale') ||
+                    g.category.includes('FPS') ||
+                    g.category.includes('Shooter')
+                  );
+                }
+                if (famousCategoryFilter === 'Board') {
+                  return (
+                    g.category.includes('Board') ||
+                    g.category.includes('Strategy') ||
+                    g.category.includes('Mind') ||
+                    g.category.includes('Trivia')
+                  );
+                }
+                if (famousCategoryFilter === 'Sports') {
+                  return (
+                    g.category.includes('Sports') ||
+                    g.category.includes('Football') ||
+                    g.category.includes('Vehicular') ||
+                    g.category.includes('Racing')
+                  );
+                }
+                if (famousCategoryFilter === 'OpenWorld') {
+                  return (
+                    g.category.includes('Open World') ||
+                    g.category.includes('RPG') ||
+                    g.category.includes('Survival') ||
+                    g.category.includes('Horror')
+                  );
+                }
+                if (famousCategoryFilter === 'Party') {
+                  return (
+                    g.category.includes('Party') ||
+                    g.category.includes('Casual') ||
+                    g.category.includes('Social') ||
+                    g.category.includes('MOBA') ||
+                    g.category.includes('Sandbox')
+                  );
+                }
+                return true;
+              })
+              .map((game) => (
+                <FamousGameCard
+                  key={game.id}
+                  game={game}
+                  onSelectFilter={(id) => {
+                    setSelectedGameFilter(id);
+                    setActiveTab('rooms');
+                  }}
+                  onHostForGame={(id) => handleOpenHostModal(id)}
+                />
+              ))}
           </div>
         </section>
       )}
