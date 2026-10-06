@@ -73,6 +73,15 @@ module.exports = (io) => {
       }
     });
 
+    // Join the live game lobby room for real-time room sharing
+    socket.on('join_game_lobby', () => {
+      socket.join('game_lobby');
+    });
+
+    socket.on('leave_game_lobby', () => {
+      socket.leave('game_lobby');
+    });
+
     socket.on('disconnect', () => {
       console.log(`User ${socket.user?.name} disconnected: ${socket.id}`);
     });

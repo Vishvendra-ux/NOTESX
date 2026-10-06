@@ -142,6 +142,7 @@ const ProjectCollabSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true,
+  optimisticConcurrency: true,
 });
 
 ProjectCollabSchema.index({ createdAt: -1 });

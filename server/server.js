@@ -34,6 +34,8 @@ const io = socketIo(server, {
   }
 });
 
+app.set('io', io);
+
 setupSocket(io);
 
 server.listen(PORT, () => {

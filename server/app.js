@@ -78,6 +78,7 @@ app.use('/api/comments', require('./routes/comments'));
 app.use('/api/roadmaps', require('./routes/roadmaps'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/build-together', require('./routes/buildTogether'));
+app.use('/api/games', require('./routes/games'));
 
 // Basic Route
 app.get('/', (req, res) => {

@@ -1,5 +1,6 @@
 const ProjectCollab = require('../models/ProjectCollab');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 const escapeRegex = (s) => String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -652,6 +653,10 @@ exports.apply = async (req, res, next) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
+    if (project.status !== 'Looking for Members') {
+      return res.status(409).json({ message: 'This project is no longer accepting applications.' });
+    }
+
     if (project.creatorId.equals(req.user._id)) {
       return res.status(400).json({ message: 'You are the creator of this project. You already occupy Seat #1!' });
     }
@@ -681,13 +686,17 @@ exports.apply = async (req, res, next) => {
       if (!targetSlot) {
         return res.status(404).json({ message: `Slot #${slotNumber} was not found on this project.` });
       }
-      if (targetSlot.status === 'reserved') {
-        return res.status(409).json({ message: `Seat #${slotNumber} (${targetSlot.roleTitle}) has already been booked and confirmed.` });
+      if (targetSlot.status !== 'available') {
+        return res.status(409).json({ message: `Seat #${slotNumber} (${targetSlot.roleTitle}) is no longer available.` });
       }
     } else {
       targetSlot = project.bookingSlots.find(
         s => s.status === 'available' && s.roleTitle.toLowerCase().includes(roleApplied.toLowerCase())
       ) || project.bookingSlots.find(s => s.status === 'available');
+    }
+
+    if (!targetSlot) {
+      return res.status(409).json({ message: 'There are no available collaboration seats on this project.' });
     }
 
     try {
@@ -807,6 +816,10 @@ exports.manageApplication = async (req, res, next) => {
     }
 
     if (action === 'accept') {
+      if (project.status !== 'Looking for Members') {
+        return res.status(409).json({ message: 'This project is no longer accepting collaborators.' });
+      }
+
       // Ensure bookingSlots exists
       if (!project.bookingSlots || project.bookingSlots.length === 0) {
         project.bookingSlots = ensureBookingSlots(project);
@@ -816,9 +829,11 @@ exports.manageApplication = async (req, res, next) => {
       let slotToFill = null;
       if (application.slotNumber) {
         slotToFill = project.bookingSlots.find(s => s.slotNumber === application.slotNumber);
-      }
-      if (!slotToFill || slotToFill.status === 'reserved') {
-        // Fallback: match by role title or first available slot
+        if (!slotToFill || slotToFill.status !== 'available') {
+          return res.status(409).json({ message: 'The seat requested by this applicant is no longer available.' });
+        }
+      } else {
+        // Legacy applications without a slot number may still be matched by role.
         slotToFill = project.bookingSlots.find(
           s => s.status === 'available' && s.roleTitle.toLowerCase().includes(application.roleApplied.toLowerCase())
         ) || project.bookingSlots.find(s => s.status === 'available');
@@ -894,6 +909,9 @@ exports.manageApplication = async (req, res, next) => {
       project: decoratedProject
     });
   } catch (error) {
+    if (error instanceof mongoose.Error.VersionError) {
+      return res.status(409).json({ message: 'Project capacity changed while reviewing this request. Refresh and try again.' });
+    }
     next(error);
   }
 };

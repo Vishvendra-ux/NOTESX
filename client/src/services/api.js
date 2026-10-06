@@ -96,3 +96,13 @@ export const buildTogetherService = {
   getMessages: (id) => api.get(`/build-together/${id}/messages`),
 };
 
+export const gameService = {
+  getFamousGames: () => api.get('/games/famous'),
+  getRooms: (params) => api.get('/games/rooms', { params }),
+  createRoom: (data) => api.post('/games/rooms', data),
+  joinRoom: (id) => api.post(`/games/rooms/${id}/join`),
+  leaveRoom: (id) => api.post(`/games/rooms/${id}/leave`),
+  updateRoomStatus: (id, data) => api.patch(`/games/rooms/${id}/status`, data),
+  deleteRoom: (id) => api.delete(`/games/rooms/${id}`),
+};
+
