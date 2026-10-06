@@ -1,8 +1,10 @@
 import Navbar from '../components/Navbar';
 import AIAssistant from '../components/AIAssistant';
+import PageLoader from '../components/PageLoader';
 import { Outlet } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Compass, Target, MessageCircle, UserRound } from 'lucide-react';
+import { Suspense } from 'react';
 
 function MobileBottomNav() {
   const { pathname } = useLocation();
@@ -17,7 +19,9 @@ export default function MainLayout() {
       <div className="fixed inset-0 radial-gradient-bg pointer-events-none -z-10"></div>
       <Navbar />
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8 animate-fade-in">
-        <Outlet />
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
       
       <AIAssistant />

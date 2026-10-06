@@ -2,6 +2,7 @@ const Doubt = require('../models/Doubt');
 const Answer = require('../models/Answer');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
+const escapeRegex = require('../utils/escapeRegex');
 
 // @desc    Get all doubts with GateOverflow filtering, sorting & search
 // @route   GET /api/doubts
@@ -29,7 +30,7 @@ exports.list = async (req, res, next) => {
 
     // Filter by Subject
     if (subject && subject !== 'All') {
-      query.subjectName = { $regex: new RegExp(`^${subject}$`, 'i') };
+      query.subjectName = { $regex: new RegExp(`^${escapeRegex(subject)}$`, 'i') };
     }
 
     // Filter by Tag
@@ -70,8 +71,9 @@ exports.list = async (req, res, next) => {
       sortOption = { createdAt: -1 };
     }
 
-    const skip = (Math.max(1, parseInt(page, 10)) - 1) * parseInt(limit, 10);
-    const take = parseInt(limit, 10);
+    // Clamp pagination so a huge ?limit= can't dump the whole collection
+    const take = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
+    const skip = (Math.max(1, parseInt(page, 10) || 1) - 1) * take;
 
     const [doubts, total] = await Promise.all([
       Doubt.find(query)
@@ -279,42 +281,51 @@ exports.deleteDoubt = async (req, res, next) => {
 // @access  Private
 exports.upvote = async (req, res, next) => {
   try {
-    const doubt = await Doubt.findById(req.params.id);
+    const doubtId = req.params.id;
+    const userId = req.user._id;
+    const doubt = await Doubt.findById(doubtId).select('askerId').lean();
     if (!doubt) return res.status(404).json({ message: 'Doubt not found' });
 
-    const userId = req.user._id.toString();
-    const upvotedByIndex = doubt.upvotedBy.findIndex(id => id.toString() === userId);
-    const downvotedByIndex = doubt.downvotedBy.findIndex(id => id.toString() === userId);
+    const askerId = doubt.askerId;
 
-    if (upvotedByIndex !== -1) {
-      // Toggle off upvote
-      doubt.upvotedBy.splice(upvotedByIndex, 1);
-      doubt.upvotes = Math.max(0, doubt.upvotes - 1);
-      await User.findByIdAndUpdate(doubt.askerId, { $inc: { reputation: -5 } });
+    // Atomic toggle: first try to withdraw an existing upvote
+    const withdrawn = await Doubt.updateOne(
+      { _id: doubtId, upvotedBy: userId },
+      { $pull: { upvotedBy: userId }, $inc: { upvotes: -1 }, $set: { lastActivityAt: new Date() } }
+    );
+
+    if (withdrawn.modifiedCount > 0) {
+      await User.findByIdAndUpdate(askerId, { $inc: { reputation: -5 } });
     } else {
-      // Add upvote
-      doubt.upvotedBy.push(userId);
-      doubt.upvotes += 1;
+      // Guarded add: the $ne filter is re-evaluated under Mongo's document lock,
+      // so concurrent double-clicks cannot double-count
+      const added = await Doubt.updateOne(
+        { _id: doubtId, upvotedBy: { $ne: userId } },
+        { $addToSet: { upvotedBy: userId }, $inc: { upvotes: 1 }, $set: { lastActivityAt: new Date() } }
+      );
+      if (added.modifiedCount > 0) {
+        await User.findByIdAndUpdate(askerId, { $inc: { reputation: 5 } });
 
-      // If previously downvoted, remove downvote
-      if (downvotedByIndex !== -1) {
-        doubt.downvotedBy.splice(downvotedByIndex, 1);
-        doubt.downvotes = Math.max(0, doubt.downvotes - 1);
-        await User.findByIdAndUpdate(doubt.askerId, { $inc: { reputation: 2 } });
+        // If the user had downvoted before, remove that vote too
+        const cleared = await Doubt.updateOne(
+          { _id: doubtId, downvotedBy: userId },
+          { $pull: { downvotedBy: userId }, $inc: { downvotes: -1 } }
+        );
+        if (cleared.modifiedCount > 0) {
+          await User.findByIdAndUpdate(askerId, { $inc: { reputation: 2 } });
+        }
       }
-
-      await User.findByIdAndUpdate(doubt.askerId, { $inc: { reputation: 5 } });
     }
 
-    await doubt.save();
-
+    const fresh = await Doubt.findById(doubtId).select('upvotes downvotes upvotedBy downvotedBy').lean();
+    const uid = userId.toString();
     res.json({
       _id: doubt._id,
-      upvotes: doubt.upvotes,
-      downvotes: doubt.downvotes,
-      netVotes: doubt.upvotes - doubt.downvotes,
-      hasUpvoted: doubt.upvotedBy.some(id => id.toString() === userId),
-      hasDownvoted: doubt.downvotedBy.some(id => id.toString() === userId)
+      upvotes: fresh.upvotes,
+      downvotes: fresh.downvotes,
+      netVotes: (fresh.upvotes || 0) - (fresh.downvotes || 0),
+      hasUpvoted: fresh.upvotedBy.some(id => id.toString() === uid),
+      hasDownvoted: fresh.downvotedBy.some(id => id.toString() === uid)
     });
   } catch (error) {
     next(error);
@@ -326,42 +337,49 @@ exports.upvote = async (req, res, next) => {
 // @access  Private
 exports.downvote = async (req, res, next) => {
   try {
-    const doubt = await Doubt.findById(req.params.id);
+    const doubtId = req.params.id;
+    const userId = req.user._id;
+    const doubt = await Doubt.findById(doubtId).select('askerId').lean();
     if (!doubt) return res.status(404).json({ message: 'Doubt not found' });
 
-    const userId = req.user._id.toString();
-    const upvotedByIndex = doubt.upvotedBy.findIndex(id => id.toString() === userId);
-    const downvotedByIndex = doubt.downvotedBy.findIndex(id => id.toString() === userId);
+    const askerId = doubt.askerId;
 
-    if (downvotedByIndex !== -1) {
-      // Toggle off downvote
-      doubt.downvotedBy.splice(downvotedByIndex, 1);
-      doubt.downvotes = Math.max(0, doubt.downvotes - 1);
-      await User.findByIdAndUpdate(doubt.askerId, { $inc: { reputation: 2 } });
+    // Atomic toggle: first try to withdraw an existing downvote
+    const withdrawn = await Doubt.updateOne(
+      { _id: doubtId, downvotedBy: userId },
+      { $pull: { downvotedBy: userId }, $inc: { downvotes: -1 }, $set: { lastActivityAt: new Date() } }
+    );
+
+    if (withdrawn.modifiedCount > 0) {
+      await User.findByIdAndUpdate(askerId, { $inc: { reputation: 2 } });
     } else {
-      // Add downvote
-      doubt.downvotedBy.push(userId);
-      doubt.downvotes += 1;
+      const added = await Doubt.updateOne(
+        { _id: doubtId, downvotedBy: { $ne: userId } },
+        { $addToSet: { downvotedBy: userId }, $inc: { downvotes: 1 }, $set: { lastActivityAt: new Date() } }
+      );
+      if (added.modifiedCount > 0) {
+        await User.findByIdAndUpdate(askerId, { $inc: { reputation: -2 } });
 
-      // If previously upvoted, remove upvote
-      if (upvotedByIndex !== -1) {
-        doubt.upvotedBy.splice(upvotedByIndex, 1);
-        doubt.upvotes = Math.max(0, doubt.upvotes - 1);
-        await User.findByIdAndUpdate(doubt.askerId, { $inc: { reputation: -5 } });
+        // If the user had upvoted before, remove that vote too
+        const cleared = await Doubt.updateOne(
+          { _id: doubtId, upvotedBy: userId },
+          { $pull: { upvotedBy: userId }, $inc: { upvotes: -1 } }
+        );
+        if (cleared.modifiedCount > 0) {
+          await User.findByIdAndUpdate(askerId, { $inc: { reputation: -5 } });
+        }
       }
-
-      await User.findByIdAndUpdate(doubt.askerId, { $inc: { reputation: -2 } });
     }
 
-    await doubt.save();
-
+    const fresh = await Doubt.findById(doubtId).select('upvotes downvotes upvotedBy downvotedBy').lean();
+    const uid = userId.toString();
     res.json({
       _id: doubt._id,
-      upvotes: doubt.upvotes,
-      downvotes: doubt.downvotes,
-      netVotes: doubt.upvotes - doubt.downvotes,
-      hasUpvoted: doubt.upvotedBy.some(id => id.toString() === userId),
-      hasDownvoted: doubt.downvotedBy.some(id => id.toString() === userId)
+      upvotes: fresh.upvotes,
+      downvotes: fresh.downvotes,
+      netVotes: (fresh.upvotes || 0) - (fresh.downvotes || 0),
+      hasUpvoted: fresh.upvotedBy.some(id => id.toString() === uid),
+      hasDownvoted: fresh.downvotedBy.some(id => id.toString() === uid)
     });
   } catch (error) {
     next(error);
@@ -373,23 +391,32 @@ exports.downvote = async (req, res, next) => {
 // @access  Private
 exports.toggleBookmark = async (req, res, next) => {
   try {
-    const doubt = await Doubt.findById(req.params.id);
-    if (!doubt) return res.status(404).json({ message: 'Doubt not found' });
+    const doubtId = req.params.id;
+    const userId = req.user._id;
+    const exists = await Doubt.findById(doubtId).select('_id').lean();
+    if (!exists) return res.status(404).json({ message: 'Doubt not found' });
 
-    const userId = req.user._id.toString();
-    const isBookmarked = doubt.bookmarkedBy.some(id => id.toString() === userId);
+    const removed = await Doubt.updateOne(
+      { _id: doubtId, bookmarkedBy: userId },
+      { $pull: { bookmarkedBy: userId } }
+    );
 
-    if (isBookmarked) {
-      doubt.bookmarkedBy = doubt.bookmarkedBy.filter(id => id.toString() !== userId);
+    let isBookmarked;
+    if (removed.modifiedCount > 0) {
+      isBookmarked = false;
     } else {
-      doubt.bookmarkedBy.push(userId);
+      await Doubt.updateOne(
+        { _id: doubtId, bookmarkedBy: { $ne: userId } },
+        { $addToSet: { bookmarkedBy: userId } }
+      );
+      isBookmarked = true;
     }
 
-    await doubt.save();
+    const fresh = await Doubt.findById(doubtId).select('bookmarkedBy').lean();
     res.json({
       _id: doubt._id,
-      isBookmarked: !isBookmarked,
-      bookmarksCount: doubt.bookmarkedBy.length
+      isBookmarked,
+      bookmarksCount: fresh.bookmarkedBy.length
     });
   } catch (error) {
     next(error);

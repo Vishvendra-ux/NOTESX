@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Compass, Search, ArrowRight, ArrowLeft, CheckCircle2, Circle, Clock,
@@ -90,7 +90,9 @@ function RoadmapDirectory() {
     fetchRoadmaps();
   }, [selectedType, selectedCategory, selectedDifficulty]);
 
+  const fetchSeq = useRef(0);
   const fetchRoadmaps = async () => {
+    const seq = ++fetchSeq.current;
     setLoading(true);
     setError('');
     try {
@@ -100,12 +102,14 @@ function RoadmapDirectory() {
       if (selectedDifficulty !== 'All Levels') params.difficulty = selectedDifficulty;
 
       const res = await roadmapService.list(params);
+      if (seq !== fetchSeq.current) return; // a newer request superseded this one
       setRoadmaps(res.data || []);
     } catch (err) {
+      if (seq !== fetchSeq.current) return;
       console.error('Failed to load roadmaps:', err);
       setError('Could not load career roadmaps. Please try again.');
     } finally {
-      setLoading(false);
+      if (seq === fetchSeq.current) setLoading(false);
     }
   };
 

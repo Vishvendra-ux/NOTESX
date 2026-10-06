@@ -8,6 +8,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// A 401 outside the auth flow means the stored token expired or was revoked:
+// clear it and send the user to login instead of failing silently forever.
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const url = String(err.config?.url || '');
+    if (err.response?.status === 401 && !url.startsWith('/auth/')) {
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(err);
+  }
+);
+
 export const collegeService = { list: (params) => api.get('/colleges', { params }), get: (id) => api.get(`/colleges/${id}`) };
 export const authService = { login: (data) => api.post('/auth/login', data), register: (data) => api.post('/auth/register', data), me: () => api.get('/auth/me') };
 
@@ -69,7 +85,8 @@ export const doubtService = {
 export const questionService = { list: (params) => api.get('/questions', { params }), create: (data) => api.post('/questions', data) };
 export const contestService = { list: () => api.get('/contests'), get: (id) => api.get(`/contests/${id}`) };
 export const userService = { me: () => api.get('/users/me'), profile: (username) => api.get(`/users/${username}`) };
-export const aiService = { ask: (data) => api.post('/ai/chat', data) };
+// LLM-backed calls can legitimately take longer than the default 10s timeout
+export const aiService = { ask: (data) => api.post('/ai/chat', data, { timeout: 60000 }) };
 export const roadmapService = {
   list: (params) => api.get('/roadmaps', { params }),
   categories: () => api.get('/roadmaps/categories'),

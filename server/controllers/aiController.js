@@ -2,6 +2,7 @@ const Note = require('../models/Note');
 const Roadmap = require('../models/Roadmap');
 const Doubt = require('../models/Doubt');
 const Subject = require('../models/Subject');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Stop words to filter out for cleaner keyword extraction
 const STOP_WORDS = new Set([
@@ -211,7 +212,9 @@ exports.ask = async (req, res, next) => {
     }
 
     const keywords = extractKeywords(prompt);
-    const regexPattern = keywords.length > 0 ? keywords.join('|') : prompt;
+    // Escape before compiling: raw user input in RegExp breaks on special
+    // characters ("???") and crafted patterns can stall the event loop.
+    const regexPattern = keywords.length > 0 ? keywords.map(escapeRegex).join('|') : escapeRegex(prompt);
     const keywordRegex = new RegExp(regexPattern, 'i');
 
     // 1. Parallel search in Notes, Roadmaps, and Doubts
@@ -223,7 +226,7 @@ exports.ask = async (req, res, next) => {
           { description: { $regex: keywordRegex } },
           { topic: { $regex: keywordRegex } },
           { subject: { $regex: keywordRegex } },
-          { tags: { $in: keywords.map(k => new RegExp(`^${k}`, 'i')) } }
+          { tags: { $in: keywords.map(k => new RegExp(`^${escapeRegex(k)}`, 'i')) } }
         ]
       })
       .select('title description subject unit topic college fileUrl fileType ratingAverage downloadCount tags')
@@ -234,7 +237,7 @@ exports.ask = async (req, res, next) => {
         $or: [
           { title: { $regex: keywordRegex } },
           { category: { $regex: keywordRegex } },
-          { tags: { $in: keywords.map(k => new RegExp(`^${k}`, 'i')) } }
+          { tags: { $in: keywords.map(k => new RegExp(`^${escapeRegex(k)}`, 'i')) } }
         ]
       }).select('title category description stages slug'),
 
@@ -242,7 +245,7 @@ exports.ask = async (req, res, next) => {
         $or: [
           { title: { $regex: keywordRegex } },
           { subject: { $regex: keywordRegex } },
-          { tags: { $in: keywords.map(k => new RegExp(`^${k}`, 'i')) } }
+          { tags: { $in: keywords.map(k => new RegExp(`^${escapeRegex(k)}`, 'i')) } }
         ]
       })
       .select('title subject isResolved upvoteCount')
@@ -265,7 +268,7 @@ exports.ask = async (req, res, next) => {
     // Prepare context block for LLM / Engine
     const contextSummary = [
       matchedNotes.length ? `Matching Notes:\n${matchedNotes.map(n => `- Title: "${n.title}", Subject: ${n.subject}, Unit: ${n.unit}, Description: ${n.description}`).join('\n')}` : '',
-      matchedRoadmaps ? `Matching Career Roadmap: "${matchedRoadmaps.title}" (${matchedRoadmaps.domain})\nDescription: ${matchedRoadmaps.description}` : '',
+      matchedRoadmaps ? `Matching Career Roadmap: "${matchedRoadmaps.title}" (${matchedRoadmaps.category})\nDescription: ${matchedRoadmaps.description}` : '',
       matchedDoubts.length ? `Related Questions: ${matchedDoubts.map(d => `"${d.title}" (${d.subject})`).join(', ')}` : ''
     ].filter(Boolean).join('\n\n');
 
@@ -285,7 +288,7 @@ exports.ask = async (req, res, next) => {
       matchedRoadmap: matchedRoadmaps ? {
         id: String(matchedRoadmaps._id),
         title: matchedRoadmaps.title,
-        domain: matchedRoadmaps.domain,
+        category: matchedRoadmaps.category,
         slug: matchedRoadmaps.slug
       } : null,
       provider

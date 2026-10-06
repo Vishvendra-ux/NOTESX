@@ -81,39 +81,49 @@ exports.list = async (req, res, next) => {
 // @access  Private
 exports.upvote = async (req, res, next) => {
   try {
-    const answer = await Answer.findById(req.params.id);
+    const answerId = req.params.id;
+    const userId = req.user._id;
+    const answer = await Answer.findById(answerId).select('answererId').lean();
     if (!answer) return res.status(404).json({ message: 'Answer not found' });
 
-    const userId = req.user._id.toString();
-    const upvotedByIndex = answer.upvotedBy.findIndex(id => id.toString() === userId);
-    const downvotedByIndex = answer.downvotedBy.findIndex(id => id.toString() === userId);
+    const answererId = answer.answererId;
 
-    if (upvotedByIndex !== -1) {
-      answer.upvotedBy.splice(upvotedByIndex, 1);
-      answer.upvotes = Math.max(0, answer.upvotes - 1);
-      await User.findByIdAndUpdate(answer.answererId, { $inc: { reputation: -10 } });
+    // Atomic toggle: first try to withdraw an existing upvote
+    const withdrawn = await Answer.updateOne(
+      { _id: answerId, upvotedBy: userId },
+      { $pull: { upvotedBy: userId }, $inc: { upvotes: -1 } }
+    );
+
+    if (withdrawn.modifiedCount > 0) {
+      await User.findByIdAndUpdate(answererId, { $inc: { reputation: -10 } });
     } else {
-      answer.upvotedBy.push(userId);
-      answer.upvotes += 1;
+      const added = await Answer.updateOne(
+        { _id: answerId, upvotedBy: { $ne: userId } },
+        { $addToSet: { upvotedBy: userId }, $inc: { upvotes: 1 } }
+      );
+      if (added.modifiedCount > 0) {
+        await User.findByIdAndUpdate(answererId, { $inc: { reputation: 10 } });
 
-      if (downvotedByIndex !== -1) {
-        answer.downvotedBy.splice(downvotedByIndex, 1);
-        answer.downvotes = Math.max(0, answer.downvotes - 1);
-        await User.findByIdAndUpdate(answer.answererId, { $inc: { reputation: 2 } });
+        // If the user had downvoted before, remove that vote too
+        const cleared = await Answer.updateOne(
+          { _id: answerId, downvotedBy: userId },
+          { $pull: { downvotedBy: userId }, $inc: { downvotes: -1 } }
+        );
+        if (cleared.modifiedCount > 0) {
+          await User.findByIdAndUpdate(answererId, { $inc: { reputation: 2 } });
+        }
       }
-
-      await User.findByIdAndUpdate(answer.answererId, { $inc: { reputation: 10 } });
     }
 
-    await answer.save();
-
+    const fresh = await Answer.findById(answerId).select('upvotes downvotes upvotedBy downvotedBy').lean();
+    const uid = userId.toString();
     res.json({
       _id: answer._id,
-      upvotes: answer.upvotes,
-      downvotes: answer.downvotes,
-      netVotes: answer.upvotes - answer.downvotes,
-      hasUpvoted: answer.upvotedBy.some(id => id.toString() === userId),
-      hasDownvoted: answer.downvotedBy.some(id => id.toString() === userId)
+      upvotes: fresh.upvotes,
+      downvotes: fresh.downvotes,
+      netVotes: (fresh.upvotes || 0) - (fresh.downvotes || 0),
+      hasUpvoted: fresh.upvotedBy.some(id => id.toString() === uid),
+      hasDownvoted: fresh.downvotedBy.some(id => id.toString() === uid)
     });
   } catch (error) {
     next(error);
@@ -125,39 +135,49 @@ exports.upvote = async (req, res, next) => {
 // @access  Private
 exports.downvote = async (req, res, next) => {
   try {
-    const answer = await Answer.findById(req.params.id);
+    const answerId = req.params.id;
+    const userId = req.user._id;
+    const answer = await Answer.findById(answerId).select('answererId').lean();
     if (!answer) return res.status(404).json({ message: 'Answer not found' });
 
-    const userId = req.user._id.toString();
-    const upvotedByIndex = answer.upvotedBy.findIndex(id => id.toString() === userId);
-    const downvotedByIndex = answer.downvotedBy.findIndex(id => id.toString() === userId);
+    const answererId = answer.answererId;
 
-    if (downvotedByIndex !== -1) {
-      answer.downvotedBy.splice(downvotedByIndex, 1);
-      answer.downvotes = Math.max(0, answer.downvotes - 1);
-      await User.findByIdAndUpdate(answer.answererId, { $inc: { reputation: 2 } });
+    // Atomic toggle: first try to withdraw an existing downvote
+    const withdrawn = await Answer.updateOne(
+      { _id: answerId, downvotedBy: userId },
+      { $pull: { downvotedBy: userId }, $inc: { downvotes: -1 } }
+    );
+
+    if (withdrawn.modifiedCount > 0) {
+      await User.findByIdAndUpdate(answererId, { $inc: { reputation: 2 } });
     } else {
-      answer.downvotedBy.push(userId);
-      answer.downvotes += 1;
+      const added = await Answer.updateOne(
+        { _id: answerId, downvotedBy: { $ne: userId } },
+        { $addToSet: { downvotedBy: userId }, $inc: { downvotes: 1 } }
+      );
+      if (added.modifiedCount > 0) {
+        await User.findByIdAndUpdate(answererId, { $inc: { reputation: -2 } });
 
-      if (upvotedByIndex !== -1) {
-        answer.upvotedBy.splice(upvotedByIndex, 1);
-        answer.upvotes = Math.max(0, answer.upvotes - 1);
-        await User.findByIdAndUpdate(answer.answererId, { $inc: { reputation: -10 } });
+        // If the user had upvoted before, remove that vote too
+        const cleared = await Answer.updateOne(
+          { _id: answerId, upvotedBy: userId },
+          { $pull: { upvotedBy: userId }, $inc: { upvotes: -1 } }
+        );
+        if (cleared.modifiedCount > 0) {
+          await User.findByIdAndUpdate(answererId, { $inc: { reputation: -10 } });
+        }
       }
-
-      await User.findByIdAndUpdate(answer.answererId, { $inc: { reputation: -2 } });
     }
 
-    await answer.save();
-
+    const fresh = await Answer.findById(answerId).select('upvotes downvotes upvotedBy downvotedBy').lean();
+    const uid = userId.toString();
     res.json({
       _id: answer._id,
-      upvotes: answer.upvotes,
-      downvotes: answer.downvotes,
-      netVotes: answer.upvotes - answer.downvotes,
-      hasUpvoted: answer.upvotedBy.some(id => id.toString() === userId),
-      hasDownvoted: answer.downvotedBy.some(id => id.toString() === userId)
+      upvotes: fresh.upvotes,
+      downvotes: fresh.downvotes,
+      netVotes: (fresh.upvotes || 0) - (fresh.downvotes || 0),
+      hasUpvoted: fresh.upvotedBy.some(id => id.toString() === uid),
+      hasDownvoted: fresh.downvotedBy.some(id => id.toString() === uid)
     });
   } catch (error) {
     next(error);

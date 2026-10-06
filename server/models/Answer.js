@@ -15,8 +15,11 @@ const answerSchema = new mongoose.Schema({
   isAccepted: { type: Boolean, default: false },
 }, { timestamps: true });
 
-// After saving an answer, update the parent Doubt's answersCount and lastActivityAt
+// After creating an answer, update the parent Doubt's answersCount and lastActivityAt.
+// Only fire on new documents — vote/accept updates also call save() and must not
+// increment the count again.
 answerSchema.post('save', async function(doc) {
+  if (!this.$isNew) return;
   const Doubt = mongoose.model('Doubt');
   await Doubt.findByIdAndUpdate(doc.doubtId, {
     $inc: { answersCount: 1 },
@@ -24,12 +27,8 @@ answerSchema.post('save', async function(doc) {
   });
 });
 
-// If answer is removed, decrement the count
-answerSchema.post('remove', async function(doc) {
-  const Doubt = mongoose.model('Doubt');
-  await Doubt.findByIdAndUpdate(doc.doubtId, {
-    $inc: { answersCount: -1 }
-  });
-});
+// answersCount is maintained explicitly: incremented by the hook above on creation
+// and recomputed in answerController.deleteAnswer, which uses findByIdAndDelete
+// (a query operation that does not fire document 'remove' hooks).
 
 module.exports = mongoose.model('Answer', answerSchema);

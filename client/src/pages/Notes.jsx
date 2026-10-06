@@ -51,10 +51,19 @@ export default function Notes() {
 
   // Notes filtering & pagination
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('All Units');
   const [fileTypeFilter, setFileTypeFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(false);
+  const [notesError, setNotesError] = useState(null);
+  const [retryTick, setRetryTick] = useState(0);
+
+  // Debounce keystrokes so typing doesn't fire a refetch per character
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   // Global search suggestions (courses, study areas, branches, subjects, notes)
   const [globalSearch, setGlobalSearch] = useState('');
@@ -373,6 +382,7 @@ export default function Notes() {
       setNotes([]);
       return;
     }
+    let isCurrent = true;
     const fetchNotes = async () => {
       try {
         setLoading(true);
@@ -380,20 +390,26 @@ export default function Notes() {
           subjectId: selectedSubject._id,
           sort: sortBy
         };
-        if (searchQuery.trim()) params.search = searchQuery.trim();
+        if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
         if (unitFilter !== 'All Units') params.unit = unitFilter;
         if (fileTypeFilter !== 'all') params.fileType = fileTypeFilter;
 
         const { data } = await notesService.list(params);
+        if (!isCurrent) return;
         setNotes(data.notes || []);
+        setNotesError(null);
       } catch (err) {
+        if (!isCurrent) return;
+        setNotes([]);
+        setNotesError('Could not load notes. Please check your connection and try again.');
         console.error('Error fetching notes:', err);
       } finally {
-        setLoading(false);
+        if (isCurrent) setLoading(false);
       }
     };
     fetchNotes();
-  }, [selectedSubject, searchQuery, unitFilter, fileTypeFilter, sortBy]);
+    return () => { isCurrent = false; };
+  }, [selectedSubject, debouncedSearch, unitFilter, fileTypeFilter, sortBy, retryTick]);
 
   // ── Global Search Query Listener ──
   useEffect(() => {
@@ -860,7 +876,19 @@ export default function Notes() {
         />
       ) : selectedSubject ? (
         /* STAGE 6: Subject Notes Page */
-        <SubjectNotesView
+        <>
+          {notesError && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+              <span>{notesError}</span>
+              <button
+                onClick={() => setRetryTick(t => t + 1)}
+                className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          <SubjectNotesView
           subject={selectedSubject}
           branch={selectedBranch}
           semester={selectedSemester}
@@ -884,6 +912,7 @@ export default function Notes() {
           setSortBy={setSortBy}
           onBack={handleStepBack}
         />
+        </>
       ) : selectedSemester ? (
         /* STAGE 5: Subjects Page */
         <SubjectsView

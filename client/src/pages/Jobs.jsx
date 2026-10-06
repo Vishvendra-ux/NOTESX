@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Briefcase, Search, MapPin, Building, DollarSign, Clock, Users,
@@ -73,7 +73,9 @@ export default function Jobs() {
     }
   };
 
+  const fetchSeq = useRef(0);
   const fetchJobs = async () => {
+    const seq = ++fetchSeq.current;
     setLoading(true);
     setError('');
     try {
@@ -85,12 +87,14 @@ export default function Jobs() {
       if (search.trim()) params.search = search.trim();
 
       const res = await jobService.list(params);
+      if (seq !== fetchSeq.current) return; // a newer request superseded this one
       setJobs(res.data?.jobs || []);
     } catch (err) {
+      if (seq !== fetchSeq.current) return;
       console.error('Failed to load jobs:', err);
       setError('Could not load job postings. Please try again.');
     } finally {
-      setLoading(false);
+      if (seq === fetchSeq.current) setLoading(false);
     }
   };
 

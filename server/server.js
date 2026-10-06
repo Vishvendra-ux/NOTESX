@@ -45,6 +45,24 @@ server.listen(PORT, () => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.log(`Error: ${err.message}`);
-  // Close server & exit process
+  // Close server & exit process (with a hard exit fallback in case close stalls)
   server.close(() => process.exit(1));
+  setTimeout(() => process.exit(1), 5000).unref();
 });
+
+// Graceful shutdown: close the HTTP server and Mongo connections on SIGTERM/SIGINT
+async function shutdown(signal) {
+  console.log(`\n${signal} received — shutting down...`);
+  server.close(async () => {
+    try {
+      await require('mongoose').connection.close();
+      process.exit(0);
+    } catch (err) {
+      process.exit(1);
+    }
+  });
+  setTimeout(() => process.exit(1), 10000).unref();
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

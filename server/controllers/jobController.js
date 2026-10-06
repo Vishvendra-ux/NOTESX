@@ -237,26 +237,34 @@ exports.create = async (req, res, next) => {
 // @access  Private
 exports.toggleSave = async (req, res, next) => {
   try {
-    const job = await Job.findById(req.params.id);
-    if (!job) return res.status(404).json({ message: 'Job not found' });
+    const exists = await Job.findById(req.params.id).select('_id').lean();
+    if (!exists) return res.status(404).json({ message: 'Job not found' });
 
-    const userId = req.user._id.toString();
-    const isSaved = job.savedBy.some(id => id.toString() === userId);
+    const userId = req.user._id;
 
-    if (isSaved) {
-      job.savedBy = job.savedBy.filter(id => id.toString() !== userId);
-      job.savesCount = Math.max(0, job.savesCount - 1);
+    // Atomic toggle: withdraw first, else guarded add — concurrent requests
+    // cannot double-save or drift savesCount
+    const removed = await Job.updateOne(
+      { _id: req.params.id, savedBy: userId },
+      { $pull: { savedBy: userId }, $inc: { savesCount: -1 } }
+    );
+
+    let isSaved;
+    if (removed.modifiedCount > 0) {
+      isSaved = false;
     } else {
-      job.savedBy.push(userId);
-      job.savesCount += 1;
+      const added = await Job.updateOne(
+        { _id: req.params.id, savedBy: { $ne: userId } },
+        { $addToSet: { savedBy: userId }, $inc: { savesCount: 1 } }
+      );
+      isSaved = added.modifiedCount > 0;
     }
 
-    await job.save();
-
+    const fresh = await Job.findById(req.params.id).select('savedBy').lean();
     res.json({
-      _id: job._id,
-      isSaved: !isSaved,
-      savesCount: job.savesCount
+      _id: req.params.id,
+      isSaved,
+      savesCount: fresh.savedBy.length
     });
   } catch (error) {
     next(error);
@@ -322,6 +330,11 @@ exports.apply = async (req, res, next) => {
       application
     });
   } catch (error) {
+    // Concurrent duplicate apply: the unique (jobId, applicantId) index fires
+    // E11000 — surface it as the friendly "already applied" message, not a 500
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'You have already applied for this role.' });
+    }
     next(error);
   }
 };

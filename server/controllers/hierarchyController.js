@@ -5,6 +5,7 @@ const AcademicYear = require('../models/AcademicYear');
 const Semester = require('../models/Semester');
 const Subject = require('../models/Subject');
 const Note = require('../models/Note');
+const escapeRegex = require('../utils/escapeRegex');
 
 // ── Course Categories ──
 exports.getCourseCategories = async (req, res, next) => {
@@ -35,8 +36,8 @@ exports.getCourses = async (req, res, next) => {
     if (categoryId) {
       filter.categoryId = categoryId;
     } else if (category) {
-      const catDoc = await CourseCategory.findOne({ 
-        $or: [{ slug: category.toLowerCase() }, { name: new RegExp(`^${category}$`, 'i') }] 
+      const catDoc = await CourseCategory.findOne({
+        $or: [{ slug: category.toLowerCase() }, { name: new RegExp(`^${escapeRegex(category)}$`, 'i') }]
       });
       if (catDoc) filter.categoryId = catDoc._id;
     }
@@ -91,7 +92,7 @@ exports.getBranches = async (req, res, next) => {
       filter.courseId = courseId;
     } else if (course) {
       const courseDoc = await Course.findOne({
-        $or: [{ slug: course.toLowerCase() }, { name: new RegExp(`^${course}$`, 'i') }]
+        $or: [{ slug: course.toLowerCase() }, { name: new RegExp(`^${escapeRegex(course)}$`, 'i') }]
       });
       if (courseDoc) filter.courseId = courseDoc._id;
     }
@@ -106,9 +107,9 @@ exports.getBranches = async (req, res, next) => {
 
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { shortCode: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { name: { $regex: escapeRegex(search), $options: 'i' } },
+        { shortCode: { $regex: escapeRegex(search), $options: 'i' } },
+        { description: { $regex: escapeRegex(search), $options: 'i' } }
       ];
     }
 
@@ -260,8 +261,8 @@ exports.getSubjects = async (req, res, next) => {
 
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { code: { $regex: search, $options: 'i' } }
+        { name: { $regex: escapeRegex(search), $options: 'i' } },
+        { code: { $regex: escapeRegex(search), $options: 'i' } }
       ];
     }
 

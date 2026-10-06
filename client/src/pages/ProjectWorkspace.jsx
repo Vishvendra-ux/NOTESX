@@ -19,7 +19,7 @@ export default function ProjectWorkspace() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // Fetch project and messages
+    // Fetch project and messages, then join the project's real-time room
     const fetchData = async () => {
       try {
         const [projectRes, messagesRes] = await Promise.all([
@@ -37,8 +37,9 @@ export default function ProjectWorkspace() {
         setProject(p);
         setMessages(messagesRes.data || []);
 
-        // Initialize Socket.io
-        const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+        // Initialize Socket.io — same-origin in production, localhost in dev
+        const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '')
+          || (window.location.hostname === 'localhost' ? 'http://localhost:5001' : '/');
         const token = localStorage.getItem('token');
         socketRef.current = io(socketUrl, {
           auth: { token }
@@ -50,6 +51,9 @@ export default function ProjectWorkspace() {
           setMessages((prev) => [...prev, message]);
         });
 
+        socketRef.current.on('project_error', (err) => {
+          setError(err?.message || 'Unable to join this project workspace in real time.');
+        });
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load project workspace');
       } finally {
@@ -60,6 +64,15 @@ export default function ProjectWorkspace() {
     if (user) {
       fetchData();
     }
+
+    // Disconnect on unmount or when id/user changes, so effect re-runs
+    // (e.g. navigating between projects) don't leak connections
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
   }, [id, user]);
 
   useEffect(() => {
@@ -82,14 +95,6 @@ export default function ProjectWorkspace() {
     socketRef.current.emit('send_message', messageData);
     setNewMessage('');
   };
-
-  useEffect(() => {
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, []);
 
   if (loading) {
     return (

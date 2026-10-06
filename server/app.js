@@ -9,6 +9,12 @@ const app = express();
 
 const { generalLimiter } = require('./middleware/rateLimiter');
 
+// Behind one reverse proxy (Render/Heroku/Nginx) in production, so rate
+// limiters key on the real client IP instead of the proxy IP
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Allowed origins
 const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map(s => s.trim())
@@ -85,11 +91,42 @@ app.get('/', (req, res) => {
   res.send('NOTESX API is running...');
 });
 
+// JSON 404 for unknown API routes (Express's default HTML 404 is unhelpful for clients)
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  let statusCode = err.statusCode || err.status || 500;
+  let message = err.message || 'Internal server error';
+
+  // Multer upload errors and bad ObjectIds are client mistakes, not server faults
+  if (err.name === 'CastError') {
+    statusCode = 400;
+    message = 'Invalid identifier format';
+  } else if (err.code === 'LIMIT_FILE_SIZE') {
+    statusCode = 413;
+    message = 'Uploaded file is too large';
+  } else if (err.name === 'MulterError') {
+    statusCode = 400;
+    message = 'File upload failed';
+  } else if (err.code === 11000) {
+    statusCode = 409;
+    message = 'Duplicate value for a unique field';
+  }
+
+  if (statusCode >= 500 && process.env.NODE_ENV === 'production') {
+    // Don't leak driver internals/file paths to clients in production
+    message = 'Internal server error';
+  }
+
   res.status(statusCode).json({
-    message: err.message,
+    message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 });

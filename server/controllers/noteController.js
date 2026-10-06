@@ -414,12 +414,23 @@ exports.addOrUpdateReview = async (req, res, next) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
 
-    // One review per student per note (upsert)
-    const savedReview = await Review.findOneAndUpdate(
-      { noteId: note._id, userId: req.user._id },
-      { rating: numRating, review: review.trim() },
-      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
-    ).populate('userId', 'name profilePhoto collegeName');
+    // One review per student per note (upsert). On a concurrent first review
+    // the unique index fires E11000 — retry against the winner's document.
+    let savedReview;
+    try {
+      savedReview = await Review.findOneAndUpdate(
+        { noteId: note._id, userId: req.user._id },
+        { rating: numRating, review: review.trim() },
+        { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
+      ).populate('userId', 'name profilePhoto collegeName');
+    } catch (err) {
+      if (err.code !== 11000) throw err;
+      savedReview = await Review.findOneAndUpdate(
+        { noteId: note._id, userId: req.user._id },
+        { rating: numRating, review: review.trim() },
+        { returnDocument: 'after', setDefaultsOnInsert: true }
+      ).populate('userId', 'name profilePhoto collegeName');
+    }
 
     // Recalculate dynamic average rating for this note
     const stats = await Review.aggregate([
@@ -466,22 +477,31 @@ exports.getReviews = async (req, res, next) => {
 
 exports.toggleHelpfulReview = async (req, res, next) => {
   try {
-    const review = await Review.findById(req.params.reviewId);
-    if (!review) return res.status(404).json({ message: 'Review not found' });
+    const exists = await Review.findById(req.params.reviewId).select('_id').lean();
+    if (!exists) return res.status(404).json({ message: 'Review not found' });
 
-    const userIdStr = req.user._id.toString();
-    const existingIndex = review.helpfulVotes.findIndex(id => id.toString() === userIdStr);
+    const userId = req.user._id;
 
-    if (existingIndex > -1) {
-      review.helpfulVotes.splice(existingIndex, 1);
-      review.helpfulCount = Math.max(0, review.helpfulCount - 1);
+    // Atomic toggle: withdraw first, else guarded add — concurrent requests
+    // cannot double-vote or drift helpfulCount
+    const removed = await Review.updateOne(
+      { _id: req.params.reviewId, helpfulVotes: userId },
+      { $pull: { helpfulVotes: userId }, $inc: { helpfulCount: -1 } }
+    );
+
+    let hasVoted;
+    if (removed.modifiedCount > 0) {
+      hasVoted = false;
     } else {
-      review.helpfulVotes.push(req.user._id);
-      review.helpfulCount = review.helpfulCount + 1;
+      const added = await Review.updateOne(
+        { _id: req.params.reviewId, helpfulVotes: { $ne: userId } },
+        { $addToSet: { helpfulVotes: userId }, $inc: { helpfulCount: 1 } }
+      );
+      hasVoted = added.modifiedCount > 0;
     }
 
-    await review.save();
-    res.json({ helpfulCount: review.helpfulCount, hasVoted: existingIndex === -1 });
+    const fresh = await Review.findById(req.params.reviewId).select('helpfulCount').lean();
+    res.json({ helpfulCount: fresh.helpfulCount, hasVoted });
   } catch (error) {
     next(error);
   }

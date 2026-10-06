@@ -61,4 +61,13 @@ doubtSchema.index({
   weights: { title: 10, tags: 8, subjectName: 5, topic: 5, description: 1 }
 });
 
+// Query-supporting indexes for the filters and sorts used by doubtController.list
+doubtSchema.index({ askerId: 1, createdAt: -1 });
+doubtSchema.index({ bookmarkedBy: 1 });
+doubtSchema.index({ answersCount: 1, createdAt: -1 });
+doubtSchema.index({ hasAcceptedAnswer: 1, createdAt: -1 });
+doubtSchema.index({ upvotes: -1, createdAt: -1 });
+doubtSchema.index({ lastActivityAt: -1 });
+doubtSchema.index({ subjectName: 1, examCategory: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Doubt', doubtSchema);

@@ -158,8 +158,8 @@ export default function MarkdownRenderer({ content, className = '' }) {
     }
 
     // Unordered List
-    if (/^[\*\-]\s+/.test(line.trim())) {
-      const itemText = line.trim().replace(/^[\*\-]\s+/, '');
+    if (/^[*-]\s+/.test(line.trim())) {
+      const itemText = line.trim().replace(/^[*-]\s+/, '');
       if (listType !== 'ul') {
         flushList();
         listType = 'ul';
@@ -209,7 +209,7 @@ function renderInlineFormatting(text) {
   if (typeof text !== 'string') return text;
 
   // Split on inline patterns: math $...$, display math $$...$$, code `...`, bold **...**, links [text](url)
-  const regex = /(\$\$[^\$]+\$\$|\$[^\$]+\$|`[^`]+`|\*\*[^\*]+\*\*|\*[^\*]+\*|\[[^\]]+\]\([^\)]+\))/g;
+  const regex = /(\$\$[^$]+\$\$|\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
   const parts = text.split(regex);
 
   return parts.map((part, index) => {

@@ -86,7 +86,8 @@ export default function Register() {
           </p>
         </div>
 
-        {/* Google One-Click Sign Up */}
+        {/* Google One-Click Sign Up — the demo credential only exists in dev builds */}
+        {import.meta.env.DEV && (
         <button
           type="button"
           onClick={handleGoogleSignUp}
@@ -101,6 +102,7 @@ export default function Register() {
           </svg>
           Sign Up with Google
         </button>
+        )}
 
         {/* Divider */}
         <div className="relative flex items-center justify-center mb-5">

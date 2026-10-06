@@ -388,7 +388,9 @@ export default function CollegeCommunity() {
             { id: 2, author: 'Neha Dixit', role: '4th Year CSE', title: 'Campus Hackathon 2026 Registration Open - Prize Pool ₹1,50,000!', content: 'Looking for 2 team members proficient in React + Node.js for 36-hr hackathon next weekend.', upvotes: 89, hasUpvoted: false, commentsCount: 32, time: '5 hours ago', tag: 'Hackathon' }
           ]);
         }
-      } catch (err) {}
+      } catch (err) {
+        // Keep existing/fallback posts on fetch failure
+      }
 
       try {
         const resEvents = await api.get(`/colleges/community/${slugOrId}/events`);
@@ -400,7 +402,9 @@ export default function CollegeCommunity() {
             { id: 2, title: 'Campus Hackathon 2026', date: 'Oct 24', department: 'All Departments' }
           ]);
         }
-      } catch (err) {}
+      } catch (err) {
+        // Keep existing/fallback events on fetch failure
+      }
 
       if (isMounted) setLoading(false);
     };
@@ -482,7 +486,9 @@ export default function CollegeCommunity() {
 
     try {
       await api.post(`/colleges/community/posts/${postId}/upvote`);
-    } catch (e) {}
+    } catch (e) {
+      // Optimistic UI already updated; nothing to show on failure
+    }
   };
 
   // ── ACCURATE TOGGLE UPVOTE FOR CAMPUS DOUBTS ──

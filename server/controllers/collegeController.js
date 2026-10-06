@@ -1,9 +1,10 @@
 const College = require('../models/College');
+const escapeRegex = require('../utils/escapeRegex');
 
 exports.list = async (req, res, next) => {
   try {
     const { search = '', state } = req.query;
-    const filter = search ? { $or: ['name', 'city', 'state', 'location'].map((field) => ({ [field]: { $regex: search, $options: 'i' } })) } : {};
+    const filter = search ? { $or: ['name', 'city', 'state', 'location'].map((field) => ({ [field]: { $regex: escapeRegex(search), $options: 'i' } })) } : {};
     if (state) filter.state = state;
     res.json(await College.find(filter).sort({ name: 1 }));
   } catch (error) { next(error); }

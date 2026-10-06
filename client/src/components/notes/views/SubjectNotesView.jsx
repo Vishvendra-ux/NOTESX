@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Search, Upload, Bookmark, Star, Download, Users, FileText, 
-  Filter, SlidersHorizontal, ArrowUpDown, Check 
+import {
+  Search, Upload, Bookmark, Star, Download, Users, FileText,
+  Filter, SlidersHorizontal, ArrowUpDown, Check, ArrowLeft
 } from 'lucide-react';
 import NoteCard from '../NoteCard';
 import EmptyState from '../EmptyState';

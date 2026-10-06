@@ -5,7 +5,7 @@ import {
   X, Check, Save, Globe, ExternalLink, Building2, GraduationCap, User, Sparkles, AlertCircle,
   FileText, UploadCloud, Trash2, Eye
 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../services/api';
 
 export default function Profile() {
   const { user, logout, setUser } = useContext(AuthContext);
@@ -51,14 +51,9 @@ export default function Profile() {
     const formData = new FormData();
     formData.append('resume', file);
 
-    const token = localStorage.getItem('token');
-
     try {
-      const res = await axios.post('/api/users/resume', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
+      const res = await api.post('/users/resume', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (res.data) {
@@ -75,11 +70,8 @@ export default function Profile() {
 
   const handleDeleteResume = async () => {
     if (!window.confirm('Are you sure you want to remove your resume?')) return;
-    const token = localStorage.getItem('token');
     try {
-      const res = await axios.delete('/api/users/resume', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.delete('/users/resume');
       if (res.data) {
         if (setUser) setUser(res.data);
         setSuccessMsg('Resume removed.');
@@ -96,13 +88,10 @@ export default function Profile() {
     setSuccessMsg('');
     setErrorMsg('');
 
-    const token = localStorage.getItem('token');
     const profileData = { name, bio, collegeName, course, year, semester, github, linkedin, profilePhoto };
 
     try {
-      const res = await axios.put('/api/users/profile', profileData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.put('/users/profile', profileData);
 
       if (res.data) {
         if (setUser) setUser(res.data);

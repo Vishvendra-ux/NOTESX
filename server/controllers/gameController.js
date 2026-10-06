@@ -1,5 +1,6 @@
 const GameRoom = require('../models/GameRoom');
 const User = require('../models/User');
+const escapeRegex = require('../utils/escapeRegex');
 
 const FAMOUS_GAMES = [
   {
@@ -334,7 +335,6 @@ const emitSocket = (req, event, data) => {
   try {
     const io = req.app.get('io');
     if (io) {
-      io.to('game_lobby').emit(event, data);
       io.emit(event, data);
     }
   } catch (err) {
@@ -389,7 +389,7 @@ exports.getRooms = async (req, res) => {
     }
 
     if (search && search.trim()) {
-      const term = search.trim();
+      const term = escapeRegex(search.trim());
       query.$or = [
         { title: { $regex: term, $options: 'i' } },
         { roomId: { $regex: term, $options: 'i' } },
@@ -402,8 +402,15 @@ exports.getRooms = async (req, res) => {
 
     let rooms = await GameRoom.find(query).sort({ createdAt: -1 }).lean();
 
-    // If zero rooms and no search filter, auto-seed starter rooms so student sees activity
-    if (rooms.length === 0 && !search && (!gameId || gameId === 'all') && (!status || status === 'all')) {
+    // If zero rooms and no search filter, auto-seed starter rooms so student sees activity.
+    // Dev convenience only, and once per process so concurrent cold-start
+    // requests cannot insert the demo rooms multiple times.
+    if (
+      rooms.length === 0 &&
+      !search && (!gameId || gameId === 'all') && (!status || status === 'all') &&
+      process.env.NODE_ENV !== 'production' && !seededDemoRooms
+    ) {
+      seededDemoRooms = true;
       await seedDefaultRooms();
       rooms = await GameRoom.find(query).sort({ createdAt: -1 }).lean();
     }
@@ -505,47 +512,55 @@ exports.createRoom = async (req, res) => {
 // POST /api/games/rooms/:id/join
 exports.joinRoom = async (req, res) => {
   try {
+    // Atomic join: the capacity and not-already-joined checks are evaluated
+    // under Mongo's document lock, so concurrent joins cannot overshoot
+    // maxPlayers or add the same player twice.
+    const joined = await GameRoom.updateOne(
+      {
+        _id: req.params.id,
+        status: { $ne: 'CLOSED' },
+        'players.userId': { $ne: req.user._id },
+        $expr: { $lt: [{ $size: '$players' }, '$maxPlayers'] },
+      },
+      {
+        $push: {
+          players: {
+            userId: req.user._id,
+            name: req.user.name,
+            college: req.user.collegeName || 'Student',
+            joinedAt: new Date(),
+          },
+        },
+        $inc: { currentPlayers: 1 },
+      }
+    );
+
+    if (joined.modifiedCount === 0) {
+      // Nothing was written — explain why so the client gets an accurate message
+      const room = await GameRoom.findById(req.params.id);
+      if (!room) {
+        return res.status(404).json({ success: false, message: 'Game room not found or has expired.' });
+      }
+      if (room.status === 'CLOSED') {
+        return res.status(400).json({ success: false, message: 'This room has already been closed.' });
+      }
+      if (room.players.some((p) => p.userId.toString() === req.user._id.toString())) {
+        return res.json({
+          success: true,
+          message: 'You have already joined this room squad!',
+          room,
+        });
+      }
+      return res.status(400).json({ success: false, message: 'This room squad is already full!' });
+    }
+
+    // Flip to FULL if that join took the last seat
+    await GameRoom.updateOne(
+      { _id: req.params.id, status: 'OPEN', $expr: { $gte: [{ $size: '$players' }, '$maxPlayers'] } },
+      { $set: { status: 'FULL' } }
+    );
+
     const room = await GameRoom.findById(req.params.id);
-    if (!room) {
-      return res.status(404).json({ success: false, message: 'Game room not found or has expired.' });
-    }
-
-    if (room.status === 'CLOSED') {
-      return res.status(400).json({ success: false, message: 'This room has already been closed.' });
-    }
-
-    const userIdStr = req.user._id.toString();
-    const alreadyJoined = room.players.some((p) => p.userId.toString() === userIdStr);
-
-    if (alreadyJoined) {
-      return res.json({
-        success: true,
-        message: 'You have already joined this room squad!',
-        room,
-      });
-    }
-
-    if (room.players.length >= room.maxPlayers) {
-      return res.status(400).json({
-        success: false,
-        message: 'This room squad is already full!',
-      });
-    }
-
-    room.players.push({
-      userId: req.user._id,
-      name: req.user.name,
-      college: req.user.collegeName || 'Student',
-      joinedAt: new Date(),
-    });
-
-    room.currentPlayers = room.players.length;
-    if (room.currentPlayers >= room.maxPlayers) {
-      room.status = 'FULL';
-    }
-
-    await room.save();
-
     emitSocket(req, 'game_room_updated', room);
 
     res.json({
@@ -601,6 +616,8 @@ exports.leaveRoom = async (req, res) => {
 };
 
 // PATCH /api/games/rooms/:id/status
+const VALID_ROOM_STATUSES = ['OPEN', 'FULL', 'CLOSED'];
+
 exports.updateRoomStatus = async (req, res) => {
   try {
     const { status, roomId, roomPassword, gameMode, notes } = req.body;
@@ -614,6 +631,10 @@ exports.updateRoomStatus = async (req, res) => {
 
     if (!isHost && !isAdmin) {
       return res.status(403).json({ success: false, message: 'Only the host or admin can update this room.' });
+    }
+
+    if (status && !VALID_ROOM_STATUSES.includes(status)) {
+      return res.status(400).json({ success: false, message: `Status must be one of: ${VALID_ROOM_STATUSES.join(', ')}` });
     }
 
     if (status) room.status = status;
@@ -658,6 +679,8 @@ exports.deleteRoom = async (req, res) => {
 };
 
 // Helper: Seed active starter rooms if empty
+let seededDemoRooms = false;
+
 async function seedDefaultRooms() {
   try {
     const demoUser = await User.findOne({ role: { $in: ['student', 'admin'] } });

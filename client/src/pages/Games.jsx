@@ -86,39 +86,10 @@ export default function Games() {
 
   const socketRef = useRef(null);
 
-  // Single game route view (/games/rock-paper-scissors or /games/tic-tac-toe)
-  if (gameId) {
-    const miniGame = MINI_GAMES.find((g) => g.id === gameId);
-    if (!miniGame) return <Navigate to="/games" replace />;
-    const GameComponent = miniGame.component;
-    const Icon = miniGame.icon;
-
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        <Link
-          to="/games"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 mb-4 transition"
-        >
-          <ArrowLeft size={16} aria-hidden="true" /> Back to Game Zone
-        </Link>
-        <div className="flex items-center gap-3 mb-6">
-          <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${miniGame.accent}`}>
-            <Icon size={22} aria-hidden="true" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              {miniGame.title}
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-300">{miniGame.description}</p>
-          </div>
-        </div>
-        <GameComponent />
-      </div>
-    );
-  }
-
   // Fetch data
+  const fetchSeq = useRef(0);
   const fetchData = async (isManualRefresh = false) => {
+    const seq = ++fetchSeq.current;
     try {
       if (isManualRefresh) setRefreshing(true);
       else setLoading(true);
@@ -132,6 +103,8 @@ export default function Games() {
         }),
       ]);
 
+      if (seq !== fetchSeq.current) return; // a newer request superseded this one
+
       if (famousRes.data.success) {
         setFamousGames(famousRes.data.games || []);
       }
@@ -141,11 +114,14 @@ export default function Games() {
       }
       setError('');
     } catch (err) {
+      if (seq !== fetchSeq.current) return;
       console.error('Failed to load games data:', err);
       setError('Failed to load game rooms. Please check your connection.');
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (seq === fetchSeq.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
 
@@ -205,6 +181,37 @@ export default function Games() {
     setTimeout(() => setToastMessage(''), 3500);
   };
 
+  // Single game route view (/games/rock-paper-scissors or /games/tic-tac-toe)
+  if (gameId) {
+    const miniGame = MINI_GAMES.find((g) => g.id === gameId);
+    if (!miniGame) return <Navigate to="/games" replace />;
+    const GameComponent = miniGame.component;
+    const Icon = miniGame.icon;
+
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        <Link
+          to="/games"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 mb-4 transition"
+        >
+          <ArrowLeft size={16} aria-hidden="true" /> Back to Game Zone
+        </Link>
+        <div className="flex items-center gap-3 mb-6">
+          <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${miniGame.accent}`}>
+            <Icon size={22} aria-hidden="true" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              {miniGame.title}
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{miniGame.description}</p>
+          </div>
+        </div>
+        <GameComponent />
+      </div>
+    );
+  }
+
   // Handlers
   const handleOpenHostModal = (gameIdToPreselect) => {
     if (!user) {
@@ -216,10 +223,17 @@ export default function Games() {
   };
 
   const handleCreateRoom = async (roomData) => {
-    const res = await gameService.createRoom(roomData);
-    if (res.data.success) {
-      showToast('🎉 Room hosted successfully! Others can now view your Room ID & Password.');
-      fetchData();
+    try {
+      const res = await gameService.createRoom(roomData);
+      if (res.data.success) {
+        showToast('🎉 Room hosted successfully! Others can now view your Room ID & Password.');
+        fetchData();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to host the room. Please try again.');
+      return false;
     }
   };
 

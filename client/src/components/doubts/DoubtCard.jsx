@@ -147,7 +147,7 @@ export default function DoubtCard({
 
           {/* Snippet / Preview */}
           <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-3 font-normal">
-            {doubt.description?.replace(/```[\s\S]*?```/g, '[code snippet]').replace(/[\$\#\*\_]/g, '')}
+            {doubt.description?.replace(/```[\s\S]*?```/g, '[code snippet]').replace(/[$#*_]/g, '')}
           </p>
 
           {/* Tags */}
