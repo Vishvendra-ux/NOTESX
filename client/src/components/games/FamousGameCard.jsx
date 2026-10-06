@@ -1,4 +1,4 @@
-import { Gamepad2, Users, Monitor, Smartphone, Globe, Plus, Filter, Play } from 'lucide-react';
+import { Gamepad2, Users, Monitor, Smartphone, Globe, Plus, Filter } from 'lucide-react';
 
 export default function FamousGameCard({ game, onSelectFilter, onHostForGame }) {
   const renderPlatformIcon = (platform) => {
@@ -9,11 +9,11 @@ export default function FamousGameCard({ game, onSelectFilter, onHostForGame }) 
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md">
+    <div className="group relative flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md">
       {/* Top Banner & Active Indicator */}
       <div className="flex items-start justify-between gap-3">
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${game.color} text-white shadow-md`}
+          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${game.color} text-white shadow-sm`}
         >
           <Gamepad2 size={24} />
         </div>
@@ -27,7 +27,7 @@ export default function FamousGameCard({ game, onSelectFilter, onHostForGame }) 
             />
             {game.activeRoomCount} {game.activeRoomCount === 1 ? 'Room' : 'Rooms'} Active
           </span>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 font-medium">
+          <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
             {game.category}
           </span>
         </div>
@@ -48,28 +48,28 @@ export default function FamousGameCard({ game, onSelectFilter, onHostForGame }) 
         {game.platforms?.map((plat) => (
           <span
             key={plat}
-            className="inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400"
+            className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:text-slate-400"
           >
             {renderPlatformIcon(plat)}
             {plat}
           </span>
         ))}
-        <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
-          <Users size={11} /> Up to {game.maxSquad} Squad
+        <span className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+          <Users size={12} /> Up to {game.maxSquad} Squad
         </span>
       </div>
 
       {/* Popular Modes */}
       {game.defaultModes && game.defaultModes.length > 0 && (
         <div className="mt-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
             Popular Modes:
           </p>
           <div className="mt-1 flex flex-wrap gap-1">
             {game.defaultModes.slice(0, 3).map((mode) => (
               <span
                 key={mode}
-                className="text-[11px] px-1.5 py-0.5 rounded bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
+                className="text-xs px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
               >
                 {mode}
               </span>
@@ -82,14 +82,14 @@ export default function FamousGameCard({ game, onSelectFilter, onHostForGame }) 
       <div className="mt-auto pt-4 flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold">
         <button
           onClick={() => onSelectFilter(game.id)}
-          className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
         >
           <Filter size={13} /> View Lobbies
         </button>
 
         <button
           onClick={() => onHostForGame(game.id)}
-          className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 font-bold transition shadow-2xs"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 font-bold transition shadow-2xs"
         >
           <Plus size={13} /> Host Room
         </button>

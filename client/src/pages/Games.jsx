@@ -297,7 +297,7 @@ export default function Games() {
       )}
 
       {/* Hero Header */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white p-6 sm:p-10 shadow-xl border border-indigo-900/40">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white p-6 sm:p-10 shadow-xl border border-indigo-900/40">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
 
@@ -305,21 +305,13 @@ export default function Games() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3.5 py-1 text-xs font-bold text-indigo-300 border border-indigo-400/30 mb-3">
               <Radio size={14} className="animate-pulse text-emerald-400" />
-              <span>COLLEGE ESPORTS & GAMING LOUNGE</span>
+              <span>College Esports &amp; Gaming Lounge</span>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-              Game Zone & Custom Lobbies
+              Game Zone &amp; Custom Lobbies
             </h1>
             <p className="mt-3 text-sm sm:text-base text-slate-300 leading-relaxed">
-              Find college teammates, post your custom <strong>Room ID & Password</strong> for{' '}
-              <span className="text-amber-300 font-semibold">BGMI</span>,{' '}
-              <span className="text-rose-400 font-semibold">Valorant</span>,{' '}
-              <span className="text-red-400 font-semibold">Ludo King</span>,{' '}
-              <span className="text-emerald-400 font-semibold">GTA V</span>,{' '}
-              <span className="text-teal-300 font-semibold">EA FC</span>,{' '}
-              <span className="text-blue-400 font-semibold">Rocket League</span>,{' '}
-              <span className="text-lime-300 font-semibold">GeoGuessr</span>, or{' '}
-              <span className="text-emerald-300 font-semibold">Chess</span>!
+              Find college teammates, post your custom <strong className="text-white">Room ID &amp; Password</strong> for BGMI, Valorant, Ludo King, GTA V, EA FC, Rocket League, GeoGuessr, or Chess!
             </p>
 
             {/* Quick Stats Banner */}
@@ -330,7 +322,7 @@ export default function Games() {
                 </span>
                 <div>
                   <div className="text-white font-extrabold">{openRooms} Open</div>
-                  <div className="text-slate-400 text-[11px]">Active Lobbies</div>
+                  <div className="text-slate-400 text-xs">Active Lobbies</div>
                 </div>
               </div>
 
@@ -340,7 +332,7 @@ export default function Games() {
                 </span>
                 <div>
                   <div className="text-white font-extrabold">{totalPlayersActive}+ Students</div>
-                  <div className="text-slate-400 text-[11px]">In Squads</div>
+                  <div className="text-slate-400 text-xs">In Squads</div>
                 </div>
               </div>
 
@@ -350,22 +342,22 @@ export default function Games() {
                 </span>
                 <div>
                   <div className="text-white font-extrabold">{famousGames.length} Famous</div>
-                  <div className="text-slate-400 text-[11px]">Supported Titles</div>
+                  <div className="text-slate-400 text-xs">Supported Titles</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Primary Action Button */}
-          <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
             <button
               onClick={() => handleOpenHostModal()}
-              className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-4 text-base font-extrabold shadow-lg hover:shadow-indigo-500/25 transition-all transform active:scale-95"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3.5 text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition transform active:scale-95"
             >
               <Plus size={20} className="stroke-[3]" />
-              Host Room / Share ID & Pass
+              Host Room / Share ID &amp; Pass
             </button>
-            <p className="text-center text-[11px] text-slate-400">
+            <p className="text-center text-xs text-slate-400">
               Instant 1-click copy for players
             </p>
           </div>
@@ -435,11 +427,11 @@ export default function Games() {
             <div className="flex flex-wrap items-center gap-3">
               {/* Game Filter */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Game:</span>
+                <span className="text-xs font-bold text-slate-500">Game:</span>
                 <select
                   value={selectedGameFilter}
                   onChange={(e) => setSelectedGameFilter(e.target.value)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
+                  className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 >
                   <option value="all">All Games</option>
                   {famousGames.map((g) => (
@@ -452,11 +444,11 @@ export default function Games() {
 
               {/* Status Filter */}
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Status:</span>
+                <span className="text-xs font-bold text-slate-500">Status:</span>
                 <select
                   value={selectedStatusFilter}
                   onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
+                  className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 >
                   <option value="all">All Statuses</option>
                   <option value="OPEN">Open Only</option>
@@ -469,7 +461,7 @@ export default function Games() {
               <button
                 onClick={() => fetchData(true)}
                 disabled={refreshing}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition"
+                className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition"
                 title="Refresh rooms"
                 aria-label="Refresh game rooms"
               >
@@ -479,28 +471,35 @@ export default function Games() {
           </div>
 
           {/* Quick How to Play Banner */}
-          <div className="rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 p-4">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-indigo-900 dark:text-indigo-300 mb-2 flex items-center gap-1.5">
-              <Sparkles size={14} /> How To Join A Custom Room:
+          <div className="rounded-xl bg-indigo-50/60 dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 p-4 sm:p-5">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <Sparkles size={16} className="text-indigo-600 dark:text-indigo-400" />
+              How to join a custom room:
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-indigo-950 dark:text-indigo-200 font-medium">
-              <div className="flex items-start gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-[10px]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              <div className="flex items-start gap-3 rounded-lg bg-white dark:bg-slate-800/80 p-3.5 border border-indigo-100/60 dark:border-slate-700/60">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-xs">
                   1
                 </span>
-                <span>Click <strong>"Copy ID"</strong> and <strong>"Copy Pass"</strong> on any room below.</span>
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                  Click <strong className="text-slate-900 dark:text-white">"Copy ID"</strong> and <strong className="text-slate-900 dark:text-white">"Copy Pass"</strong> on any room card below.
+                </p>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-[10px]">
+              <div className="flex items-start gap-3 rounded-lg bg-white dark:bg-slate-800/80 p-3.5 border border-indigo-100/60 dark:border-slate-700/60">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-xs">
                   2
                 </span>
-                <span>Open your game (BGMI / Valorant / Chess) & select <strong>Custom Room</strong>.</span>
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                  Open your game (BGMI, Valorant, or Chess) &amp; select <strong className="text-slate-900 dark:text-white">Custom Room</strong>.
+                </p>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-[10px]">
+              <div className="flex items-start gap-3 rounded-lg bg-white dark:bg-slate-800/80 p-3.5 border border-indigo-100/60 dark:border-slate-700/60">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-xs">
                   3
                 </span>
-                <span>Paste Room ID & Password, join the squad, and enjoy playing together!</span>
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                  Paste credentials to enter the lobby, join the squad, and enjoy playing together!
+                </p>
               </div>
             </div>
           </div>
@@ -521,7 +520,7 @@ export default function Games() {
               ))}
             </div>
           ) : rooms.length === 0 ? (
-            <div className="text-center py-16 px-4 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
               <Gamepad2 size={48} className="mx-auto text-slate-400 mb-3" />
               <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                 No Active Game Rooms Found
@@ -531,7 +530,7 @@ export default function Games() {
               </p>
               <button
                 onClick={() => handleOpenHostModal()}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 text-sm font-bold transition shadow-sm"
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 text-sm font-bold transition shadow-sm"
               >
                 <Plus size={16} /> Host a Game Room Now
               </button>
@@ -581,7 +580,7 @@ export default function Games() {
               <button
                 key={cat.id}
                 onClick={() => setFamousCategoryFilter(cat.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                   famousCategoryFilter === cat.id
                     ? 'bg-indigo-600 text-white shadow-2xs'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'

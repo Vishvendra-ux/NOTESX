@@ -93,7 +93,7 @@ export default function HostRoomModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
       <div
-        className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transition-all max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transition-all max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -101,7 +101,7 @@ export default function HostRoomModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="absolute top-5 right-5 p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           aria-label="Close modal"
         >
           <X size={20} />
@@ -109,7 +109,7 @@ export default function HostRoomModal({
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md">
             <Radio size={24} className="animate-pulse" />
           </div>
           <div>
@@ -123,7 +123,7 @@ export default function HostRoomModal({
         </div>
 
         {error && (
-          <div className="mb-5 flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 p-3 text-xs sm:text-sm font-semibold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+          <div className="mb-5 flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 p-3 text-xs sm:text-sm font-semibold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
             <AlertCircle size={16} className="shrink-0" />
             {error}
           </div>
@@ -138,7 +138,7 @@ export default function HostRoomModal({
             <select
               value={formData.gameId}
               onChange={handleGameChange}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             >
               {games?.map((g) => (
                 <option key={g.id} value={g.id}>
@@ -159,12 +159,12 @@ export default function HostRoomModal({
               placeholder="e.g. TDM 4v4 WareHouse - Need 2 rushers for rank push!"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
 
           {/* Credentials: Room ID & Password (side-by-side) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl bg-indigo-50/50 dark:bg-slate-950/60 p-4 border border-indigo-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl bg-indigo-50/50 dark:bg-slate-950/60 p-4 border border-indigo-100 dark:border-slate-800">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-indigo-950 dark:text-indigo-300 mb-1.5 flex items-center gap-1">
                 <span>Room ID / Code *</span>
@@ -175,9 +175,9 @@ export default function HostRoomModal({
                 placeholder="e.g. 849201 or VALO-MUM"
                 value={formData.roomId}
                 onChange={(e) => setFormData({ ...formData, roomId: e.target.value })}
-                className="w-full rounded-xl border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm font-mono font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm font-mono font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 In-game room number or party code
               </p>
             </div>
@@ -192,9 +192,9 @@ export default function HostRoomModal({
                 placeholder="e.g. 1234 (Leave blank if open)"
                 value={formData.roomPassword}
                 onChange={(e) => setFormData({ ...formData, roomPassword: e.target.value })}
-                className="w-full rounded-xl border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm font-mono font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm font-mono font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Leave empty for open free entry
               </p>
             </div>
@@ -210,7 +210,7 @@ export default function HostRoomModal({
               placeholder="e.g. TDM 4v4, Custom Ascent, Blitz 5 min"
               value={formData.gameMode}
               onChange={(e) => setFormData({ ...formData, gameMode: e.target.value })}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
             />
             {currentGame?.defaultModes && (
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -244,7 +244,7 @@ export default function HostRoomModal({
                     key={slot}
                     type="button"
                     onClick={() => handleQuickSlot(slot)}
-                    className={`flex-1 rounded-xl py-2 text-xs font-bold transition border ${
+                    className={`flex-1 rounded-lg py-2 text-xs font-bold transition border ${
                       formData.maxPlayers === slot
                         ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
@@ -263,7 +263,7 @@ export default function HostRoomModal({
               <select
                 value={formData.voiceChannel}
                 onChange={(e) => setFormData({ ...formData, voiceChannel: e.target.value })}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500"
               >
                 <option value="In-game Mic">In-game Voice Mic</option>
                 <option value="Discord Voice">Discord Voice Server</option>
@@ -283,7 +283,7 @@ export default function HostRoomModal({
               placeholder="e.g. Beginners welcome! Be ready on time, match starts in 10 mins."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
             />
           </div>
 
@@ -293,14 +293,14 @@ export default function HostRoomModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition"
+              className="rounded-lg px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 text-sm font-bold shadow-md hover:shadow-lg transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 text-sm font-bold shadow-sm hover:shadow transition disabled:opacity-50"
             >
               {loading ? (
                 'Publishing Room...'
