@@ -20,6 +20,9 @@ const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map(s => s.trim())
   : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
+// Exposed so server.js can lock down the Socket.IO handshake to the same list
+app.set('allowedOrigins', allowedOrigins);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -89,6 +92,11 @@ app.use('/api/games', require('./routes/games'));
 // Basic Route
 app.get('/', (req, res) => {
   res.send('NOTESX API is running...');
+});
+
+// Health check for platform probes and uptime monitors (Render, etc.)
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
 });
 
 // JSON 404 for unknown API routes (Express's default HTML 404 is unhelpful for clients)

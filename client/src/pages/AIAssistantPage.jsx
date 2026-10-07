@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, BookOpen, ListChecks, Lightbulb, Route, BarChart3, Plus, FileText, ArrowRight, Loader2, Compass, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Sparkles, Send, BookOpen, ListChecks, Lightbulb, Route, BarChart3, Plus, FileText, ArrowRight, Loader2, Compass, ChevronRight, MapPin } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { aiService } from '../services/api';
 
 const actions = [
@@ -8,8 +8,8 @@ const actions = [
   [ListChecks, 'Banker’s Algorithm Example', 'Safe state matrices and deadlock avoidance'],
   [Lightbulb, 'BCNF vs 3NF Normalization', 'Key differences and dependency preservation'],
   [Route, 'AI / ML Career Roadmap', 'Milestones, math foundations, and project specs'],
-  [BarChart3, 'CPU Scheduling Gantt Charts', 'SJF, FCFS, and Round Robin calculations'],
-  [Compass, 'Cache Memory & Virtual Addressing', 'Direct-mapped vs associative cache and page tables']
+  [BarChart3, 'Find GATE mock tests', 'Where can I practice timed test series?'],
+  [Compass, 'Find internship openings', 'Jobs and internships for my batch']
 ];
 
 const recentTopics = [
@@ -25,6 +25,7 @@ export default function AIAssistantPage() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,6 +50,7 @@ export default function AIAssistantPage() {
         {
           user: false,
           text: data.message,
+          navigation: data.navigation || null,
           matchedDocs: data.matchedDocs || [],
           matchedRoadmap: data.matchedRoadmap || null,
           provider: data.provider
@@ -183,7 +185,7 @@ export default function AIAssistantPage() {
           {messages.length === 0 ? (
             <div>
               <p className="max-w-xl text-sm leading-6 text-slate-500">
-                Choose a starter topic below or ask about any concept, algorithm, or past question from your curriculum. Answers are directly matched with course notes uploaded on NOTESX.
+                Choose a starter topic below or ask about any concept, algorithm, or past question from your curriculum. You can also describe what you're looking for — "where can I practice GATE tests" — and I'll take you straight to the right page.
               </p>
               <div className="mt-6 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
                 {actions.map(([Icon, title, desc]) => (
@@ -219,6 +221,33 @@ export default function AIAssistantPage() {
                     )}
                   </div>
 
+                  {/* AI-suggested redirect to the right page on NOTESX */}
+                  {!message.user && message.navigation && (
+                    <button
+                      onClick={() => navigate(message.navigation.path)}
+                      className="mt-3 max-w-[85%] w-full flex items-center justify-between gap-3 p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:border-emerald-300 hover:shadow-sm transition-all group cursor-pointer text-left"
+                    >
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-emerald-100 text-emerald-700">
+                          <MapPin size={15} />
+                        </span>
+                        <span className="min-w-0">
+                          <b className="block text-xs font-bold text-emerald-950 truncate">
+                            {message.navigation.label}
+                          </b>
+                          {message.navigation.reason && (
+                            <span className="block text-[11px] text-emerald-800/80 truncate">
+                              {message.navigation.reason}
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                      <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
+                        Take me there <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+                      </span>
+                    </button>
+                  )}
+
                   {/* Matched Documents Citation Cards */}
                   {!message.user && message.matchedDocs && message.matchedDocs.length > 0 && (
                     <div className="mt-3 max-w-[85%] w-full">
@@ -230,7 +259,7 @@ export default function AIAssistantPage() {
                         {message.matchedDocs.map((doc) => (
                           <Link
                             key={doc.id}
-                            to="/notes"
+                            to={`/notes/${doc.id}`}
                             className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm transition-all group"
                           >
                             <div className="min-w-0 pr-2">

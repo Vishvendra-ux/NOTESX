@@ -1,20 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles, FileText, ArrowRight, Loader2, RotateCcw, Compass, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bot, X, Send, Sparkles, FileText, ArrowRight, Loader2, RotateCcw, Compass, ExternalLink, MapPin } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { aiService } from '../services/api';
 
 const STARTER_PROMPTS = [
   'Explain Process Synchronization in OS',
   'How does Banker’s Algorithm prevent deadlocks?',
   'Difference between 3NF and BCNF in DBMS',
-  'How do I upload and share notes on NOTESX?'
+  'Where can I find GATE mock tests?'
 ];
 
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
-      text: "👋 Hi! I'm your **NOTESX Study & Docs Assistant**.\n\nAsk me any concept question, algorithm, or ask how to find specific lecture notes and documents on your campus platform!",
+      text: "👋 Hi! I'm your **NOTESX Study & Docs Assistant**.\n\nAsk me any concept question, algorithm, or tell me what you're looking for — I'll point you to (and take you to) the right page on NOTESX!",
       isBot: true,
       matchedDocs: []
     }
@@ -22,6 +22,7 @@ export default function AIAssistant() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,6 +50,7 @@ export default function AIAssistant() {
         {
           text: data.message || "Here's what I found from your course notes.",
           isBot: true,
+          navigation: data.navigation || null,
           matchedDocs: data.matchedDocs || [],
           matchedRoadmap: data.matchedRoadmap || null,
           provider: data.provider
@@ -210,6 +212,33 @@ export default function AIAssistant() {
                   )}
                 </div>
 
+                {/* AI-suggested redirect to the right page on NOTESX */}
+                {msg.isBot && msg.navigation && (
+                  <button
+                    onClick={() => { setIsOpen(false); navigate(msg.navigation.path); }}
+                    className="mt-2 max-w-[92%] w-full flex items-center justify-between gap-2.5 p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:border-emerald-300 hover:shadow-sm transition-all group cursor-pointer text-left"
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-emerald-100 text-emerald-700">
+                        <MapPin size={13} />
+                      </span>
+                      <span className="min-w-0">
+                        <b className="block text-xs font-bold text-emerald-950 truncate">
+                          {msg.navigation.label}
+                        </b>
+                        {msg.navigation.reason && (
+                          <span className="block text-[10px] text-emerald-800/80 truncate">
+                            {msg.navigation.reason}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                      Go <ArrowRight size={12} className="transition group-hover:translate-x-0.5" />
+                    </span>
+                  </button>
+                )}
+
                 {/* Referenced Notes & Docs Citations */}
                 {msg.isBot && msg.matchedDocs && msg.matchedDocs.length > 0 && (
                   <div className="mt-2.5 max-w-[92%] w-full space-y-2">
@@ -221,7 +250,7 @@ export default function AIAssistant() {
                       {msg.matchedDocs.map((doc) => (
                         <Link
                           key={doc.id}
-                          to="/notes"
+                          to={`/notes/${doc.id}`}
                           onClick={() => setIsOpen(false)}
                           className="flex items-center justify-between p-2 rounded-xl border border-indigo-100 bg-white hover:border-indigo-300 hover:shadow-sm transition-all group"
                         >

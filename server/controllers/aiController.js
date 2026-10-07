@@ -24,7 +24,80 @@ function extractKeywords(text) {
 }
 
 /**
- * Call Google Gemini API if API key is provided in environment
+ * Catalog of real NOTESX destinations the assistant may navigate to.
+ * Kept in sync with the client routes in client/src/App.jsx.
+ */
+const SITE_PAGES = [
+  { path: '/notes', name: 'Notes Directory', description: 'Browse and search all approved lecture notes and PDFs, filterable by subject, unit and college.' },
+  { path: '/notes/upload', name: 'Upload Notes', description: 'Upload and share study material or PDFs with your college.' },
+  { path: '/gate', name: 'GATE Preparation', description: 'GATE syllabus progress tracker organised by subject and topic.' },
+  { path: '/gate/tests', name: 'GATE Test Series', description: 'Take or create timed GATE mock and practice tests.' },
+  { path: '/gate/questions', name: 'GATE PYQ Discussion', description: 'Previous-year GATE questions with student explanations.' },
+  { path: '/doubts', name: 'Doubt Forum', description: 'Ask academic doubts and get answers from other students.' },
+  { path: '/doubts/ask', name: 'Ask a Doubt', description: 'Post a new question to the doubt forum.' },
+  { path: '/jobs', name: 'Job & Internship Portal', description: 'Browse jobs and internships, filterable by role, work mode and batch.' },
+  { path: '/roadmaps', name: 'Career Roadmaps', description: 'Interactive skill and career roadmaps like AI/ML, web dev and more.' },
+  { path: '/colleges', name: 'College Communities', description: 'Community pages and member directories per college.' },
+  { path: '/contests', name: 'Coding Contests', description: 'Coding contests and competitive programming challenges.' },
+  { path: '/leaderboard', name: 'Leaderboard', description: 'Ranking of top contributors on the platform.' },
+  { path: '/build-together', name: 'Build Together', description: 'Find teammates and collaborate on student projects.' },
+  { path: '/games', name: 'Learning Games', description: 'Educational and multiplayer games to play with friends.' },
+  { path: '/profile', name: 'My Profile', description: 'Your profile, uploads, bookmarks and account settings.' }
+];
+
+const SITE_PAGE_PATHS = new Set(SITE_PAGES.map(p => p.path));
+
+/**
+ * Validate/normalize a navigation suggestion coming from the LLM so a
+ * hallucinated or malformed path can never reach the client.
+ */
+function normalizeNavigation(navigation) {
+  if (!navigation || typeof navigation !== 'object') return null;
+  const path = String(navigation.path || '');
+  if (!SITE_PAGE_PATHS.has(path)) return null;
+  const page = SITE_PAGES.find(p => p.path === path);
+  return {
+    path,
+    label: String(navigation.label || page.name).slice(0, 80),
+    reason: String(navigation.reason || '').slice(0, 160)
+  };
+}
+
+/**
+ * Deterministic keyword router used when Gemini is unavailable, so the
+ * navigation feature still works with no API key configured.
+ */
+const NAV_RULES = [
+  { path: '/notes/upload', patterns: ['upload', 'share my', 'contribute'] },
+  { path: '/gate/tests', patterns: ['gate test', 'mock test', 'practice test', 'test series'] },
+  { path: '/gate/questions', patterns: ['pyq', 'previous year'] },
+  { path: '/gate', patterns: ['gate', 'syllabus tracker'] },
+  { path: '/jobs', patterns: ['job', 'internship', 'placement', 'fresher', 'hiring', 'recruit'] },
+  { path: '/doubts/ask', patterns: ['ask a question', 'post a doubt', 'ask my doubt'] },
+  { path: '/doubts', patterns: ['doubt', 'question forum'] },
+  { path: '/roadmaps', patterns: ['roadmap', 'career path', 'learning path'] },
+  { path: '/contests', patterns: ['contest', 'competitive programming'] },
+  { path: '/leaderboard', patterns: ['leaderboard', 'ranking'] },
+  { path: '/colleges', patterns: ['college', 'community', 'campus'] },
+  { path: '/build-together', patterns: ['build together', 'teammate', 'team up', 'collaborate', 'project partner'] },
+  { path: '/games', patterns: ['game', 'play'] },
+  { path: '/profile', patterns: ['my profile', 'my account', 'settings'] },
+  { path: '/notes', patterns: ['note', 'pdf', 'lecture', 'study material'] }
+];
+
+function matchNavigationFromPrompt(prompt) {
+  const lower = String(prompt).toLowerCase();
+  const rule = NAV_RULES.find(r => r.patterns.some(p => lower.includes(p)));
+  if (!rule) return null;
+  const page = SITE_PAGES.find(p => p.path === rule.path);
+  return { path: rule.path, label: page.name, reason: 'Matched from your question' };
+}
+
+/**
+ * Call Google Gemini API if API key is provided in environment.
+ * Returns { answer, navigation } — the model must answer as JSON with an
+ * optional navigation target chosen from SITE_PAGES (enforced by the enum
+ * in the response schema, so it cannot invent paths).
  */
 async function callGeminiIfAvailable(prompt, contextText) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -36,12 +109,17 @@ Provide clear, structured, and pedagogical responses with:
 1. A direct conceptual definition and explanation.
 2. Step-by-step algorithms, mechanisms, or formulas where applicable.
 3. Explicit references to the available NOTESX notes or documents in the context.
-4. Keep the tone friendly, academic, and practical.
+4. Keep the tone friendly, academic, and practical. Use markdown headings (###) and bullet lists.
+
+In addition to answering, decide whether the student is looking for somewhere to go on the NOTESX platform (a tool, page, or feature — e.g. "where can I practice GATE tests", "I want to upload notes", "find internships"). If so, set "navigation" to the single best destination from the catalog below; use its path exactly as listed. If the question is purely conceptual, set "navigation" to null.
+
+NOTESX page catalog:
+${SITE_PAGES.map(p => `- ${p.path} — ${p.name}: ${p.description}`).join('\n')}
 
 Context from NOTESX Knowledge Base & Documents:
 ${contextText}`;
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -53,7 +131,25 @@ ${contextText}`;
         ],
         generationConfig: {
           temperature: 0.3,
-          maxOutputTokens: 1000
+          maxOutputTokens: 2048,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              answer: { type: 'STRING' },
+              navigation: {
+                type: 'OBJECT',
+                nullable: true,
+                properties: {
+                  path: { type: 'STRING', enum: SITE_PAGES.map(p => p.path) },
+                  label: { type: 'STRING' },
+                  reason: { type: 'STRING' }
+                },
+                required: ['path', 'label', 'reason']
+              }
+            },
+            required: ['answer']
+          }
         }
       })
     });
@@ -65,7 +161,17 @@ ${contextText}`;
 
     const data = await res.json();
     const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    return candidateText || null;
+    if (!candidateText) return null;
+
+    try {
+      const parsed = JSON.parse(candidateText);
+      if (typeof parsed.answer === 'string' && parsed.answer.trim()) {
+        return { answer: parsed.answer, navigation: normalizeNavigation(parsed.navigation) };
+      }
+    } catch {
+      // Model replied in plain text despite the JSON schema — still usable
+    }
+    return { answer: candidateText, navigation: null };
   } catch (err) {
     console.warn('Gemini API call failed, falling back to local doc engine:', err.message);
     return null;
@@ -273,17 +379,27 @@ exports.ask = async (req, res, next) => {
     ].filter(Boolean).join('\n\n');
 
     // 2. Attempt Google Gemini call if configured
-    let aiResponse = await callGeminiIfAvailable(prompt, contextSummary);
-    let provider = 'gemini';
+    let geminiResult = await callGeminiIfAvailable(prompt, contextSummary);
+    let aiResponse;
+    let provider;
 
     // 3. Fallback to Local Document-Grounded Synthesis
-    if (!aiResponse) {
+    if (geminiResult) {
+      aiResponse = geminiResult.answer;
+      provider = 'gemini';
+    } else {
       aiResponse = generateLocalDocAnswer(prompt, matchedNotes, matchedRoadmaps, matchedDoubts[0]);
       provider = 'notesx-docs';
     }
 
+    // 4. Where should the student be redirected? Prefer the model's choice,
+    //    fall back to the deterministic keyword router (also covers the
+    //    no-API-key path).
+    const navigation = (geminiResult && geminiResult.navigation) || matchNavigationFromPrompt(prompt);
+
     return res.json({
       message: aiResponse,
+      navigation,
       matchedDocs: formattedDocs,
       matchedRoadmap: matchedRoadmaps ? {
         id: String(matchedRoadmaps._id),
@@ -298,3 +414,8 @@ exports.ask = async (req, res, next) => {
     next(error);
   }
 };
+
+// Exposed for unit tests of the navigation layer
+exports.matchNavigationFromPrompt = matchNavigationFromPrompt;
+exports.normalizeNavigation = normalizeNavigation;
+exports.SITE_PAGES = SITE_PAGES;

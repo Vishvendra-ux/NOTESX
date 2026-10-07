@@ -26,11 +26,21 @@ const setupSocket = require('./socket/index');
 
 const PORT = process.env.PORT || 5000;
 
+// Lock the socket handshake to the same origins the REST API allows (app.js).
+// Requests with no Origin header (non-browser clients) are still accepted.
+const allowedOrigins = app.get('allowedOrigins') || [];
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Using * for dev, can be configured for production
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true,
   }
 });
 
