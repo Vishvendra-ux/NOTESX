@@ -16,7 +16,7 @@ export default function Register() {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 
@@ -37,7 +37,7 @@ export default function Register() {
 
     try {
       await register({ name, email, password });
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -53,7 +53,7 @@ export default function Register() {
         name: 'Google Student',
         email: 'student.google@gmail.com',
       });
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

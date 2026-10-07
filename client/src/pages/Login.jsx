@@ -14,10 +14,10 @@ export default function Login() {
   const { user, login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const rawRedirect = location.state?.from?.pathname || '/dashboard';
-  const redirectPath = rawRedirect === '/login' ? '/dashboard' : rawRedirect;
+  const rawRedirect = location.state?.from?.pathname || '/';
+  const redirectPath = (rawRedirect === '/login' || rawRedirect === '/dashboard' || rawRedirect === '/profile') ? '/' : rawRedirect;
 
-  // If already logged in, redirect straight to intended page or dashboard
+  // If already logged in, redirect straight to intended page or front page
   useEffect(() => {
     if (user) {
       navigate(redirectPath, { replace: true });
