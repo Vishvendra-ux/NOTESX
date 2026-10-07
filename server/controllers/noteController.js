@@ -207,13 +207,9 @@ exports.get = async (req, res, next) => {
   }
 };
 
-// ── Create / Upload Note with Strict Hierarchy Validation ──
+// ── Create / Upload Note with Strict Hierarchy Validation & Public Link Support ──
 exports.create = async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'A note document or presentation file is required' });
-    }
-
     const {
       title,
       description,
@@ -224,8 +220,23 @@ exports.create = async (req, res, next) => {
       subjectId,
       unit = 'Unit 1',
       topic = '',
-      tags = '[]'
+      tags = '[]',
+      externalLink = ''
     } = req.body;
+
+    const trimmedLink = (externalLink || req.body.link || req.body.fileUrl || '').trim();
+
+    if (!req.file && !trimmedLink) {
+      return res.status(400).json({ 
+        message: 'Please provide either a study document file or a public Google Drive / Docs / PDF link.' 
+      });
+    }
+
+    if (trimmedLink && !/^https?:\/\//i.test(trimmedLink)) {
+      return res.status(400).json({
+        message: 'Invalid link. Please provide a valid URL starting with http:// or https://'
+      });
+    }
 
     if (!title || !title.trim()) {
       return res.status(400).json({ message: 'Note title is required' });
@@ -269,13 +280,34 @@ exports.create = async (req, res, next) => {
       }
     }
 
-    // Determine normalized file type
-    const mime = req.file.mimetype.toLowerCase();
-    const originalName = req.file.originalname.toLowerCase();
+    // Determine normalized file type, file URL, and size
     let normType = 'pdf';
-    if (mime.includes('image') || originalName.match(/\.(jpg|jpeg|png)$/)) normType = 'img';
-    else if (mime.includes('word') || originalName.match(/\.(doc|docx)$/)) normType = 'doc';
-    else if (mime.includes('presentation') || originalName.match(/\.(ppt|pptx)$/)) normType = 'ppt';
+    let finalFileUrl = '';
+    let finalFileSize = 0;
+    const isExternal = Boolean(trimmedLink && !req.file);
+
+    if (req.file) {
+      const mime = req.file.mimetype.toLowerCase();
+      const originalName = req.file.originalname.toLowerCase();
+      if (mime.includes('image') || originalName.match(/\.(jpg|jpeg|png)$/)) normType = 'img';
+      else if (mime.includes('word') || originalName.match(/\.(doc|docx)$/)) normType = 'doc';
+      else if (mime.includes('presentation') || originalName.match(/\.(ppt|pptx)$/)) normType = 'ppt';
+      else normType = 'pdf';
+
+      finalFileUrl = req.file.path && req.file.path.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`;
+      finalFileSize = req.file.size;
+    } else {
+      const lowerLink = trimmedLink.toLowerCase();
+      if (lowerLink.includes('drive.google.com')) normType = 'drive';
+      else if (lowerLink.includes('docs.google.com/document')) normType = 'gdoc';
+      else if (lowerLink.includes('docs.google.com/presentation')) normType = 'ppt';
+      else if (lowerLink.includes('docs.google.com/spreadsheets')) normType = 'sheet';
+      else if (lowerLink.includes('.pdf')) normType = 'pdf';
+      else normType = 'link';
+
+      finalFileUrl = trimmedLink;
+      finalFileSize = 0;
+    }
 
     let parsedTags = [];
     try {
@@ -304,9 +336,11 @@ exports.create = async (req, res, next) => {
       topic: topic || '',
       tags: parsedTags,
       uploaderId: req.user._id,
-      fileUrl: req.file.path && req.file.path.startsWith('http') ? req.file.path : `/uploads/${req.file.filename}`,
+      fileUrl: finalFileUrl,
+      externalLink: trimmedLink,
+      isExternalLink: isExternal,
       fileType: normType,
-      fileSize: req.file.size,
+      fileSize: finalFileSize,
       status: 'approved', // Auto-approved so students see their uploaded notes immediately
       college: req.user.collegeName || 'Engineering Campus',
       ratingAverage: 0,
@@ -329,7 +363,7 @@ exports.create = async (req, res, next) => {
   }
 };
 
-// ── Download Note with Backend Tracking ──
+// ── Download / Access Note with Backend Tracking ──
 exports.download = async (req, res, next) => {
   try {
     const note = await Note.findByIdAndUpdate(
@@ -347,7 +381,7 @@ exports.download = async (req, res, next) => {
     });
 
     res.json({
-      downloadUrl: note.fileUrl,
+      downloadUrl: note.externalLink || note.fileUrl,
       downloadCount: note.downloadCount
     });
   } catch (error) {

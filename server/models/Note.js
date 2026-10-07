@@ -73,9 +73,18 @@ const noteSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  externalLink: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  isExternalLink: {
+    type: Boolean,
+    default: false
+  },
   fileType: {
     type: String,
-    default: 'pdf' // 'pdf', 'doc', 'ppt', 'img'
+    default: 'pdf' // 'pdf', 'doc', 'ppt', 'img', 'drive', 'gdoc', 'link'
   },
   fileSize: {
     type: Number,

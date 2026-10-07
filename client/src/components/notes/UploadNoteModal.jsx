@@ -1,10 +1,65 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { 
   X, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, 
-  Layers, ChevronRight, BookOpen, GraduationCap, Shield 
+  Layers, ChevronRight, BookOpen, GraduationCap, Shield,
+  Link2, Globe, ExternalLink, Info
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { hierarchyService, notesService } from '../../services/api';
+
+const getLinkDetails = (url) => {
+  if (!url) return null;
+  const lower = url.trim().toLowerCase();
+  if (lower.includes('drive.google.com')) {
+    return {
+      type: 'drive',
+      name: 'Google Drive',
+      badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300',
+      hint: 'Make sure General access is set to "Anyone with the link can view"'
+    };
+  }
+  if (lower.includes('docs.google.com/document')) {
+    return {
+      type: 'gdoc',
+      name: 'Google Docs',
+      badge: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300',
+      hint: 'Make sure Share setting is set to "Anyone with the link can view"'
+    };
+  }
+  if (lower.includes('docs.google.com/presentation')) {
+    return {
+      type: 'gslide',
+      name: 'Google Slides',
+      badge: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300',
+      hint: 'Make sure Share setting is set to "Anyone with the link can view"'
+    };
+  }
+  if (lower.includes('docs.google.com/spreadsheets')) {
+    return {
+      type: 'gsheet',
+      name: 'Google Sheets',
+      badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300',
+      hint: 'Make sure Share setting is set to "Anyone with the link can view"'
+    };
+  }
+  if (lower.endsWith('.pdf') || lower.includes('.pdf')) {
+    return {
+      type: 'pdf',
+      name: 'Public Web PDF',
+      badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300',
+      hint: 'Direct PDF link accessible to everyone'
+    };
+  }
+  if (/^https?:\/\//i.test(lower)) {
+    return {
+      type: 'web',
+      name: 'Public Web Link',
+      badge: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300',
+      hint: 'Make sure this web link is publicly accessible without requiring logins'
+    };
+  }
+  return null;
+};
 
 export default function UploadNoteModal({
   isOpen,
@@ -41,6 +96,9 @@ export default function UploadNoteModal({
   const [description, setDescription] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [file, setFile] = useState(null);
+  const [externalLink, setExternalLink] = useState('');
+
+  const linkDetails = getLinkDetails(externalLink);
 
   // Terms & Copyright confirmation
   const [hasPermission, setHasPermission] = useState(false);
@@ -57,6 +115,8 @@ export default function UploadNoteModal({
     if (!isOpen) {
       setHasPermission(false);
       setNoCopyrightInfringement(false);
+      setFile(null);
+      setExternalLink('');
     }
   }, [isOpen]);
 
@@ -216,8 +276,13 @@ export default function UploadNoteModal({
       return;
     }
 
-    if (!file) {
-      setError('Please choose a PDF, DOC, PPT, or Image document.');
+    if (!file && !externalLink.trim()) {
+      setError('Please choose a document file or provide a public Google Drive / Docs / PDF link.');
+      return;
+    }
+
+    if (externalLink.trim() && !/^https?:\/\//i.test(externalLink.trim())) {
+      setError('Please enter a valid link starting with https:// or http://');
       return;
     }
 
@@ -237,7 +302,12 @@ export default function UploadNoteModal({
     try {
       setUploading(true);
       const formData = new FormData();
-      formData.append('file', file);
+      if (file) {
+        formData.append('file', file);
+      }
+      if (externalLink.trim()) {
+        formData.append('externalLink', externalLink.trim());
+      }
       formData.append('title', title.trim());
       formData.append('description', description.trim());
       formData.append('courseId', selectedCourseId);
@@ -477,37 +547,119 @@ export default function UploadNoteModal({
             />
           </div>
 
-          {/* 7. File Drag & Drop Dropzone */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Attach Study Document</label>
-            <label className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition ${
-              file ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30'
-            }`}>
-              <input
-                required
-                type="file"
-                accept=".pdf,.doc,.docx,.ppt,.pptx,image/*"
-                className="sr-only"
-                onChange={handleFileChange}
-              />
-              {file ? (
-                <>
-                  <CheckCircle2 size={26} className="text-emerald-600 mb-1" />
-                  <b className="text-xs text-emerald-900">{file.name}</b>
-                  <span className="text-[11px] text-emerald-700 mt-0.5">
-                    {(file.size / (1024 * 1024)).toFixed(2)} MB • Ready to Upload
+          {/* 7. Study Document Link (Google Drive / Docs / PDF) or File */}
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
+                  Public Document Link (Google Drive, Google Docs, or Web PDF)
+                </label>
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                  ⚡ Recommended for Instant Access
+                </span>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Link2 size={16} />
+                </div>
+                <input
+                  type="url"
+                  value={externalLink}
+                  onChange={(e) => setExternalLink(e.target.value)}
+                  placeholder="Paste Google Drive, Google Docs, or PDF public link (e.g. https://drive.google.com/...)"
+                  className="input-field pl-9 pr-24 py-2.5 text-xs"
+                />
+                {externalLink.trim() && (
+                  <div className="absolute inset-y-0 right-1.5 flex items-center">
+                    <a
+                      href={externalLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 px-2.5 py-1 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 transition shadow-xs"
+                      title="Test if link opens publicly"
+                    >
+                      <ExternalLink size={12} /> Test Link
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Detected Link Badge */}
+              {linkDetails && (
+                <div className="mt-2 flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-1 rounded-md px-2.5 py-0.5 text-[10px] font-extrabold border ${linkDetails.badge}`}>
+                    <Globe size={11} /> {linkDetails.name} Detected
                   </span>
-                </>
-              ) : (
-                <>
-                  <Upload size={24} className="text-indigo-600 mb-1" />
-                  <b className="text-xs text-slate-800">Choose PDF, Word, PowerPoint, or Image</b>
-                  <span className="text-[11px] text-slate-500 mt-0.5">
-                    Max size: 25 MB • Executables strictly blocked
-                  </span>
-                </>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{linkDetails.hint}</span>
+                </div>
               )}
-            </label>
+
+              {/* Public Sharing Instructions Box */}
+              <div className="mt-2.5 rounded-xl border border-blue-200/80 bg-blue-50/70 dark:border-blue-900/50 dark:bg-blue-950/40 p-3 text-xs text-blue-900 dark:text-blue-200">
+                <div className="flex items-start gap-2.5">
+                  <Info size={16} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-extrabold block">Make Sure Link is Public for All Students:</span>
+                    <p className="mt-0.5 text-[11px] text-blue-800 dark:text-blue-300 leading-relaxed">
+                      In Google Drive or Google Docs, click <strong>Share</strong> → change General Access to <strong>"Anyone with the link can view"</strong>. This allows every student to access the notes immediately without permission requests.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+              <span className="flex-shrink mx-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {externalLink.trim() ? 'Optional File Attachment' : 'OR Upload File From Device'}
+              </span>
+              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+            </div>
+
+            {/* File Drag & Drop Dropzone */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                Attach Local Document {externalLink.trim() ? '(Optional)' : '(Required if no link provided)'}
+              </label>
+              <label className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-5 text-center transition ${
+                file ? 'border-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30' : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 dark:border-slate-800'
+              }`}>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,image/*"
+                  className="sr-only"
+                  onChange={handleFileChange}
+                />
+                {file ? (
+                  <div className="flex items-center justify-between w-full px-2">
+                    <div className="flex items-center gap-2.5 text-left">
+                      <CheckCircle2 size={24} className="text-emerald-600 shrink-0" />
+                      <div>
+                        <b className="text-xs text-emerald-900 dark:text-emerald-300 block truncate max-w-xs">{file.name}</b>
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB • Ready to Upload
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setFile(null); }}
+                      className="text-xs font-bold text-rose-600 hover:text-rose-800 px-2 py-1 rounded-lg hover:bg-rose-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload size={22} className="text-indigo-600 mb-1" />
+                    <b className="text-xs text-slate-800 dark:text-slate-200">Choose PDF, Word, PowerPoint, or Image</b>
+                    <span className="text-[11px] text-slate-500 mt-0.5">
+                      Max size: 25 MB • Executables strictly blocked
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
           </div>
 
           {/* 8. Terms & Copyright Declaration */}
@@ -527,7 +679,7 @@ export default function UploadNoteModal({
                   required
                 />
                 <span className="text-xs text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white leading-relaxed font-medium">
-                  I have the right/permission to upload this material.
+                  I have the right/permission to upload or link this study material.
                 </span>
               </label>
 
@@ -557,10 +709,10 @@ export default function UploadNoteModal({
             </button>
             <button
               type="submit"
-              disabled={uploading || !title.trim() || !file || !hasPermission || !noCopyrightInfringement}
+              disabled={uploading || !title.trim() || (!file && !externalLink.trim()) || !hasPermission || !noCopyrightInfringement}
               className="btn-primary py-2.5 px-6 text-xs font-bold gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-200 dark:shadow-none"
             >
-              <Upload size={14} /> {uploading ? 'Uploading...' : 'Upload'}
+              <Upload size={14} /> {uploading ? 'Publishing Notes...' : 'Publish Notes'}
             </button>
           </div>
         </form>

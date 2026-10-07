@@ -2,11 +2,28 @@ import React, { useState, useEffect, useContext } from 'react';
 import { 
   X, ArrowLeft, Download, Bookmark, Flag, Star, ThumbsUp, 
   User, CheckCircle2, Award, Calendar, FileText, Send, 
-  Layers, ExternalLink, Sparkles, AlertCircle 
+  Layers, ExternalLink, Sparkles, AlertCircle, Globe 
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { notesService } from '../../services/api';
 import RatingStars from './RatingStars';
+
+const getEmbedUrl = (url) => {
+  if (!url) return null;
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+
+  const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if (driveOpenMatch) return `https://drive.google.com/file/d/${driveOpenMatch[1]}/preview`;
+
+  const docsMatch = url.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/);
+  if (docsMatch) return `https://docs.google.com/document/d/${docsMatch[1]}/preview`;
+
+  const slidesMatch = url.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+  if (slidesMatch) return `https://docs.google.com/presentation/d/${slidesMatch[1]}/preview`;
+
+  return null;
+};
 
 export default function NoteViewerModal({
   noteId,
@@ -62,17 +79,27 @@ export default function NoteViewerModal({
     badge: 'Top Contributor 🏆'
   };
 
+  const targetLink = note?.externalLink || note?.fileUrl;
+  const isCloudLink = Boolean(
+    note?.isExternalLink ||
+    (note?.externalLink && !note?.fileSize) ||
+    note?.fileType === 'drive' ||
+    note?.fileType === 'gdoc' ||
+    String(targetLink).toLowerCase().includes('drive.google.com') ||
+    String(targetLink).toLowerCase().includes('docs.google.com')
+  );
+  const embedUrl = getEmbedUrl(targetLink);
+
   const handleDownload = async () => {
     try {
       const { data } = await notesService.download(note._id || note.id);
-      if (data && data.downloadUrl) {
-        window.open(data.downloadUrl, '_blank');
+      const url = data?.downloadUrl || targetLink;
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
         setNote(prev => ({ ...prev, downloadCount: (prev.downloadCount || 0) + 1 }));
-      } else if (note.fileUrl) {
-        window.open(note.fileUrl, '_blank');
       }
     } catch (err) {
-      if (note.fileUrl) window.open(note.fileUrl, '_blank');
+      if (targetLink) window.open(targetLink, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -195,7 +222,7 @@ export default function NoteViewerModal({
                 {note?.year || '3rd Year'} • {note?.semester || 'Semester 5'}
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-600">
-                {note?.fileType || 'PDF'} • 2.4 MB
+                {isCloudLink ? 'Cloud Link' : `${note?.fileType || 'PDF'} • 2.4 MB`}
               </span>
             </div>
 
@@ -213,7 +240,7 @@ export default function NoteViewerModal({
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-500">
                   <Download size={15} />
-                  <span><b>{Number(note?.downloadCount || 1240).toLocaleString()}</b> downloads</span>
+                  <span><b>{Number(note?.downloadCount || 1240).toLocaleString()}</b> {isCloudLink ? 'views' : 'downloads'}</span>
                 </div>
               </div>
 
@@ -221,31 +248,58 @@ export default function NoteViewerModal({
                 onClick={handleDownload}
                 className="btn-primary py-2.5 px-6 text-xs sm:text-sm font-bold gap-2 w-full sm:w-auto shadow-md shadow-indigo-200"
               >
-                <Download size={16} /> Download File
+                {isCloudLink ? <ExternalLink size={16} /> : <Download size={16} />}
+                {isCloudLink ? 'Open Public Document' : 'Download File'}
               </button>
             </div>
           </div>
 
           {/* Embedded Document Preview / Reader Box */}
-          <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-900/5 p-4 sm:p-6 text-center">
-            <div className="mx-auto max-w-md py-8">
-              <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white text-indigo-600 shadow-md mb-4">
-                <FileText size={32} />
+          {embedUrl ? (
+            <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-md">
+              <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5 text-xs text-white">
+                <span className="flex items-center gap-2 font-bold">
+                  <Globe size={15} className="text-blue-400" />
+                  Public Cloud Reader (Google Drive / Docs)
+                </span>
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="inline-flex items-center gap-1.5 font-bold text-indigo-400 hover:text-indigo-300 transition"
+                >
+                  Open in New Tab <ExternalLink size={13} />
+                </button>
               </div>
-              <h4 className="text-base font-bold text-slate-800 mb-1">
-                Document Preview Ready
-              </h4>
-              <p className="text-xs text-slate-500 mb-4">
-                {note?.title} ({note?.fileType?.toUpperCase() || 'PDF'} document)
-              </p>
-              <button
-                onClick={handleDownload}
-                className="btn-secondary py-2 px-5 text-xs font-semibold gap-1.5 mx-auto"
-              >
-                <ExternalLink size={14} /> Open Full Screen Preview
-              </button>
+              <iframe
+                src={embedUrl}
+                title={note?.title || 'Note Preview'}
+                className="h-[480px] w-full border-0 bg-white"
+                allow="autoplay"
+              />
             </div>
-          </div>
+          ) : (
+            <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-900/5 p-4 sm:p-6 text-center">
+              <div className="mx-auto max-w-md py-8">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white text-indigo-600 shadow-md mb-4">
+                  {isCloudLink ? <Globe size={32} className="text-blue-600" /> : <FileText size={32} />}
+                </div>
+                <h4 className="text-base font-bold text-slate-800 mb-1">
+                  {isCloudLink ? 'Public Cloud Material Ready' : 'Document Preview Ready'}
+                </h4>
+                <p className="text-xs text-slate-500 mb-4">
+                  {isCloudLink 
+                    ? 'Shared publicly on Google Drive / Docs with open view access for all students.'
+                    : `${note?.title} (${note?.fileType?.toUpperCase() || 'PDF'} document)`}
+                </p>
+                <button
+                  onClick={handleDownload}
+                  className="btn-secondary py-2 px-5 text-xs font-semibold gap-1.5 mx-auto"
+                >
+                  <ExternalLink size={14} /> {isCloudLink ? 'Open Document in New Tab' : 'Open Full Screen Preview'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Note Description & Syllabus Coverage */}
           <div className="mb-8">

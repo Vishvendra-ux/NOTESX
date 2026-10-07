@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Download, Eye, Star, User, Bookmark, MoreVertical, 
-  Flag, Check, ExternalLink, Sparkles 
+  Flag, Check, ExternalLink, Sparkles, Globe 
 } from 'lucide-react';
 
 export default function NoteCard({
@@ -15,9 +15,20 @@ export default function NoteCard({
   const [showMenu, setShowMenu] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  const getFileBadge = (type) => {
+  const getFileBadge = (type, extLink, url) => {
     const t = (type || 'pdf').toLowerCase();
-    if (t.includes('pdf')) {
+    const link = (extLink || url || '').toLowerCase();
+
+    if (t.includes('drive') || link.includes('drive.google.com')) {
+      return { icon: <Globe size={18} className="text-amber-500" />, label: 'G-Drive', bg: 'bg-amber-50 border-amber-100 text-amber-700' };
+    }
+    if (t.includes('gdoc') || link.includes('docs.google.com/document')) {
+      return { icon: <Globe size={18} className="text-blue-500" />, label: 'G-Docs', bg: 'bg-blue-50 border-blue-100 text-blue-700' };
+    }
+    if (link.includes('docs.google.com/presentation')) {
+      return { icon: <FileText size={18} className="text-orange-500" />, label: 'G-Slides', bg: 'bg-orange-50 border-orange-100 text-orange-700' };
+    }
+    if (t.includes('pdf') || link.endsWith('.pdf')) {
       return { icon: <FileText size={18} className="text-rose-500" />, label: 'PDF', bg: 'bg-rose-50 border-rose-100 text-rose-700' };
     }
     if (t.includes('doc') || t.includes('word')) {
@@ -29,12 +40,16 @@ export default function NoteCard({
     if (t.includes('image') || t.includes('img')) {
       return { icon: <FileText size={18} className="text-emerald-500" />, label: 'IMG', bg: 'bg-emerald-50 border-emerald-100 text-emerald-700' };
     }
+    if (extLink) {
+      return { icon: <ExternalLink size={18} className="text-indigo-500" />, label: 'Public Link', bg: 'bg-indigo-50 border-indigo-100 text-indigo-700' };
+    }
     return { icon: <FileText size={18} className="text-indigo-500" />, label: 'PDF', bg: 'bg-indigo-50 border-indigo-100 text-indigo-700' };
   };
 
-  const badge = getFileBadge(note.fileType);
+  const badge = getFileBadge(note.fileType, note.externalLink, note.fileUrl);
 
   const formatFileSize = (bytes) => {
+    if (note.isExternalLink || (note.externalLink && !bytes)) return 'Cloud Link';
     if (!bytes) return '2.4 MB';
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -46,11 +61,12 @@ export default function NoteCard({
   const handleDownloadClick = async (e) => {
     e.stopPropagation();
     setDownloading(true);
+    const targetUrl = note.externalLink || note.fileUrl;
     try {
       if (onDownload) {
         await onDownload(note);
-      } else if (note.fileUrl) {
-        window.open(note.fileUrl, '_blank');
+      } else if (targetUrl) {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
     } finally {
       setTimeout(() => setDownloading(false), 800);

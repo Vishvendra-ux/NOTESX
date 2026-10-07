@@ -734,15 +734,15 @@ export default function Notes() {
 
   const handleDownloadNote = async (note) => {
     const noteId = note._id || note.id;
+    const targetUrl = note.externalLink || note.fileUrl;
     try {
       const { data } = await notesService.download(noteId);
-      if (data && data.downloadUrl) {
-        window.open(data.downloadUrl, '_blank');
-      } else if (note.fileUrl) {
-        window.open(note.fileUrl, '_blank');
+      const url = data?.downloadUrl || targetUrl;
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
-      if (note.fileUrl) window.open(note.fileUrl, '_blank');
+      if (targetUrl) window.open(targetUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
