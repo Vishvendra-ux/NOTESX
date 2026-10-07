@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check, Users2, Gamepad2, MessageCircle, Trophy } from 'lucide-react';
+import { Search, Bell, Menu, X, ChevronDown, Sparkles, LogOut, ShieldCheck, User, BookOpen, Check, Users2, Gamepad2, MessageCircle, Trophy, Database } from 'lucide-react';
 import { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { notesService } from '../services/api';
@@ -437,6 +437,15 @@ export default function Navbar() {
                         >
                           <Sparkles size={14} /> AI Study Assistant
                         </Link>
+                        {user.role === 'admin' && (
+                          <Link
+                            to="/admin/gate-questions"
+                            onClick={() => setDropdownOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl"
+                          >
+                            <Database size={14} /> GATE Question Import
+                          </Link>
+                        )}
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl"

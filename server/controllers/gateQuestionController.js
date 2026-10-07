@@ -1,4 +1,19 @@
 const GateQuestion = require('../models/GateQuestion');
+const { importQuestions, syllabus } = require('../services/gateQuestionImportService');
+
+// Subject/topic catalog the admin uploader uses to pick valid IDs
+exports.getCatalog = (req, res) => {
+  res.json(syllabus.subjects);
+};
+
+// Admin bulk import (POST /api/gate/questions/import)
+exports.importQuestions = async (req, res, next) => {
+  try {
+    res.json(await importQuestions(req.body || {}));
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.getQuestions = async (req, res, next) => {
   try {

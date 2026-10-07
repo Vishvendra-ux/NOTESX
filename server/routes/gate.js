@@ -1,10 +1,14 @@
 const router = require('express').Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect, authorize } = require('../middleware/authMiddleware');
 const progressController = require('../controllers/gateProgressController');
 const questionController = require('../controllers/gateQuestionController');
 
 // Public or optional protect if you want non-logged in users to practice
 router.get('/questions', questionController.getQuestions);
+router.get('/catalog', questionController.getCatalog);
+
+// Admin-only bulk import of GATE questions
+router.post('/questions/import', protect, authorize('admin'), questionController.importQuestions);
 
 router.use(protect);
 router.get('/progress', progressController.getProgress);

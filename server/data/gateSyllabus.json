@@ -1,0 +1,323 @@
+{
+  "source": "client/src/data/gateSyllabus.js",
+  "subjects": [
+    {
+      "id": "engineering-mathematics",
+      "name": "Engineering Mathematics",
+      "topics": [
+        {
+          "id": "math-discrete",
+          "name": "Discrete mathematics"
+        },
+        {
+          "id": "math-graphs",
+          "name": "Graph theory"
+        },
+        {
+          "id": "math-combinatorics",
+          "name": "Combinatorics and recurrence relations"
+        },
+        {
+          "id": "math-linear-algebra",
+          "name": "Linear algebra"
+        },
+        {
+          "id": "math-calculus",
+          "name": "Calculus"
+        },
+        {
+          "id": "math-probability",
+          "name": "Probability and statistics"
+        }
+      ]
+    },
+    {
+      "id": "digital-logic",
+      "name": "Digital Logic",
+      "topics": [
+        {
+          "id": "logic-number-systems",
+          "name": "Number systems and arithmetic"
+        },
+        {
+          "id": "logic-boolean-algebra",
+          "name": "Boolean algebra and minimization"
+        },
+        {
+          "id": "logic-combinational",
+          "name": "Combinational circuits"
+        },
+        {
+          "id": "logic-sequential",
+          "name": "Sequential circuits"
+        }
+      ]
+    },
+    {
+      "id": "computer-organization",
+      "name": "Computer Organization & Architecture",
+      "topics": [
+        {
+          "id": "coa-instructions",
+          "name": "Instruction set and addressing modes"
+        },
+        {
+          "id": "coa-datapath",
+          "name": "ALU and control unit design"
+        },
+        {
+          "id": "coa-pipeline",
+          "name": "Instruction pipelining and hazards"
+        },
+        {
+          "id": "coa-memory",
+          "name": "Memory interfacing and cache mapping"
+        },
+        {
+          "id": "coa-io",
+          "name": "I/O interfaces, interrupts and DMA"
+        }
+      ]
+    },
+    {
+      "id": "programming-data-structures",
+      "name": "Programming & Data Structures",
+      "topics": [
+        {
+          "id": "pds-c-programming",
+          "name": "C programming and memory"
+        },
+        {
+          "id": "pds-recursion",
+          "name": "Recursion"
+        },
+        {
+          "id": "pds-arrays-lists",
+          "name": "Arrays and linked lists"
+        },
+        {
+          "id": "pds-stacks-queues",
+          "name": "Stacks and queues"
+        },
+        {
+          "id": "pds-trees",
+          "name": "Trees and binary search trees"
+        },
+        {
+          "id": "pds-heaps-graphs",
+          "name": "Binary heaps and graphs"
+        }
+      ]
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithms",
+      "topics": [
+        {
+          "id": "algo-analysis",
+          "name": "Algorithm analysis"
+        },
+        {
+          "id": "algo-search-sort",
+          "name": "Searching and sorting"
+        },
+        {
+          "id": "algo-hashing",
+          "name": "Hashing"
+        },
+        {
+          "id": "algo-divide-conquer",
+          "name": "Divide and conquer"
+        },
+        {
+          "id": "algo-greedy",
+          "name": "Greedy algorithms"
+        },
+        {
+          "id": "algo-dynamic-programming",
+          "name": "Dynamic programming"
+        },
+        {
+          "id": "algo-graphs",
+          "name": "Graph algorithms"
+        }
+      ]
+    },
+    {
+      "id": "theory-of-computation",
+      "name": "Theory of Computation",
+      "topics": [
+        {
+          "id": "toc-finite-automata",
+          "name": "Finite automata"
+        },
+        {
+          "id": "toc-regular-languages",
+          "name": "Regular expressions and languages"
+        },
+        {
+          "id": "toc-context-free",
+          "name": "Context-free grammars"
+        },
+        {
+          "id": "toc-pda",
+          "name": "Pushdown automata"
+        },
+        {
+          "id": "toc-turing",
+          "name": "Turing machines and decidability"
+        },
+        {
+          "id": "toc-undecidability",
+          "name": "Undecidability and reductions"
+        }
+      ]
+    },
+    {
+      "id": "compiler-design",
+      "name": "Compiler Design",
+      "topics": [
+        {
+          "id": "compiler-lexical",
+          "name": "Lexical analysis"
+        },
+        {
+          "id": "compiler-parsing",
+          "name": "Parsing and syntax analysis"
+        },
+        {
+          "id": "compiler-syntax-directed",
+          "name": "Syntax-directed translation"
+        },
+        {
+          "id": "compiler-runtime",
+          "name": "Runtime environments"
+        },
+        {
+          "id": "compiler-intermediate",
+          "name": "Intermediate code generation"
+        },
+        {
+          "id": "compiler-optimization",
+          "name": "Local optimization and data-flow analysis"
+        }
+      ]
+    },
+    {
+      "id": "operating-systems",
+      "name": "Operating Systems",
+      "topics": [
+        {
+          "id": "os-processes",
+          "name": "Processes and threads"
+        },
+        {
+          "id": "os-scheduling",
+          "name": "CPU scheduling"
+        },
+        {
+          "id": "os-synchronization",
+          "name": "Synchronization"
+        },
+        {
+          "id": "os-deadlocks",
+          "name": "Deadlocks"
+        },
+        {
+          "id": "os-memory",
+          "name": "Memory management"
+        },
+        {
+          "id": "os-virtual-memory",
+          "name": "Virtual memory"
+        },
+        {
+          "id": "os-files-io",
+          "name": "File systems and I/O"
+        }
+      ]
+    },
+    {
+      "id": "databases",
+      "name": "Databases",
+      "topics": [
+        {
+          "id": "dbms-er-relational",
+          "name": "ER and relational models"
+        },
+        {
+          "id": "dbms-sql",
+          "name": "SQL and relational algebra"
+        },
+        {
+          "id": "dbms-functional-dependencies",
+          "name": "Functional dependencies"
+        },
+        {
+          "id": "dbms-normalization",
+          "name": "Normalization"
+        },
+        {
+          "id": "dbms-storage-indexing",
+          "name": "Storage and indexing"
+        },
+        {
+          "id": "dbms-transactions",
+          "name": "Transactions and concurrency"
+        }
+      ]
+    },
+    {
+      "id": "computer-networks",
+      "name": "Computer Networks",
+      "topics": [
+        {
+          "id": "net-fundamentals",
+          "name": "Layering, switching and performance"
+        },
+        {
+          "id": "net-link-layer",
+          "name": "Data link layer and Ethernet"
+        },
+        {
+          "id": "net-routing",
+          "name": "Distance-vector and link-state routing"
+        },
+        {
+          "id": "net-ip-addressing",
+          "name": "IPv4, fragmentation, CIDR and NAT"
+        },
+        {
+          "id": "net-transport",
+          "name": "TCP flow control, congestion and sockets"
+        },
+        {
+          "id": "net-application",
+          "name": "DNS and HTTP"
+        }
+      ]
+    },
+    {
+      "id": "general-aptitude",
+      "name": "General Aptitude",
+      "topics": [
+        {
+          "id": "ga-verbal",
+          "name": "Verbal aptitude"
+        },
+        {
+          "id": "ga-quantitative",
+          "name": "Quantitative aptitude"
+        },
+        {
+          "id": "ga-analytical",
+          "name": "Analytical aptitude"
+        },
+        {
+          "id": "ga-spatial",
+          "name": "Spatial aptitude"
+        }
+      ]
+    }
+  ]
+}

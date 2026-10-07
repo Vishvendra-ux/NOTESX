@@ -1,72 +1,51 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-const GateQuestion = require('../models/GateQuestion');
+const { importQuestions } = require('../services/gateQuestionImportService');
 
 const jsonFilePath = process.argv[2] || './gate_questions_scraped.json';
-const targetSubjectId = process.argv[3]; 
+const targetSubjectId = process.argv[3];
 const targetTopicId = process.argv[4];
 
 const importData = async () => {
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ MongoDB Connected');
     if (!fs.existsSync(jsonFilePath)) {
       console.error(`❌ File not found: ${jsonFilePath}`);
       process.exit(1);
     }
-
-    if (!targetSubjectId || !targetTopicId) {
-      console.error('❌ Please provide subjectId and topicId.');
-      console.log('Usage: node importGateQuestions.js <file.json> <subjectId> <topicId>');
-      console.log('Example: node importGateQuestions.js data.json algorithms algo-analysis');
+    const data = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
+    if (!Array.isArray(data)) {
+      console.error('❌ JSON file must contain an array of questions');
       process.exit(1);
     }
+    if (!targetSubjectId || !targetTopicId) {
+      console.log('ℹ️  No subjectId/topicId arguments — rows must carry their own subjectId and topicId.');
+      console.log('   (Legacy per-topic usage: node importGateQuestions.js <file.json> <subjectId> <topicId>)');
+    }
 
-    const data = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('✅ MongoDB Connected');
 
-    // Format data to match our schema
-    const formattedData = data.map(q => ({
-      examCategory: q.examCategory || 'GATE CSE',
-      examYear: q.examYear || 'Unknown Year',
-      subjectId: targetSubjectId,
-      topicId: targetTopicId,
-      subjectName: q.subjectName || targetSubjectId,
-      topicName: q.topic || targetTopicId,
-      questionType: q.questionType || 'MCQ',
-      marks: q.marks || 1,
-      questionHtml: q.questionHtml || q.question || '',
-      options: q.options || [],
-      correctAnswer: q.correctAnswer || '',
-      explanationHtml: q.explanationHtml || q.explanation || ''
+    const rows = data.map((q) => ({
+      ...q,
+      subjectId: q.subjectId || targetSubjectId,
+      topicId: q.topicId || targetTopicId
     }));
 
-    console.log(`⏳ Importing ${formattedData.length} questions...`);
-    
-    // Idempotent upsert keyed by a stable hash of the question identity
-    const ops = formattedData.map(q => {
-      const sourceKey = crypto.createHash('sha1')
-        .update([q.subjectId, q.topicId, q.examYear, q.questionHtml].join('|'))
-        .digest('hex');
-      return {
-        updateOne: {
-          filter: { sourceKey },
-          update: { $set: { ...q, sourceKey } },
-          upsert: true
-        }
-      };
-    });
-    const result = await GateQuestion.bulkWrite(ops, { ordered: false });
-    console.log(`   inserted: ${result.upsertedCount}, updated: ${result.modifiedCount}`);
-    
-    console.log('✅ Data Imported Successfully!');
-    process.exit();
+    console.log(`⏳ Importing ${rows.length} questions...`);
+    const report = await importQuestions({ questions: rows });
+    console.log(`   total: ${report.total}, inserted: ${report.inserted}, updated: ${report.updated}, rejected: ${report.rejected.length}`);
+    report.rejected.slice(0, 20).forEach((r) => console.log(`   ✖ row ${r.row}: ${r.reason}`));
+    if (report.rejected.length > 20) {
+      console.log(`   ... and ${report.rejected.length - 20} more rejections`);
+    }
+
+    console.log('✅ Import finished');
+    process.exit(0);
   } catch (error) {
-    console.error('❌ Import Failed:', error);
+    console.error('❌ Import Failed:', error.message);
     process.exit(1);
   }
 };

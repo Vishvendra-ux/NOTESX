@@ -24,6 +24,7 @@ const Jobs = lazy(() => import('./pages/Jobs'));
 const BuildTogether = lazy(() => import('./pages/BuildTogether'));
 const ProjectWorkspace = lazy(() => import('./pages/ProjectWorkspace'));
 const Games = lazy(() => import('./pages/Games'));
+const GateQuestionAdmin = lazy(() => import('./pages/GateQuestionAdmin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
               <Route path="/games" element={<Games />} />
               <Route path="/games/:gameId" element={<Games />} />
               <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/gate-questions" element={<GateQuestionAdmin />} />
             </Route>
 
             {/* Catch-all */}

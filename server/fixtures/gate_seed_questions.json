@@ -1,0 +1,266 @@
+[
+  {
+    "subjectId": "engineering-mathematics", "topicId": "math-probability",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>A fair coin is tossed three times. What is the probability of getting exactly two heads?</p>",
+    "options": ["1/8", "3/8", "1/2", "5/8"],
+    "correctAnswer": "3/8",
+    "explanationHtml": "<p>Exactly two heads occurs in C(3,2) = 3 of the 8 equally likely outcomes, giving 3/8.</p>"
+  },
+  {
+    "subjectId": "engineering-mathematics", "topicId": "math-discrete",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>How many edges does the complete graph K<sub>5</sub> have?</p>",
+    "options": ["5", "10", "20", "25"],
+    "correctAnswer": "10",
+    "explanationHtml": "<p>A complete graph on n vertices has n(n−1)/2 edges, so K₅ has 5·4/2 = 10 edges.</p>"
+  },
+  {
+    "subjectId": "engineering-mathematics", "topicId": "math-linear-algebra",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>The eigenvalues of the matrix [[2, 1], [0, 3]] are:</p>",
+    "options": ["2 and 3", "2 and 1", "3 and 1", "1 and 1"],
+    "correctAnswer": "2 and 3",
+    "explanationHtml": "<p>The matrix is upper triangular, and the eigenvalues of a triangular matrix are exactly its diagonal entries.</p>"
+  },
+  {
+    "subjectId": "digital-logic", "topicId": "logic-number-systems",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>What range of integers can be represented in 8-bit two's complement form?</p>",
+    "options": ["-127 to +127", "-128 to +127", "-128 to +128", "-255 to +255"],
+    "correctAnswer": "-128 to +127",
+    "explanationHtml": "<p>With one value reserved for zero, the asymmetric range is −2⁷ to 2⁷−1, i.e. −128 to +127.</p>"
+  },
+  {
+    "subjectId": "digital-logic", "topicId": "logic-boolean-algebra",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>The Boolean expression A + A'B simplifies to:</p>",
+    "options": ["A", "B", "A + B", "A · B"],
+    "correctAnswer": "A + B",
+    "explanationHtml": "<p>By the absorption identity A + A'B = (A + A')(A + B) = 1 · (A + B) = A + B.</p>"
+  },
+  {
+    "subjectId": "digital-logic", "topicId": "logic-sequential",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>A JK flip-flop with J = K = 1 behaves as a:</p>",
+    "options": ["Set latch", "Reset latch", "Toggle (T) flip-flop", "Hold (no change)"],
+    "correctAnswer": "Toggle (T) flip-flop",
+    "explanationHtml": "<p>J = K = 1 inverts the previous state on every clock edge, which is exactly toggle behaviour.</p>"
+  },
+  {
+    "subjectId": "computer-organization", "topicId": "coa-pipeline",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Ignoring hazards and stalls, the ideal speedup of a 5-stage pipelined processor over a non-pipelined one is:</p>",
+    "options": ["1", "5", "10", "100"],
+    "correctAnswer": "5",
+    "explanationHtml": "<p>In steady state a k-stage pipeline completes one instruction per cycle, giving an ideal speedup equal to the number of stages.</p>"
+  },
+  {
+    "subjectId": "computer-organization", "topicId": "coa-memory",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Which of the following has the fastest access time?</p>",
+    "options": ["Registers", "L1 cache", "Main memory (RAM)", "Hard disk"],
+    "correctAnswer": "Registers",
+    "explanationHtml": "<p>Registers sit inside the CPU core and are accessed in a single cycle — faster than any cache, RAM, or disk.</p>"
+  },
+  {
+    "subjectId": "computer-organization", "topicId": "coa-instructions",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Zero-address instructions typically operate on:</p>",
+    "options": ["A stack", "An accumulator", "General-purpose registers", "Immediate operands"],
+    "correctAnswer": "A stack",
+    "explanationHtml": "<p>Zero-address (stack-based) machines take operands implicitly from the top of the stack, so no address fields are needed.</p>"
+  },
+  {
+    "subjectId": "programming-data-structures", "topicId": "pds-stacks-queues",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>The value of the postfix expression <code>6 2 3 + -</code> is:</p>",
+    "options": ["1", "7", "11", "-1"],
+    "correctAnswer": "1",
+    "explanationHtml": "<p>2 + 3 = 5 is pushed, then 6 − 5 = 1 is computed.</p>"
+  },
+  {
+    "subjectId": "programming-data-structures", "topicId": "pds-trees",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>An inorder traversal of a binary search tree visits the keys in:</p>",
+    "options": ["Arbitrary order", "Ascending sorted order", "Descending sorted order", "Level order"],
+    "correctAnswer": "Ascending sorted order",
+    "explanationHtml": "<p>The BST property (left &lt; root &lt; right) makes left-root-right traversal visit keys in increasing order.</p>"
+  },
+  {
+    "subjectId": "programming-data-structures", "topicId": "pds-heaps-graphs",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>In a min-heap, the smallest element is always located:</p>",
+    "options": ["At the root", "At any leaf", "At the last array index", "Somewhere in the middle level"],
+    "correctAnswer": "At the root",
+    "explanationHtml": "<p>The min-heap property requires every parent to be no larger than its children, so the minimum is at the root.</p>"
+  },
+  {
+    "subjectId": "algorithms", "topicId": "algo-analysis",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>The recurrence T(n) = 2T(n/2) + n solves to:</p>",
+    "options": ["Θ(n)", "Θ(n log n)", "Θ(n²)", "Θ(log n)"],
+    "correctAnswer": "Θ(n log n)",
+    "explanationHtml": "<p>Master theorem case 2: a = 2, b = 2, f(n) = n = Θ(n^log₂2), giving T(n) = Θ(n log n).</p>"
+  },
+  {
+    "subjectId": "algorithms", "topicId": "algo-graphs",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Breadth-first search on a graph with V vertices and E edges using an adjacency list runs in:</p>",
+    "options": ["O(V + E)", "O(V · E)", "O(V²)", "O(E²)"],
+    "correctAnswer": "O(V + E)",
+    "explanationHtml": "<p>Each vertex is enqueued once and each edge examined at most twice, so the total work is proportional to V plus E.</p>"
+  },
+  {
+    "subjectId": "algorithms", "topicId": "algo-search-sort",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Which of these sorting algorithms is stable?</p>",
+    "options": ["Quick sort", "Heap sort", "Merge sort", "Selection sort"],
+    "correctAnswer": "Merge sort",
+    "explanationHtml": "<p>Merge sort preserves the relative order of equal elements (ties always take from the left run first); quick sort, heap sort, and selection sort make no such guarantee.</p>"
+  },
+  {
+    "subjectId": "theory-of-computation", "topicId": "toc-finite-automata",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>The minimum number of states in a DFA over {0, 1} that accepts exactly the strings ending in <code>01</code> is:</p>",
+    "options": ["2", "3", "4", "5"],
+    "correctAnswer": "3",
+    "explanationHtml": "<p>The DFA must track three situations: no useful suffix so far, last symbol was 0, and last two symbols were 01 (accepting) — three states.</p>"
+  },
+  {
+    "subjectId": "theory-of-computation", "topicId": "toc-regular-languages",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Regular languages are NOT closed under:</p>",
+    "options": ["Union", "Complement", "Intersection", "None of the above — they are closed under all of these"],
+    "correctAnswer": "None of the above — they are closed under all of these",
+    "explanationHtml": "<p>Regular languages are closed under union, complement, and intersection, so none of the listed operations escapes the class.</p>"
+  },
+  {
+    "subjectId": "theory-of-computation", "topicId": "toc-context-free",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Context-free languages are closed under which of the following?</p>",
+    "options": ["Union", "Complement", "Intersection", "Set difference with a context-free language"],
+    "correctAnswer": "Union",
+    "explanationHtml": "<p>CFLs are closed under union but famously not under complement or intersection.</p>"
+  },
+  {
+    "subjectId": "compiler-design", "topicId": "compiler-lexical",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>The primary output of the lexical analyzer (scanner) is:</p>",
+    "options": ["A parse tree", "A stream of tokens", "Three-address code", "Target machine code"],
+    "correctAnswer": "A stream of tokens",
+    "explanationHtml": "<p>The scanner groups characters into lexemes and produces the token stream consumed by the parser.</p>"
+  },
+  {
+    "subjectId": "compiler-design", "topicId": "compiler-parsing",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>LR parsers can handle exactly which class of grammars?</p>",
+    "options": ["All context-free grammars", "Deterministic context-free grammars", "Only regular grammars", "Only ambiguous grammars"],
+    "correctAnswer": "Deterministic context-free grammars",
+    "explanationHtml": "<p>LR(k) parsing accepts precisely the deterministic context-free languages — the largest class parsable in linear time bottom-up.</p>"
+  },
+  {
+    "subjectId": "compiler-design", "topicId": "compiler-optimization",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Peephole optimization improves code by examining:</p>",
+    "options": ["The whole program's control-flow graph", "A small sliding window of instructions", "Only the symbol table", "Only loop headers"],
+    "correctAnswer": "A small sliding window of instructions",
+    "explanationHtml": "<p>Peephole optimizers apply local transformations (redundant load/store elimination, strength reduction) over a short moving window of code.</p>"
+  },
+  {
+    "subjectId": "operating-systems", "topicId": "os-deadlocks",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Which of the following is NOT one of the four necessary conditions for deadlock?</p>",
+    "options": ["Mutual exclusion", "Hold and wait", "Circular wait", "Preemption"],
+    "correctAnswer": "Preemption",
+    "explanationHtml": "<p>The Coffman conditions are mutual exclusion, hold and wait, no preemption, and circular wait — so preemption is not one of them.</p>"
+  },
+  {
+    "subjectId": "operating-systems", "topicId": "os-synchronization",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>A binary semaphore can take which values?</p>",
+    "options": ["Any non-negative integer", "0 or 1", "-1 to 1", "1 to n for n processes"],
+    "correctAnswer": "0 or 1",
+    "explanationHtml": "<p>A binary semaphore is restricted to two states, 0 and 1, which is why it behaves like a mutual-exclusion lock.</p>"
+  },
+  {
+    "subjectId": "operating-systems", "topicId": "os-scheduling",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>For a fixed set of processes with known burst times, which scheduling algorithm gives the minimum average waiting time?</p>",
+    "options": ["First-Come, First-Served", "Round Robin", "Shortest Job First", "Priority scheduling"],
+    "correctAnswer": "Shortest Job First",
+    "explanationHtml": "<p>SJF is provably optimal for average waiting time: scheduling the shortest job first minimizes the sum of waiting times.</p>"
+  },
+  {
+    "subjectId": "databases", "topicId": "dbms-normalization",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>A relation is in BCNF if, for every non-trivial functional dependency X → Y, X is:</p>",
+    "options": ["A superkey", "A single attribute", "A foreign key", "A non-prime attribute"],
+    "correctAnswer": "A superkey",
+    "explanationHtml": "<p>BCNF strengthens 3NF by requiring the determinant of every non-trivial FD to be a superkey, removing remaining redundancy from FDs.</p>"
+  },
+  {
+    "subjectId": "databases", "topicId": "dbms-sql",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Which SQL clause is used to filter groups produced by GROUP BY?</p>",
+    "options": ["WHERE", "HAVING", "FILTER", "ORDER BY"],
+    "correctAnswer": "HAVING",
+    "explanationHtml": "<p>WHERE filters individual rows before grouping; HAVING filters the aggregated groups afterwards.</p>"
+  },
+  {
+    "subjectId": "databases", "topicId": "dbms-transactions",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>In ACID properties, the letter D stands for:</p>",
+    "options": ["Distribution", "Determinism", "Durability", "Denormalization"],
+    "correctAnswer": "Durability",
+    "explanationHtml": "<p>Durability guarantees that once a transaction commits, its effects survive crashes and power failures.</p>"
+  },
+  {
+    "subjectId": "computer-networks", "topicId": "net-transport",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Which service does TCP provide that UDP does not?</p>",
+    "options": ["Best-effort delivery", "Reliable, ordered byte streams", "Low packet overhead", "Multicast transmission"],
+    "correctAnswer": "Reliable, ordered byte streams",
+    "explanationHtml": "<p>TCP adds acknowledgements, retransmission, and sequence numbers for reliability and ordering; UDP offers neither.</p>"
+  },
+  {
+    "subjectId": "computer-networks", "topicId": "net-link-layer",
+    "examYear": "Practice Set 1", "marks": 2,
+    "questionHtml": "<p>In CSMA/CD, the minimum frame size is determined by:</p>",
+    "options": ["The round-trip propagation delay", "The IP MTU", "The router hop count", "The header checksum size"],
+    "correctAnswer": "The round-trip propagation delay",
+    "explanationHtml": "<p>A transmitting station must still be sending when a collision signal returns, so the frame's transmission time must exceed twice the propagation delay.</p>"
+  },
+  {
+    "subjectId": "computer-networks", "topicId": "net-ip-addressing",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>How many host bits are available in an IPv4 subnet with mask /26?</p>",
+    "options": ["4", "6", "8", "10"],
+    "correctAnswer": "6",
+    "explanationHtml": "<p>A /26 leaves 32 − 26 = 6 host bits, giving 62 usable host addresses.</p>"
+  },
+  {
+    "subjectId": "general-aptitude", "topicId": "ga-quantitative",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>What number comes next in the sequence 2, 6, 12, 20, 30, ___?</p>",
+    "options": ["40", "42", "44", "46"],
+    "correctAnswer": "42",
+    "explanationHtml": "<p>The terms follow n² + n (2, 6, 12, 20, 30, …), so the next term is 6² + 6 = 42.</p>"
+  },
+  {
+    "subjectId": "general-aptitude", "topicId": "ga-analytical",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>If all A are B, and all B are C, which conclusion necessarily follows?</p>",
+    "options": ["All A are C", "Some C are not A", "No A are C", "All C are A"],
+    "correctAnswer": "All A are C",
+    "explanationHtml": "<p>Membership chains transitively: every A lies inside B, and every B lies inside C, so every A lies inside C.</p>"
+  },
+  {
+    "subjectId": "general-aptitude", "topicId": "ga-verbal",
+    "examYear": "Practice Set 1", "marks": 1,
+    "questionHtml": "<p>Choose the word most nearly OPPOSITE in meaning to <em>candid</em>:</p>",
+    "options": ["Frank", "Honest", "Deceptive", "Blunt"],
+    "correctAnswer": "Deceptive",
+    "explanationHtml": "<p>Candid means open and truthful, so its antonym is deceptive; frank, honest, and blunt are near-synonyms.</p>"
+  }
+]

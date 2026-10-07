@@ -1,0 +1,37 @@
+#!/bin/sh
+# NOTESX pre-commit: fast checks on staged files only. Full validation runs in CI.
+# Skip with: git commit --no-verify
+set -eu
+
+staged() {
+  git diff --cached --name-only --diff-filter=ACMR -- "$1" | grep -q .
+}
+
+# 1. Env files must never be committed (blocks even "git add -f").
+if git diff --cached --name-only | grep -E '(^|/)\.env($|\.)' | grep -Ev '\.env\.example$' | grep -q .; then
+  echo "✖ Refusing to commit: an .env file is staged. Keep env files local (see .gitignore)." >&2
+  exit 1
+fi
+
+# 2. Client changes must pass lint with the warning ceiling (npm run lint:ci).
+if staged "client"; then
+  if [ -x client/node_modules/.bin/eslint ]; then
+    echo "→ linting client…"
+    (cd client && npm run --silent lint:ci) || {
+      echo "✖ Client lint failed: fix errors and any NEW warnings, or commit with --no-verify." >&2
+      exit 1
+    }
+  else
+    echo "→ skipping client lint (client/node_modules missing — run: npm install)"
+  fi
+fi
+
+# 3. Changed server JS must at least parse (full test suite runs in CI).
+status=0
+for f in $(git diff --cached --name-only --diff-filter=ACMR -- 'server/*.js'); do
+  node --check "$f" || status=1
+done
+if [ "$status" -ne 0 ]; then
+  echo "✖ Server file(s) failed syntax check." >&2
+fi
+exit "$status"
