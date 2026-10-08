@@ -27,7 +27,8 @@ import {
   Code2,
   HelpCircle,
   ExternalLink,
-  BookMarked
+  BookMarked,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -90,6 +91,14 @@ const collegeRow2 = [
   { name: 'Jadavpur University', badge: 'Core Engg', icon: '⚙️' },
   { name: 'BITS Goa', badge: 'Open Source', icon: '🌐' },
   { name: 'Delhi University', badge: 'CS Community', icon: '✨' }
+];
+
+const liveActivities = [
+  { student: 'Rahul S.', college: 'GLA Univ', action: 'accessed Unit 3 Data Structures PYQs', time: 'Just now', icon: '🔥' },
+  { student: 'Priya P.', college: 'NIT Trichy', action: 'completed GATE CS Algo Mock Test', time: '1m ago', icon: '⚡' },
+  { student: 'Ayush V.', college: 'DTU Delhi', action: 'teamed up in BuildTogether Lab', time: '2m ago', icon: '🚀' },
+  { student: 'Neha K.', college: 'BITS Pilani', action: 'asked 24/7 AI: B-Tree vs Red-Black', time: '3m ago', icon: '🧠' },
+  { student: 'Amit R.', college: 'IIT Bombay', action: 'bookmarked OS Scheduling Cheatsheet', time: '4m ago', icon: '📚' }
 ];
 
 const allServices = [
@@ -340,11 +349,20 @@ const featuredColleges = [
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [queryIndex, setQueryIndex] = useState(0);
+  const [activityIndex, setActivityIndex] = useState(0);
+  const [showActivity, setShowActivity] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setQueryIndex((prev) => (prev + 1) % liveQueries.length);
     }, 3600);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActivityIndex((prev) => (prev + 1) % liveActivities.length);
+    }, 4200);
     return () => clearInterval(timer);
   }, []);
 
@@ -453,7 +471,14 @@ export default function Home() {
                 className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
               >
                 <BrainCircuit size={18} className="text-[#C4B0FF]" />
-                Ask 24/7 AI Tutor
+                <span>Ask 24/7 AI Tutor</span>
+                {/* Dancing Audio/AI Equalizer Bars */}
+                <span className="flex items-end gap-0.5 h-3.5 ml-0.5" aria-hidden="true">
+                  <span className="w-0.5 bg-[#FF7FB7] rounded-full soundwave-1" />
+                  <span className="w-0.5 bg-[#C4B0FF] rounded-full soundwave-2" />
+                  <span className="w-0.5 bg-[#8B5CF6] rounded-full soundwave-3" />
+                  <span className="w-0.5 bg-[#4D8BFF] rounded-full soundwave-4" />
+                </span>
               </Link>
               <a
                 href="#services"
@@ -533,8 +558,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Floating Bento Card 1: Syllabus Coverage (animate-float-1) */}
-            <div className="glass-bento-navy animate-float-1 absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[250px] sm:max-w-[270px] rounded-2xl p-4 text-white shadow-2xl z-10">
+            {/* Floating Bento Card 1: Syllabus Coverage (animate-float-1 & animate-border-glow) */}
+            <div className="glass-bento-navy animate-float-1 animate-border-glow absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[250px] sm:max-w-[270px] rounded-2xl p-4 text-white shadow-2xl z-10">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-violet-200 uppercase">
                   <BookOpen size={11} /> Syllabus Coverage
@@ -554,8 +579,8 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Floating Bento Card 2: BuildTogether Co-Builders (animate-float-2) */}
-            <div className="glass-bento-rose animate-float-2 absolute -top-8 -right-4 sm:-top-10 sm:-right-6 max-w-[230px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-10">
+            {/* Floating Bento Card 2: BuildTogether Co-Builders (animate-float-2 & animate-border-glow) */}
+            <div className="glass-bento-rose animate-float-2 animate-border-glow absolute -top-8 -right-4 sm:-top-10 sm:-right-6 max-w-[230px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-10">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-pink-400/30 bg-pink-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-pink-200 uppercase">
                   <Users size={11} /> BuildTogether
@@ -611,11 +636,23 @@ export default function Home() {
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                   </svg>
-                  <span className="absolute text-[10px] font-black text-white">88%</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Animated Mouse Scroll Down Indicator */}
+        <div className="mt-8 hidden justify-center lg:flex">
+          <a
+            href="#services"
+            className="group flex flex-col items-center gap-2 text-[11px] font-semibold text-slate-400 hover:text-white transition-colors"
+          >
+            <span className="tracking-wider uppercase text-[10px] text-slate-400 group-hover:text-violet-300 transition-colors">Scroll to explore services</span>
+            <div className="flex h-7 w-4 justify-center rounded-full border-2 border-white/30 p-0.5 shadow-inner">
+              <div className="h-1.5 w-1 rounded-full bg-[#FF7FB7] animate-mouse-wheel" />
+            </div>
+          </a>
         </div>
       </section>
 
@@ -736,8 +773,9 @@ export default function Home() {
                     <span className={`grid h-12 w-12 place-items-center rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 ${service.iconBg}`}>
                       <Icon size={24} />
                     </span>
-                    <span className="rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                      {service.badge}
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <span className="animate-flame text-xs select-none">🔥</span>
+                      <span>{service.badge}</span>
                     </span>
                   </div>
 
@@ -968,11 +1006,14 @@ export default function Home() {
 
               {/* Student Profile Info */}
               <div className="mt-6 flex items-center gap-3.5 border-t border-slate-100 pt-4 dark:border-slate-800">
-                <img
-                  src={t.avatar}
-                  alt={`Portrait of ${t.name}, student at ${t.college}`}
-                  className="h-12 w-12 rounded-full border-2 border-indigo-200 object-cover shadow-sm dark:border-indigo-800"
-                />
+                <div className="relative p-0.5 rounded-full overflow-hidden shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] animate-spin-slow rounded-full" />
+                  <img
+                    src={t.avatar}
+                    alt={`Portrait of ${t.name}, student at ${t.college}`}
+                    className="relative h-12 w-12 rounded-full border-2 border-white dark:border-slate-900 object-cover shadow-sm"
+                  />
+                </div>
                 <div>
                   <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
                     {t.name}
@@ -1121,6 +1162,42 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FLOATING REAL-TIME CAMPUS ACTIVITY NOTIFICATION PILL */}
+      {showActivity && (
+        <aside
+          aria-label="Recent platform activity"
+          className="fixed bottom-5 right-5 z-50 max-w-sm rounded-2xl border border-white/20 bg-slate-950/90 p-3.5 text-white shadow-2xl backdrop-blur-xl animate-toast-enter transition-all duration-300"
+        >
+          <div className="flex items-start gap-3">
+            <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-pink-600 text-sm shadow-md">
+              <span>{liveActivities[activityIndex].icon}</span>
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+              </span>
+            </div>
+            <div className="flex-1 pr-1">
+              <div className="flex items-center justify-between text-[10px] font-bold text-violet-300">
+                <span className="truncate">{liveActivities[activityIndex].college}</span>
+                <span className="text-slate-400 font-mono text-[9px]">{liveActivities[activityIndex].time}</span>
+              </div>
+              <p className="mt-0.5 text-xs font-semibold text-white leading-tight">
+                <span className="text-[#FF7FB7]">{liveActivities[activityIndex].student}</span>{' '}
+                <span className="text-slate-300">{liveActivities[activityIndex].action}</span>
+              </p>
+            </div>
+            <button
+              onClick={() => setShowActivity(false)}
+              className="text-slate-400 hover:text-white transition-colors p-1 -mr-1 -mt-1 rounded-lg"
+              title="Dismiss notification"
+              aria-label="Dismiss notification"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
