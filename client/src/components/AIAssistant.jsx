@@ -151,7 +151,7 @@ export default function AIAssistant() {
       <button 
         onClick={() => setIsOpen(true)}
         aria-label="Open AI Learning Assistant"
-        className={`fixed bottom-20 right-4 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white shadow-xl shadow-indigo-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40 ${
+        className={`fixed bottom-24 right-4 sm:bottom-24 sm:right-6 lg:bottom-8 lg:right-8 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white shadow-xl shadow-indigo-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40 ${
           isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'
         }`}
       >
@@ -161,7 +161,7 @@ export default function AIAssistant() {
 
       {/* Floating Chat Interface */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-[420px] h-[560px] max-h-[85vh] rounded-2xl bg-white border border-slate-200 shadow-2xl flex flex-col z-50 overflow-hidden animate-slide-up">
+        <div className="fixed bottom-24 right-4 sm:bottom-24 sm:right-6 lg:bottom-8 lg:right-8 w-[calc(100vw-2rem)] sm:w-[420px] h-[560px] max-h-[72vh] sm:max-h-[85vh] rounded-2xl bg-white border border-slate-200 shadow-2xl flex flex-col z-50 overflow-hidden animate-slide-up">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3.5 flex justify-between items-center text-white shrink-0 shadow-sm">

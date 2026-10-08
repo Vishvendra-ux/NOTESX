@@ -470,10 +470,10 @@ export default function Home() {
                 to="/ai-assistant"
                 className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
               >
-                <BrainCircuit size={18} className="text-[#C4B0FF]" />
-                <span>Ask 24/7 AI Tutor</span>
+                <BrainCircuit size={18} className="text-[#C4B0FF] shrink-0" />
+                <span className="whitespace-nowrap">Ask 24/7 AI Tutor</span>
                 {/* Dancing Audio/AI Equalizer Bars */}
-                <span className="flex items-end gap-0.5 h-3.5 ml-0.5" aria-hidden="true">
+                <span className="flex items-end gap-0.5 h-3.5 ml-1 shrink-0" aria-hidden="true">
                   <span className="w-0.5 bg-[#FF7FB7] rounded-full soundwave-1" />
                   <span className="w-0.5 bg-[#C4B0FF] rounded-full soundwave-2" />
                   <span className="w-0.5 bg-[#8B5CF6] rounded-full soundwave-3" />
@@ -558,8 +558,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Floating Bento Card 1: Syllabus Coverage (animate-float-1 & animate-border-glow) */}
-            <div className="glass-bento-navy animate-float-1 animate-border-glow absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[250px] sm:max-w-[270px] rounded-2xl p-4 text-white shadow-2xl z-10">
+            {/* Floating Bento Card 1: Syllabus Coverage (Upper-Left: Safely Above Bottom AI Widget) */}
+            <div className="glass-bento-navy animate-float-1 animate-border-glow absolute top-14 -left-3 sm:top-18 sm:-left-7 max-w-[240px] sm:max-w-[260px] rounded-2xl p-4 text-white shadow-2xl z-20 hidden sm:block">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-violet-200 uppercase">
                   <BookOpen size={11} /> Syllabus Coverage
@@ -579,8 +579,8 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Floating Bento Card 2: BuildTogether Co-Builders (animate-float-2 & animate-border-glow) */}
-            <div className="glass-bento-rose animate-float-2 animate-border-glow absolute -top-8 -right-4 sm:-top-10 sm:-right-6 max-w-[230px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-10">
+            {/* Floating Bento Card 2: BuildTogether Co-Builders (Top-Right: Safely Positioned) */}
+            <div className="glass-bento-rose animate-float-2 animate-border-glow absolute -top-7 -right-3 sm:-top-9 sm:-right-6 max-w-[220px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-20">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-pink-400/30 bg-pink-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-pink-200 uppercase">
                   <Users size={11} /> BuildTogether
@@ -604,8 +604,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Floating Bento Card 3: GATE CS AIR Benchmark (animate-float-3) */}
-            <div className="glass-bento-navy animate-float-3 absolute -bottom-10 -right-2 sm:-bottom-12 sm:-right-4 max-w-[220px] sm:max-w-[240px] rounded-2xl p-3.5 text-white shadow-2xl z-20 hidden md:block">
+            {/* Floating Bento Card 3: GATE CS AIR Benchmark (Mid-Right: Safely Above Bottom AI Widget) */}
+            <div className="glass-bento-navy animate-float-3 absolute top-40 -right-3 sm:top-44 sm:-right-6 max-w-[210px] sm:max-w-[230px] rounded-2xl p-3.5 text-white shadow-2xl z-20 hidden md:block">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider text-emerald-300 uppercase">
                   <Trophy size={10} /> AIR 214 Benchmark
@@ -1167,7 +1167,7 @@ export default function Home() {
       {showActivity && (
         <aside
           aria-label="Recent platform activity"
-          className="fixed bottom-5 right-5 z-50 max-w-sm rounded-2xl border border-white/20 bg-slate-950/90 p-3.5 text-white shadow-2xl backdrop-blur-xl animate-toast-enter transition-all duration-300"
+          className="fixed bottom-24 left-4 sm:bottom-24 sm:left-6 lg:bottom-8 lg:left-8 z-40 max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl border border-white/20 bg-slate-950/90 p-3.5 text-white shadow-2xl backdrop-blur-xl animate-toast-enter transition-all duration-300"
         >
           <div className="flex items-start gap-3">
             <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-pink-600 text-sm shadow-md">

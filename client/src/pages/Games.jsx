@@ -304,7 +304,7 @@ export default function Games() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-3 shadow-2xl border border-slate-700/50 text-sm font-bold animate-bounce">
+        <div className="fixed bottom-24 right-4 sm:bottom-24 sm:right-6 lg:bottom-8 lg:right-28 z-50 flex items-center gap-2 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-3 shadow-2xl border border-slate-700/50 text-sm font-bold animate-bounce">
           <Sparkles size={16} className="text-amber-400" />
           {toastMessage}
         </div>

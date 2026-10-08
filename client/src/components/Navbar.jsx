@@ -485,7 +485,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="lg:hidden bg-white border-t border-slate-100 p-4 space-y-2 animate-slide-up">
+          <div className="lg:hidden bg-white border-t border-slate-100 p-4 space-y-2 animate-slide-up max-h-[calc(100vh-140px)] overflow-y-auto pb-6">
             {navLinks.map((link) => {
               const Icon = link.icon;
               return (
