@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -41,6 +41,55 @@ const quickSurfPills = [
   { name: 'Doubts Forum', to: '/doubts', icon: MessageCircle, badge: 'Q&A' },
   { name: 'Campus Hubs', to: '/colleges', icon: GraduationCap, badge: '50+ Colleges' },
   { name: 'Game Lounge', to: '/games', icon: Gamepad2, badge: 'Break Time' }
+];
+
+const liveQueries = [
+  {
+    q: "Explain Dijkstra vs Bellman-Ford negative cycles?",
+    tag: "AI Tutor • Unit 4 Algo",
+    res: "Solved in 3 steps • Unit 4 Algorithms notes & PYQs linked",
+    match: "99% Syllabus Match"
+  },
+  {
+    q: "Looking for 2 full-stack teammates for campus hackathon",
+    tag: "BuildTogether • Lab",
+    res: "3 GLA & 2 NIT batchmates ready to build with you",
+    match: "Live Teaming"
+  },
+  {
+    q: "GATE CS Operating Systems: Process Sync & Semaphores",
+    tag: "GATE CS 2027 • Mock Arena",
+    res: "128 Topic MCQs with AIR 214 solutions ready",
+    match: "Topper Verified"
+  },
+  {
+    q: "Web Dev Roadmap: Frontend to Backend Milestone 3",
+    tag: "Career Roadmaps",
+    res: "Interactive checklist with 14 hands-on projects",
+    match: "Industry Standard"
+  }
+];
+
+const collegeRow1 = [
+  { name: 'GLA University', badge: '2.4k Students', icon: '🏛️' },
+  { name: 'IIT Delhi', badge: 'Verified PYQs', icon: '⚡' },
+  { name: 'IIT Bombay', badge: 'Rank 1 Hub', icon: '🏆' },
+  { name: 'NIT Trichy', badge: 'AIR 214 Alum', icon: '🔥' },
+  { name: 'BITS Pilani', badge: 'Hackathon Lead', icon: '🚀' },
+  { name: 'DTU Delhi', badge: 'Internship Portal', icon: '💼' },
+  { name: 'IIIT Hyderabad', badge: 'AI & Coding', icon: '🧠' },
+  { name: 'VIT Vellore', badge: '3.1k Active', icon: '🎓' }
+];
+
+const collegeRow2 = [
+  { name: 'Anna University', badge: 'Units 1-5', icon: '📚' },
+  { name: 'AKTU Lucknow', badge: '4.8k Students', icon: '🏛️' },
+  { name: 'IIT Kanpur', badge: 'GATE Toppers', icon: '🎯' },
+  { name: 'NIT Surathkal', badge: 'Project Labs', icon: '💻' },
+  { name: 'IIT Kharagpur', badge: 'Verified Notes', icon: '📖' },
+  { name: 'Jadavpur University', badge: 'Core Engg', icon: '⚙️' },
+  { name: 'BITS Goa', badge: 'Open Source', icon: '🌐' },
+  { name: 'Delhi University', badge: 'CS Community', icon: '✨' }
 ];
 
 const allServices = [
@@ -290,6 +339,14 @@ const featuredColleges = [
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [queryIndex, setQueryIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQueryIndex((prev) => (prev + 1) % liveQueries.length);
+    }, 3600);
+    return () => clearInterval(timer);
+  }, []);
 
   const filteredServices = activeCategory === 'all'
     ? allServices
@@ -331,6 +388,13 @@ export default function Home() {
         {/* Ambient Counter-Rotating Glow Orbs (from taai.live) */}
         <div className="pointer-events-none absolute -right-24 -top-36 h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,127,183,0.24)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-1" />
         <div className="pointer-events-none absolute -bottom-32 -left-28 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(77,139,255,0.22)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-2" />
+
+        {/* Ambient Twinkling Cosmic Sparkles */}
+        <div className="pointer-events-none absolute left-1/4 top-10 text-pink-300 animate-twinkle-1 text-xs select-none">✦</div>
+        <div className="pointer-events-none absolute left-1/2 top-20 text-violet-300 animate-twinkle-2 text-sm select-none">✧</div>
+        <div className="pointer-events-none absolute right-1/3 top-14 text-blue-300 animate-twinkle-3 text-xs select-none">✦</div>
+        <div className="pointer-events-none absolute left-12 bottom-20 text-pink-200 animate-twinkle-2 text-sm select-none">✦</div>
+        <div className="pointer-events-none absolute right-16 bottom-14 text-violet-200 animate-twinkle-1 text-xs select-none">✧</div>
 
         <div className="relative grid items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
           <div className="max-w-2xl">
@@ -434,7 +498,7 @@ export default function Home() {
               />
 
               {/* Dark Vignette Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#07051a] via-[#07051a]/25 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#07051a] via-[#07051a]/30 to-transparent" />
 
               {/* Live Campus Radar Pill (Top Left) */}
               <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/85 px-3.5 py-1.5 backdrop-blur-md shadow-lg sm:left-6 sm:top-6">
@@ -446,17 +510,31 @@ export default function Home() {
                 <span className="text-[11px] font-medium text-slate-300">• 50+ Hubs</span>
               </div>
 
-              {/* Bottom Caption */}
-              <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/30 border border-indigo-400/30 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-indigo-200 backdrop-blur">
-                  <Sparkles size={12} className="text-[#C4B0FF]" /> Student Powerhouse
-                </span>
-                <p className="mt-1.5 text-base font-extrabold text-white sm:text-lg">Study together. Build together.</p>
+              {/* Interactive Live AI Query & Doubt Solver Widget */}
+              <div className="absolute inset-x-3 bottom-3 sm:inset-x-5 sm:bottom-4 rounded-2xl border border-white/20 bg-slate-950/90 p-3 backdrop-blur-md shadow-2xl transition-all duration-500">
+                <div className="flex items-center justify-between text-[11px] font-bold text-violet-300">
+                  <span className="inline-flex items-center gap-1.5">
+                    <BrainCircuit size={13} className="text-[#FF7FB7] animate-pulse" />
+                    <span>{liveQueries[queryIndex].tag}</span>
+                  </span>
+                  <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-emerald-300 border border-emerald-500/30 font-mono text-[9px] font-bold">
+                    {liveQueries[queryIndex].match}
+                  </span>
+                </div>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-white">
+                  <span className="text-[#FF7FB7] font-mono">Q:</span>
+                  <span className="truncate">"{liveQueries[queryIndex].q}"</span>
+                  <span className="animate-cursor inline-block h-3.5 w-1 bg-[#FF7FB7] shrink-0" />
+                </div>
+                <div className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
+                  <Check size={12} className="text-emerald-400 shrink-0" />
+                  <span className="truncate">{liveQueries[queryIndex].res}</span>
+                </div>
               </div>
             </div>
 
             {/* Floating Bento Card 1: Syllabus Coverage (animate-float-1) */}
-            <div className="glass-bento-navy animate-float-1 absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[260px] sm:max-w-[280px] rounded-2xl p-4 text-white shadow-2xl z-10">
+            <div className="glass-bento-navy animate-float-1 absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[250px] sm:max-w-[270px] rounded-2xl p-4 text-white shadow-2xl z-10">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-violet-200 uppercase">
                   <BookOpen size={11} /> Syllabus Coverage
@@ -498,6 +576,43 @@ export default function Home() {
                   <img src="/images/notesx-avatar-ayush.jpg" alt="Student" className="h-6 w-6 rounded-full border border-slate-900 object-cover" />
                 </div>
                 <span className="text-[10px] font-bold text-slate-300">Teaming up for hackathons</span>
+              </div>
+            </div>
+
+            {/* Floating Bento Card 3: GATE CS AIR Benchmark (animate-float-3) */}
+            <div className="glass-bento-navy animate-float-3 absolute -bottom-10 -right-2 sm:-bottom-12 sm:-right-4 max-w-[220px] sm:max-w-[240px] rounded-2xl p-3.5 text-white shadow-2xl z-20 hidden md:block">
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider text-emerald-300 uppercase">
+                  <Trophy size={10} /> AIR 214 Benchmark
+                </span>
+                <span className="text-[10px] font-extrabold text-[#38bdf8]">GATE CS</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-black tracking-tight text-white">88.4 / 100</p>
+                  <p className="text-[10px] text-slate-300">Mock Exam Score</p>
+                </div>
+                <div className="relative grid h-10 w-10 place-items-center">
+                  <svg className="h-10 w-10 -rotate-90 transform" viewBox="0 0 36 36">
+                    <path
+                      className="text-white/10"
+                      strokeWidth="3.5"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-[#FF7FB7] animate-pen-draw"
+                      strokeDasharray="88, 100"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="absolute text-[10px] font-black text-white">88%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -753,8 +868,13 @@ export default function Home() {
         </div>
 
         <div className="mt-12 grid items-center gap-12 lg:grid-cols-12">
-          {/* 4 Interactive Step Cards */}
-          <div className="space-y-4 lg:col-span-7">
+          {/* 4 Interactive Step Cards with Animated Flow Beam */}
+          <div className="relative space-y-4 lg:col-span-7 pl-4 sm:pl-6">
+            {/* Vertical Progressive Glow Beam */}
+            <div className="pointer-events-none absolute left-0 top-6 bottom-6 w-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+              <div className="h-28 w-full rounded-full bg-gradient-to-b from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] animate-vertical-beam" />
+            </div>
+
             {onboardingSteps.map((step) => {
               const StepIcon = step.icon;
               return (
@@ -835,8 +955,8 @@ export default function Home() {
               className="interactive-hover-card flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:border-indigo-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
             >
               <div>
-                {/* Highlight Badge */}
-                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
+                {/* Highlight Badge with subtle bounce */}
+                <span className="animate-badge-bounce inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
                   <Star size={12} className="fill-indigo-600 text-indigo-600" />
                   {t.highlight}
                 </span>
@@ -908,21 +1028,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED UNIVERSITIES STRIP */}
-      <section className="text-center">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          Active Student Communities & Verified Syllabi Across Top Institutions
-        </p>
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
-          {featuredColleges.map((college) => (
-            <Link
-              key={college}
-              to="/colleges"
-              className="sheen-btn rounded-full border border-slate-200/90 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 hover:scale-105 active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-            >
-              🎓 {college}
-            </Link>
-          ))}
+      {/* FEATURED UNIVERSITIES STRIP (INFINITE SMOOTH DUAL-MARQUEE) */}
+      <section className="text-center overflow-hidden">
+        <div className="mx-auto max-w-2xl px-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/60 bg-indigo-50/70 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-300">
+            <GraduationCap size={14} /> Campus Network
+          </span>
+          <h3 className="mt-2 text-2xl font-black text-slate-950 dark:text-white sm:text-3xl">
+            Active Across India's Premier Institutions
+          </h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Verified university syllabi, branch PYQs, and student communities from top engineering campuses
+          </p>
+        </div>
+
+        {/* Marquee Wrapper with Smooth Left & Right Edge Fade Masks */}
+        <div className="relative mt-8 overflow-hidden py-3 before:pointer-events-none before:absolute before:left-0 before:top-0 before:bottom-0 before:w-24 sm:before:w-36 before:z-10 before:bg-gradient-to-r before:from-[#F8FAFC] dark:before:from-[#0B1020] before:to-transparent after:pointer-events-none after:absolute after:right-0 after:top-0 after:bottom-0 after:w-24 sm:after:w-36 after:z-10 after:bg-gradient-to-l after:from-[#F8FAFC] dark:after:from-[#0B1020] after:to-transparent">
+          {/* Row 1: Scrolling Left */}
+          <div className="animate-marquee flex gap-3">
+            {[...collegeRow1, ...collegeRow1].map((col, idx) => (
+              <Link
+                key={`r1-${col.name}-${idx}`}
+                to="/colleges"
+                className="group sheen-btn flex items-center gap-2.5 rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-sm transition hover:border-indigo-400 hover:scale-105 active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              >
+                <span className="text-base">{col.icon}</span>
+                <span>{col.name}</span>
+                <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400">
+                  {col.badge}
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Row 2: Scrolling Right */}
+          <div className="animate-marquee-rev mt-3 flex gap-3">
+            {[...collegeRow2, ...collegeRow2].map((col, idx) => (
+              <Link
+                key={`r2-${col.name}-${idx}`}
+                to="/colleges"
+                className="group sheen-btn flex items-center gap-2.5 rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-sm transition hover:border-purple-400 hover:scale-105 active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              >
+                <span className="text-base">{col.icon}</span>
+                <span>{col.name}</span>
+                <span className="rounded-md bg-purple-50 px-2 py-0.5 text-[10px] font-extrabold text-purple-600 dark:bg-purple-950/80 dark:text-purple-400">
+                  {col.badge}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -938,7 +1092,7 @@ export default function Home() {
               100% Free Forever for Engineering Students
             </div>
             <h2 className="mt-5 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl">
-              Ready to Upgrade Your College Journey?
+              Ready to Upgrade Your <span className="bg-gradient-to-r from-[#FF7FB7] via-[#C4B0FF] to-[#4D8BFF] bg-clip-text text-transparent animate-gradient-flow">College Journey?</span>
             </h2>
             <p className="mt-4 text-base leading-relaxed text-slate-300 sm:text-lg">
               Unlock verified unit notes, 24/7 AI explanations, GATE tests, and team project workspaces today.
