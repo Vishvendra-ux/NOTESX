@@ -92,3 +92,226 @@ svg.lucide {
   background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
               radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
 }
+
+/* ===================================================
+   TAAI.LIVE SIGNATURE ANIMATIONS & POLISH SUITE
+   =================================================== */
+
+/* Dot matrix dark background */
+.taai-dot-matrix {
+  background-color: #07051a;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* Counter-rotating ambient glow orbs */
+@keyframes hero-orb {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(22px, -22px);
+  }
+}
+
+.animate-hero-orb-1 {
+  animation: hero-orb 10s ease-in-out infinite;
+}
+
+.animate-hero-orb-2 {
+  animation: hero-orb 13s ease-in-out 3s infinite reverse;
+}
+
+/* Staggered spring entrance */
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hero-in-1 { animation: heroIn 0.72s cubic-bezier(0.34, 1.12, 0.64, 1) 0.05s both; }
+.hero-in-2 { animation: heroIn 0.70s cubic-bezier(0.34, 1.12, 0.64, 1) 0.15s both; }
+.hero-in-3 { animation: heroIn 0.66s cubic-bezier(0.34, 1.12, 0.64, 1) 0.25s both; }
+.hero-in-4 { animation: heroIn 0.64s cubic-bezier(0.34, 1.12, 0.64, 1) 0.35s both; }
+.hero-in-5 { animation: heroIn 0.62s cubic-bezier(0.34, 1.12, 0.64, 1) 0.45s both; }
+.hero-in-6 { animation: heroIn 0.78s cubic-bezier(0.34, 1.12, 0.64, 1) 0.30s both; }
+
+/* Floating motion loops for Bento cards */
+@keyframes float-gentle-1 {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes float-gentle-2 {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-22px);
+  }
+}
+
+@keyframes float-gentle-3 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+.animate-float-1 {
+  animation: float-gentle-1 5.5s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-gentle-2 7s ease-in-out 0.8s infinite;
+}
+
+.animate-float-3 {
+  animation: float-gentle-3 6s ease-in-out 1.5s infinite;
+}
+
+/* Rotating / wobbling badge sticker */
+@keyframes wobble-sticker {
+  0%, 100% {
+    transform: rotate(-10deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-4deg) translateY(-8px);
+  }
+}
+
+.animate-wobble-sticker {
+  animation: wobble-sticker 5.5s ease-in-out infinite;
+}
+
+/* Water flow liquid glass */
+@keyframes water-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes glass-shine {
+  0%, 100% {
+    opacity: 0.95;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translateX(12px);
+  }
+}
+
+.water-flow-pill {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(180, 155, 255, 0.22) 40%,
+    rgba(139, 92, 246, 0.15) 68%,
+    rgba(255, 255, 255, 0.35) 100%
+  );
+  background-size: 300% 300%;
+  animation: water-flow 4.5s ease-in-out infinite;
+}
+
+/* Button sweep hover sheen */
+.sheen-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.sheen-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.45) 48%,
+    rgba(210, 195, 255, 0.28) 56%,
+    transparent 74%
+  );
+  transform: translateX(-130%) skewX(-14deg);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.sheen-btn:hover::before {
+  transform: translateX(230%) skewX(-14deg);
+  transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+/* Smooth live animated bar growth */
+@keyframes bar-grow {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.animate-bar-grow {
+  transform-origin: left;
+  animation: bar-grow 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Radar pulse animation for live counters */
+@keyframes ping-radar {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+.animate-ping-radar {
+  animation: ping-radar 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Frosted dark plum-navy glass bento cards with top specular reflection */
+.glass-bento-navy {
+  background: radial-gradient(120% 140% at 88% 8%, rgba(139, 92, 246, 0.28) 0%, transparent 60%),
+              linear-gradient(135deg, rgba(21, 16, 46, 0.94) 0%, rgba(27, 20, 64, 0.94) 55%, rgba(34, 23, 63, 0.94) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 24px 52px -16px rgba(8, 4, 28, 0.8), 0 12px 28px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-bento-rose {
+  background: radial-gradient(120% 140% at 88% 8%, rgba(236, 72, 153, 0.28) 0%, transparent 60%),
+              linear-gradient(135deg, rgba(21, 16, 46, 0.94) 0%, rgba(29, 21, 56, 0.94) 55%, rgba(38, 22, 52, 0.94) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 24px 52px -16px rgba(8, 4, 28, 0.8), 0 12px 28px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Service cards interactive hover lift with glow */
+.interactive-hover-card {
+  transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.interactive-hover-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 48px -12px rgba(99, 102, 241, 0.2), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+

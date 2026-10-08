@@ -300,8 +300,12 @@ export default function Home() {
       {/* QUICK SURF / DISCOVERY RIBBON */}
       <section className="relative -mt-2 overflow-x-auto pb-2 scrollbar-none">
         <div className="flex items-center gap-2.5 min-w-max px-1">
-          <span className="flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-            <Zap size={14} className="text-indigo-600" /> Quick Surf:
+          <span className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/50 shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping-radar absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+            </span>
+            <Zap size={14} className="text-indigo-600 dark:text-indigo-400" /> Quick Surf:
           </span>
           {quickSurfPills.map((pill) => {
             const Icon = pill.icon;
@@ -309,11 +313,11 @@ export default function Home() {
               <Link
                 key={pill.name}
                 to={pill.to}
-                className="group flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                className="group sheen-btn flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-indigo-400/80 hover:bg-indigo-50/50 hover:text-indigo-700 hover:scale-[1.03] active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
               >
-                <Icon size={14} className="text-slate-400 group-hover:text-indigo-600 dark:text-slate-400" />
+                <Icon size={14} className="text-slate-400 group-hover:text-indigo-600 dark:text-slate-400 transition-colors" />
                 <span>{pill.name}</span>
-                <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-800 dark:text-slate-400">
+                <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-800 dark:text-slate-400 transition-colors">
                   {pill.badge}
                 </span>
               </Link>
@@ -322,36 +326,59 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HERO SECTION */}
-      <section className="relative isolate overflow-hidden rounded-[2.5rem] border border-indigo-100 bg-gradient-to-br from-[#f8faff] via-white to-[#edf2ff] p-6 shadow-sm dark:border-slate-800 dark:from-slate-900/90 dark:via-slate-900 dark:to-slate-950 sm:p-10 lg:p-14">
-        {/* Glow ambient decorations */}
-        <div className="pointer-events-none absolute -left-20 -top-24 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-900/20" />
-        <div className="pointer-events-none absolute -bottom-24 right-1/4 h-80 w-80 rounded-full bg-violet-200/35 blur-3xl dark:bg-violet-900/20" />
+      {/* HERO SECTION (TAAI.LIVE SIGNATURE STYLING & ANIMATIONS) */}
+      <section className="relative isolate overflow-hidden rounded-[2.5rem] border border-violet-900/40 taai-dot-matrix p-6 text-white shadow-2xl sm:p-10 lg:p-14">
+        {/* Ambient Counter-Rotating Glow Orbs (from taai.live) */}
+        <div className="pointer-events-none absolute -right-24 -top-36 h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,127,183,0.24)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-1" />
+        <div className="pointer-events-none absolute -bottom-32 -left-28 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(77,139,255,0.22)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-2" />
 
-        <div className="relative grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative grid items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-white/95 px-4 py-2 text-xs font-bold text-indigo-700 shadow-sm dark:border-indigo-800/60 dark:bg-slate-800/90 dark:text-indigo-300">
-              <Sparkles size={14} className="text-indigo-600 dark:text-indigo-400" />
+            {/* Stagger 1: Badge with Live Radar Ping */}
+            <div className="hero-in-1 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-950/60 px-4 py-2 text-xs font-bold text-violet-200 shadow-lg backdrop-blur-md">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping-radar absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+              </span>
+              <Sparkles size={14} className="text-[#FF7FB7]" />
               <span>India's All-In-One Engineering Learning & Project Hub</span>
             </div>
 
-            <h1 className="mt-6 text-4xl font-black leading-[1.08] tracking-[-0.05em] text-slate-950 dark:text-white sm:text-5xl lg:text-[3.8rem]">
+            {/* Stagger 2: Title with Gradient Flow */}
+            <h1 className="hero-in-2 mt-6 text-4xl font-black leading-[1.05] tracking-[-0.04em] text-white sm:text-5xl lg:text-[3.9rem]">
               Learn Smarter,
-              <span className="mt-1 block bg-gradient-to-r from-indigo-700 via-blue-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:via-blue-300 dark:to-violet-400">
+              <span className="mt-1 block bg-gradient-to-r from-[#FF7FB7] via-[#C4B0FF] to-[#4D8BFF] bg-clip-text text-transparent">
                 Build Real Projects &
               </span>
-              <span className="block text-slate-950 dark:text-white">Accelerate Your Degree.</span>
+              <span className="block text-white">Accelerate Your Degree.</span>
             </h1>
 
-            <p className="mt-6 text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
-              Say goodbye to messy WhatsApp groups and dead Google Drive links. <strong>NOTESX</strong> unites syllabus-aligned unit notes, a 24/7 AI study assistant, GATE practice arenas, peer hackathon teams, and verified tech internships in one unified student space.
+            {/* Stagger 3: Subtitle */}
+            <p className="hero-in-3 mt-6 text-base leading-relaxed text-slate-300 sm:text-lg">
+              Say goodbye to messy WhatsApp groups and dead Google Drive links. <strong className="text-white">NOTESX</strong> unites syllabus-aligned unit notes, a 24/7 AI study assistant, GATE practice arenas, peer hackathon teams, and verified tech internships in one unified student space.
             </p>
 
-            {/* CTAs */}
-            <div className="mt-8 flex flex-col gap-3.5 sm:flex-row">
+            {/* Stagger 4: Verified Checklist */}
+            <div className="hero-in-4 mt-6 flex flex-col gap-2.5 text-sm text-slate-200 font-medium">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 size={16} className="text-[#FF7FB7] shrink-0" />
+                <span>Units 1 to 5 structured syllabi mapped to your university & semester</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 size={16} className="text-[#8B5CF6] shrink-0" />
+                <span>24/7 AI Tutor + peer doubts forum for midnight conceptual clarity</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 size={16} className="text-[#4D8BFF] shrink-0" />
+                <span>GATE CS mock tests, BuildTogether team matching & vetted jobs</span>
+              </div>
+            </div>
+
+            {/* Stagger 5: CTAs with Sweep Sheen */}
+            <div className="hero-in-5 mt-8 flex flex-col gap-3.5 sm:flex-row">
               <Link
                 to="/notes"
-                className="btn-primary inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-sm font-bold shadow-lg shadow-indigo-600/25"
+                className="sheen-btn inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] px-7 py-3.5 text-sm font-bold text-white shadow-[0_8px_25px_rgba(139,92,246,0.4)] transition-all hover:shadow-[0_12px_35px_rgba(139,92,246,0.55)] hover:scale-105 active:scale-95"
               >
                 <BookOpen size={18} />
                 Explore Course Notes
@@ -359,102 +386,185 @@ export default function Home() {
               </Link>
               <Link
                 to="/ai-assistant"
-                className="btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold hover:border-indigo-300"
+                className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
               >
-                <BrainCircuit size={18} className="text-violet-600" />
+                <BrainCircuit size={18} className="text-[#C4B0FF]" />
                 Ask 24/7 AI Tutor
               </Link>
               <a
                 href="#services"
-                className="inline-flex items-center justify-center rounded-xl px-4 py-3.5 text-sm font-bold text-slate-600 hover:text-indigo-700 dark:text-slate-300 dark:hover:text-indigo-400"
+                className="inline-flex items-center justify-center rounded-full px-5 py-3.5 text-sm font-bold text-slate-300 transition hover:text-white hover:underline underline-offset-4"
               >
                 All 9 Services ↓
               </a>
             </div>
 
-            {/* Trust highlights */}
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-slate-200/80 pt-6 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:text-slate-400">
+            {/* Stagger 6: Trust Proof */}
+            <div className="hero-in-6 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/15 pt-6 text-xs font-semibold text-slate-300">
               <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-emerald-500" /> 10,000+ Verified Notes
+                <CheckCircle2 size={15} className="text-emerald-400" /> 10,000+ Verified Notes
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-emerald-500" /> 50+ Top Indian Colleges
+                <CheckCircle2 size={15} className="text-emerald-400" /> 50+ Top Indian Colleges
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-emerald-500" /> 100% Free Forever
+                <CheckCircle2 size={15} className="text-emerald-400" /> 100% Free Forever
               </span>
             </div>
           </div>
 
-          {/* HERO VISUAL WITH AI-GENERATED STUDENTS */}
-          <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-            {/* Background accent backdrop */}
-            <div className="absolute -inset-3 -rotate-1 rounded-[2.5rem] bg-gradient-to-tr from-indigo-300/40 via-violet-200/30 to-blue-200/40 dark:from-indigo-950/60 dark:to-slate-800/60" />
+          {/* HERO VISUAL WITH TAAI-STYLE FLOATING BENTO CARDS & AI STUDENTS */}
+          <div className="hero-in-6 relative mx-auto w-full max-w-lg lg:max-w-none">
+            {/* Playful Wobbling Sticker Badge (taai.live signature) */}
+            <div className="hero-sticker animate-wobble-sticker -top-6 -right-3 sm:-top-8 sm:-right-4">
+              <div className="flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-pink-100">100% FREE</span>
+                <span className="text-xs font-black tracking-wider text-white">VERIFIED</span>
+                <span className="text-[9px] font-bold text-violet-200">NOTES & AI</span>
+              </div>
+            </div>
 
-            <div className="relative overflow-hidden rounded-[2.2rem] border-2 border-white/80 bg-slate-100 shadow-[0_32px_80px_-24px_rgba(30,27,75,0.35)] dark:border-slate-700/80 dark:bg-slate-800">
+            {/* Main AI Student Photo Container */}
+            <div className="relative overflow-hidden rounded-[2.2rem] border border-white/20 bg-slate-950 shadow-[0_32px_80px_-24px_rgba(20,16,43,0.85)]">
               <img
                 src="/images/notesx-hero-students.jpg"
                 alt="Diverse Indian engineering college students collaborating with laptops, tablets, and notes in modern campus library"
-                className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-[1.02] sm:aspect-[1.3/1]"
+                className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-[1.03] sm:aspect-[1.3/1]"
                 fetchPriority="high"
               />
 
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
+              {/* Dark Vignette Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#07051a] via-[#07051a]/25 to-transparent" />
 
-              {/* Floating Stat Card: Top Left */}
-              <div className="absolute left-4 top-4 rounded-xl border border-white/20 bg-slate-900/80 px-3.5 py-2.5 text-white backdrop-blur-md shadow-lg sm:left-6 sm:top-6">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">Live Campus Network</span>
-                </div>
-                <p className="mt-1 text-sm font-bold">50+ Universities Connected</p>
-              </div>
-
-              {/* Floating Stat Card: Bottom Right */}
-              <div className="absolute bottom-4 right-4 max-w-[240px] rounded-2xl border border-white/20 bg-slate-900/85 p-3.5 text-white backdrop-blur-md shadow-xl sm:bottom-6 sm:right-6">
-                <div className="flex items-center gap-2 text-indigo-300">
-                  <Users size={16} />
-                  <span className="text-xs font-bold">BuildTogether Active</span>
-                </div>
-                <p className="mt-1 text-xs text-slate-200 leading-snug">
-                  2,500+ students actively teaming up for hackathons & side projects.
-                </p>
-              </div>
-
-              {/* Bottom bar caption */}
-              <div className="absolute bottom-4 left-4 text-white sm:bottom-6 sm:left-6">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider backdrop-blur">
-                  <Sparkles size={12} /> Student Powerhouse
+              {/* Live Campus Radar Pill (Top Left) */}
+              <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/85 px-3.5 py-1.5 backdrop-blur-md shadow-lg sm:left-6 sm:top-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping-radar absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                 </span>
-                <p className="mt-1.5 text-base font-extrabold sm:text-lg">Study together. Build together.</p>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">Live Campus Network</span>
+                <span className="text-[11px] font-medium text-slate-300">• 50+ Hubs</span>
+              </div>
+
+              {/* Bottom Caption */}
+              <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/30 border border-indigo-400/30 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-indigo-200 backdrop-blur">
+                  <Sparkles size={12} className="text-[#C4B0FF]" /> Student Powerhouse
+                </span>
+                <p className="mt-1.5 text-base font-extrabold text-white sm:text-lg">Study together. Build together.</p>
+              </div>
+            </div>
+
+            {/* Floating Bento Card 1: Syllabus Coverage (animate-float-1) */}
+            <div className="glass-bento-navy animate-float-1 absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[260px] sm:max-w-[280px] rounded-2xl p-4 text-white shadow-2xl z-10">
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-violet-200 uppercase">
+                  <BookOpen size={11} /> Syllabus Coverage
+                </span>
+                <span className="text-[10px] font-bold text-violet-300">Units 1 - 5</span>
+              </div>
+              <div className="mt-2.5 flex items-baseline justify-between">
+                <p className="text-xl font-black tracking-tight text-white">100% Curated</p>
+                <span className="text-xs font-bold text-emerald-400">Verified PYQs</span>
+              </div>
+              {/* Animated Progress Bar (taai.live signature) */}
+              <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="animate-bar-grow h-full w-full rounded-full bg-gradient-to-r from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF]" />
+              </div>
+              <p className="mt-2 text-[11px] text-slate-300 leading-snug">
+                Structured by semester & branch with senior formula sheets.
+              </p>
+            </div>
+
+            {/* Floating Bento Card 2: BuildTogether Co-Builders (animate-float-2) */}
+            <div className="glass-bento-rose animate-float-2 absolute -top-8 -right-4 sm:-top-10 sm:-right-6 max-w-[230px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-10">
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1 rounded-full border border-pink-400/30 bg-pink-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-pink-200 uppercase">
+                  <Users size={11} /> BuildTogether
+                </span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping-radar absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+              </div>
+              <div className="mt-2">
+                <p className="text-2xl font-black tracking-tight text-white">2,500+</p>
+                <p className="text-[11px] font-semibold text-pink-200">Active Student Co-Builders</p>
+              </div>
+              <div className="mt-2.5 flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  <img src="/images/notesx-avatar-rahul.jpg" alt="Student" className="h-6 w-6 rounded-full border border-slate-900 object-cover" />
+                  <img src="/images/notesx-avatar-priya.jpg" alt="Student" className="h-6 w-6 rounded-full border border-slate-900 object-cover" />
+                  <img src="/images/notesx-avatar-ayush.jpg" alt="Student" className="h-6 w-6 rounded-full border border-slate-900 object-cover" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-300">Teaming up for hackathons</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* METRICS & CREDIBILITY COUNTER */}
-      <section className="grid grid-cols-2 gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:grid-cols-4 lg:p-8">
-        <div className="border-r-0 border-b border-slate-100 p-3 pb-5 dark:border-slate-800 sm:p-4 lg:border-b-0 lg:border-r">
-          <p className="text-3xl font-black text-indigo-700 dark:text-indigo-400 sm:text-4xl">50+</p>
-          <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">Partner & Campus Hubs</p>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">GLA, IITs, NITs, BITS, DTU & more</p>
-        </div>
-        <div className="border-b border-slate-100 p-3 pb-5 dark:border-slate-800 sm:p-4 lg:border-b-0 lg:border-r">
-          <p className="text-3xl font-black text-indigo-700 dark:text-indigo-400 sm:text-4xl">10,000+</p>
-          <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">Curated Unit Notes</p>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Structured syllabus units & PYQs</p>
-        </div>
-        <div className="border-r-0 border-slate-100 p-3 pt-5 dark:border-slate-800 sm:p-4 lg:border-r lg:pt-4">
-          <p className="text-3xl font-black text-indigo-700 dark:text-indigo-400 sm:text-4xl">15,000+</p>
-          <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">Practice Questions</p>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">GATE CS MCQs with full solutions</p>
-        </div>
-        <div className="p-3 pt-5 sm:p-4 lg:pt-4">
-          <p className="text-3xl font-black text-indigo-700 dark:text-indigo-400 sm:text-4xl">2,500+</p>
-          <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">Student Project Builders</p>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Collaborating on real tech products</p>
+      {/* METRICS & CREDIBILITY COUNTER (TAAI.LIVE SIGNATURE STATS) */}
+      <section className="relative overflow-hidden rounded-3xl border border-violet-900/40 taai-dot-matrix p-6 sm:p-10 shadow-2xl text-white">
+        {/* Glowing streaks */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_40%_90%_at_15%_50%,rgba(236,72,153,0.18)_0%,transparent_65%),radial-gradient(ellipse_35%_80%_at_50%_50%,rgba(139,92,246,0.18)_0%,transparent_65%),radial-gradient(ellipse_40%_90%_at_85%_50%,rgba(56,189,248,0.18)_0%,transparent_65%)]" />
+
+        <div className="relative grid grid-cols-2 gap-6 lg:grid-cols-4 lg:gap-8">
+          {/* Stat 1 */}
+          <div className="flex flex-col items-center text-center p-3 relative">
+            <div className="mb-4 h-0.5 w-10 rounded-full bg-[#ec4899] shadow-[0_0_12px_2px_rgba(236,72,153,0.7)]" />
+            <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#ffc0dc] to-[#ec4899] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(236,72,153,0.5)]">
+              50+
+            </p>
+            <p className="mt-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-200">
+              Campus Hubs
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              GLA, IITs, NITs, BITS, DTU & more
+            </p>
+          </div>
+
+          {/* Stat 2 */}
+          <div className="flex flex-col items-center text-center p-3 relative lg:border-l lg:border-white/10">
+            <div className="mb-4 h-0.5 w-10 rounded-full bg-[#8b5cf6] shadow-[0_0_12px_2px_rgba(139,92,246,0.7)]" />
+            <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#d8b4fe] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(139,92,246,0.5)]">
+              10,000+
+            </p>
+            <p className="mt-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-200">
+              Curated Unit Notes
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              Units 1 to 5 + Solved PYQs
+            </p>
+          </div>
+
+          {/* Stat 3 */}
+          <div className="flex flex-col items-center text-center p-3 relative border-t border-white/10 pt-6 lg:border-t-0 lg:border-l lg:pt-3">
+            <div className="mb-4 h-0.5 w-10 rounded-full bg-[#38bdf8] shadow-[0_0_12px_2px_rgba(56,189,248,0.7)]" />
+            <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#bae6fd] to-[#38bdf8] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(56,189,248,0.5)]">
+              15,000+
+            </p>
+            <p className="mt-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-200">
+              Practice Questions
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              GATE CS MCQs with full solutions
+            </p>
+          </div>
+
+          {/* Stat 4 */}
+          <div className="flex flex-col items-center text-center p-3 relative border-t border-white/10 pt-6 lg:border-t-0 lg:border-l lg:pt-3">
+            <div className="mb-4 h-0.5 w-10 rounded-full bg-[#10b981] shadow-[0_0_12px_2px_rgba(16,185,129,0.7)]" />
+            <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#a7f3d0] to-[#10b981] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(16,185,129,0.5)]">
+              2,500+
+            </p>
+            <p className="mt-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-200">
+              Project Builders
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              Teaming up & shipping real apps
+            </p>
+          </div>
         </div>
       </section>
 
@@ -504,11 +614,11 @@ export default function Home() {
             return (
               <div
                 key={service.title}
-                className="group relative flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-indigo-600/60"
+                className="interactive-hover-card group relative flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition-all duration-300 hover:border-indigo-400/80 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-indigo-500/70"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className={`grid h-12 w-12 place-items-center rounded-2xl shadow-sm ${service.iconBg}`}>
+                    <span className={`grid h-12 w-12 place-items-center rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 ${service.iconBg}`}>
                       <Icon size={24} />
                     </span>
                     <span className="rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -540,7 +650,7 @@ export default function Home() {
                 <div className="mt-6 pt-2">
                   <Link
                     to={service.to}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-2.5 text-xs font-bold text-indigo-700 transition group-hover:bg-indigo-600 group-hover:text-white dark:bg-slate-800 dark:text-indigo-300 dark:group-hover:bg-indigo-600 dark:group-hover:text-white"
+                    className="sheen-btn inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-2.5 text-xs font-bold text-indigo-700 transition group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-violet-600 group-hover:text-white dark:bg-slate-800 dark:text-indigo-300 dark:group-hover:text-white"
                   >
                     Surf {service.title.split(' ')[0]} Hub
                     <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -556,17 +666,17 @@ export default function Home() {
       <section className="relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="grid items-stretch lg:grid-cols-12">
           {/* AI-Generated Image: Student Late Night Study Setup */}
-          <div className="relative min-h-[360px] bg-slate-900 lg:col-span-5">
+          <div className="relative min-h-[360px] bg-slate-950 lg:col-span-5 overflow-hidden">
             <img
               src="/images/notesx-ai-study.jpg"
               alt="Dedicated Indian engineering student studying late evening with warm desk lamp and glowing AI study interface"
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/30 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-xs font-bold backdrop-blur">
-                <Lightbulb size={14} /> High-Yield Learning Focus
+                <Lightbulb size={14} className="text-[#FF7FB7]" /> High-Yield Learning Focus
               </span>
               <h4 className="mt-3 text-xl font-bold">No noise. Just pure exam and project clarity.</h4>
               <p className="mt-1 text-xs text-slate-300">
@@ -587,13 +697,13 @@ export default function Home() {
               Most portals either dump unorganized PDFs or try to sell expensive test series. Here is why thousands of engineering students make NOTESX their primary browser tab:
             </p>
 
-            <div className="mt-8 space-y-5">
+            <div className="mt-8 space-y-4">
               {comparisonPoints.map((item, index) => (
                 <div
                   key={index}
-                  className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-800/40"
+                  className="interactive-hover-card rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition dark:border-slate-800 dark:bg-slate-800/40"
                 >
-                  <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                  <h4 className="text-sm font-extrabold text-slate-950 dark:text-white">
                     {item.title}
                   </h4>
                   <div className="mt-2.5 grid gap-2 sm:grid-cols-2 text-xs">
@@ -613,7 +723,7 @@ export default function Home() {
             <div className="mt-8 flex items-center gap-4">
               <Link
                 to="/notes"
-                className="btn-primary inline-flex items-center gap-2 text-xs font-bold py-2.5 px-4"
+                className="sheen-btn btn-primary inline-flex items-center gap-2 text-xs font-bold py-2.5 px-5 rounded-xl shadow-md"
               >
                 Experience The Difference <ArrowRight size={14} />
               </Link>
@@ -650,17 +760,17 @@ export default function Home() {
               return (
                 <div
                   key={step.step}
-                  className="group relative flex items-start gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                  className="interactive-hover-card group relative flex items-start gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-700 font-black text-lg dark:bg-indigo-950/70 dark:text-indigo-300">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-50 to-violet-100 text-indigo-700 font-black text-lg dark:from-indigo-950/70 dark:to-violet-950/70 dark:text-indigo-300 shadow-sm">
                     {step.step}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-extrabold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                      <h3 className="text-base font-extrabold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {step.title}
                       </h3>
-                      <StepIcon size={18} className="text-slate-400 group-hover:text-indigo-600 dark:text-slate-500" />
+                      <StepIcon size={18} className="text-slate-400 group-hover:text-indigo-600 dark:text-slate-500 transition-colors" />
                     </div>
                     <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                       {step.description}
@@ -683,12 +793,12 @@ export default function Home() {
               <img
                 src="/images/notesx-build-together.jpg"
                 alt="Energetic Indian student hackathon team collaborating on laptops and monitors debugging a project"
-                className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-[1.02]"
+                className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider backdrop-blur">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider backdrop-blur shadow-md">
                   <Rocket size={12} /> Step 4: Ship Together
                 </span>
                 <p className="mt-2 text-base font-black">
@@ -722,7 +832,7 @@ export default function Home() {
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-indigo-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+              className="interactive-hover-card flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:border-indigo-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
             >
               <div>
                 {/* Highlight Badge */}
@@ -782,13 +892,13 @@ export default function Home() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   to="/colleges"
-                  className="btn-primary inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5"
+                  className="sheen-btn btn-primary inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg"
                 >
                   Find Your Campus Hub <ArrowRight size={14} />
                 </Link>
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center rounded-xl border border-white/40 bg-white/10 px-5 py-2.5 text-xs font-bold text-white backdrop-blur hover:bg-white/20 transition"
+                  className="sheen-btn inline-flex items-center justify-center rounded-xl border border-white/40 bg-white/10 px-5 py-2.5 text-xs font-bold text-white backdrop-blur hover:bg-white/20 transition"
                 >
                   Create Student Profile
                 </Link>
@@ -808,7 +918,7 @@ export default function Home() {
             <Link
               key={college}
               to="/colleges"
-              className="rounded-full border border-slate-200/90 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+              className="sheen-btn rounded-full border border-slate-200/90 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 hover:scale-105 active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
             >
               🎓 {college}
             </Link>
@@ -816,21 +926,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BOTTOM HIGH-CONVERTING CLOSING CTA */}
-      <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#121640] via-[#1e256b] to-[#3644b3] px-6 py-12 text-white shadow-2xl sm:px-12 sm:py-16 lg:px-16">
-        <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-violet-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
+      {/* BOTTOM CLOSING CTA (TAAI-INSPIRED GLOW & ATMOSPHERE) */}
+      <section className="relative overflow-hidden rounded-[2.5rem] taai-dot-matrix border border-violet-900/40 px-6 py-12 text-white shadow-2xl sm:px-12 sm:py-16 lg:px-16">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(255,127,183,0.25)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-1" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(77,139,255,0.22)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-2" />
 
         <div className="relative flex flex-col justify-between gap-8 lg:flex-row lg:items-center">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-indigo-100 backdrop-blur">
-              <Sparkles size={14} />
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-950/60 px-3.5 py-1.5 text-xs font-bold text-violet-200 backdrop-blur">
+              <Sparkles size={14} className="text-[#FF7FB7]" />
               100% Free Forever for Engineering Students
             </div>
             <h2 className="mt-5 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl">
               Ready to Upgrade Your College Journey?
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-indigo-100 sm:text-lg">
+            <p className="mt-4 text-base leading-relaxed text-slate-300 sm:text-lg">
               Unlock verified unit notes, 24/7 AI explanations, GATE tests, and team project workspaces today.
             </p>
           </div>
@@ -838,19 +948,19 @@ export default function Home() {
           <div className="flex flex-col gap-3.5 sm:flex-row">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-indigo-900 shadow-xl transition hover:bg-indigo-50 active:scale-95"
+              className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_25px_rgba(139,92,246,0.4)] transition-all hover:shadow-[0_12px_32px_rgba(139,92,246,0.55)] hover:scale-105 active:scale-95"
             >
               Get Started Free <ArrowRight size={16} />
             </Link>
             <Link
               to="/notes"
-              className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10 backdrop-blur"
+              className="sheen-btn inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10 backdrop-blur"
             >
               Browse Course Notes
             </Link>
             <Link
               to="/ai-assistant"
-              className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10 backdrop-blur"
+              className="sheen-btn inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10 backdrop-blur"
             >
               Ask AI Assistant
             </Link>
