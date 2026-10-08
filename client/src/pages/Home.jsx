@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowRight,
   BookOpen,
@@ -1164,10 +1165,10 @@ export default function Home() {
       </section>
 
       {/* FLOATING REAL-TIME CAMPUS ACTIVITY NOTIFICATION PILL */}
-      {showActivity && (
+      {showActivity && typeof document !== 'undefined' && createPortal(
         <aside
           aria-label="Recent platform activity"
-          className="fixed bottom-24 left-4 sm:bottom-24 sm:left-6 lg:bottom-8 lg:left-8 z-40 max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl border border-white/20 bg-slate-950/90 p-3.5 text-white shadow-2xl backdrop-blur-xl animate-toast-enter transition-all duration-300"
+          className="fixed bottom-28 left-4 sm:bottom-28 sm:left-6 lg:bottom-28 lg:left-8 z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl border border-white/20 bg-slate-950/95 p-3.5 text-white shadow-2xl backdrop-blur-xl animate-toast-enter transition-all duration-300"
         >
           <div className="flex items-start gap-3">
             <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-pink-600 text-sm shadow-md">
@@ -1196,7 +1197,8 @@ export default function Home() {
               <X size={14} />
             </button>
           </div>
-        </aside>
+        </aside>,
+        document.body
       )}
     </div>
   );
