@@ -141,9 +141,15 @@ export default function Notes() {
     return () => { isMounted = false; };
   }, [user]);
 
-  // Notification links can open a note directly at /notes/:id.
+  // Notification links can open a note directly at /notes/:id or /notes/upload
   useEffect(() => {
-    if (!routeNoteId || routeNoteId === 'upload') {
+    if (routeNoteId === 'upload') {
+      setShowUploadModal(true);
+      setActiveViewerNote(null);
+      return undefined;
+    }
+
+    if (!routeNoteId) {
       setActiveViewerNote(null);
       return undefined;
     }
@@ -374,7 +380,7 @@ export default function Notes() {
       }
     };
     fetchSubjects();
-  }, [selectedBranch, selectedSemester]);
+  }, [selectedBranch, selectedSemester, selectedYear]);
 
   // ── 9. Load Notes when Subject is Selected ──
   useEffect(() => {
@@ -988,7 +994,12 @@ export default function Notes() {
       {showUploadModal && (
         <UploadNoteModal
           isOpen={showUploadModal}
-          onClose={() => setShowUploadModal(false)}
+          onClose={() => {
+            setShowUploadModal(false);
+            if (routeNoteId === 'upload') {
+              navigate('/notes');
+            }
+          }}
           prefilledCategory={selectedCategory}
           prefilledCourse={selectedCourse}
           prefilledBranch={selectedBranch}
@@ -999,6 +1010,9 @@ export default function Notes() {
             setNotes(prev => [newNote, ...prev]);
             setSuccessBanner(`“${newNote.title}” successfully published!`);
             setTimeout(() => setSuccessBanner(''), 4000);
+            if (routeNoteId === 'upload') {
+              navigate('/notes');
+            }
           }}
         />
       )}

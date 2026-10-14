@@ -18,15 +18,16 @@ export default function Doubts() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
-  // If URL has /doubts/:id, render DoubtDetail
-  if (id) {
+  // If URL has /doubts/:id (excluding 'ask'), render DoubtDetail
+  if (id && id !== 'ask') {
     return <DoubtDetail />;
   }
 
-  return <DoubtList user={user} searchParams={searchParams} setSearchParams={setSearchParams} />;
+  return <DoubtList user={user} isAskDirectly={id === 'ask'} searchParams={searchParams} setSearchParams={setSearchParams} />;
 }
 
-function DoubtList({ user, searchParams, setSearchParams }) {
+function DoubtList({ user, isAskDirectly = false, searchParams, setSearchParams }) {
+  const navigate = useNavigate();
   // Read initial query params from URL
   const activeTab = searchParams.get('tab') || 'trending';
   const selectedSubject = searchParams.get('subject') || null;
@@ -46,7 +47,20 @@ function DoubtList({ user, searchParams, setSearchParams }) {
   const [error, setError] = useState('');
 
   // Modal State
-  const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+  const [isAskModalOpen, setIsAskModalOpen] = useState(isAskDirectly);
+
+  useEffect(() => {
+    if (isAskDirectly) {
+      setIsAskModalOpen(true);
+    }
+  }, [isAskDirectly]);
+
+  const handleCloseAskModal = () => {
+    setIsAskModalOpen(false);
+    if (isAskDirectly) {
+      navigate('/doubts');
+    }
+  };
 
   // Fetch Stats (once and on updates)
   const fetchStats = async () => {
@@ -487,8 +501,13 @@ function DoubtList({ user, searchParams, setSearchParams }) {
       {/* Ask Doubt Modal */}
       <AskDoubtModal
         isOpen={isAskModalOpen}
-        onClose={() => setIsAskModalOpen(false)}
-        onSubmitSuccess={handleAskSuccess}
+        onClose={handleCloseAskModal}
+        onSubmitSuccess={(newDoubt) => {
+          handleAskSuccess(newDoubt);
+          if (isAskDirectly) {
+            navigate('/doubts');
+          }
+        }}
       />
     </div>
   );

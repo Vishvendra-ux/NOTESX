@@ -86,10 +86,6 @@ function RoadmapDirectory() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchRoadmaps();
-  }, [selectedType, selectedCategory, selectedDifficulty]);
-
   const fetchSeq = useRef(0);
   const fetchRoadmaps = async () => {
     const seq = ++fetchSeq.current;
@@ -112,6 +108,10 @@ function RoadmapDirectory() {
       if (seq === fetchSeq.current) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchRoadmaps();
+  }, [selectedType, selectedCategory, selectedDifficulty]);
 
   const filteredRoadmaps = useMemo(() => {
     return roadmaps.filter((r) => {
@@ -448,20 +448,6 @@ function RoadmapDetail({ slug, onBack }) {
   // Student Completed Nodes Set
   const [completedNodeIds, setCompletedNodeIds] = useState(new Set());
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    fetchRoadmapData();
-
-    // Load progress for this roadmap
-    try {
-      const savedMap = JSON.parse(localStorage.getItem('notesx:roadmap:completed_nodes') || '{}');
-      const list = savedMap[slug] || [];
-      setCompletedNodeIds(new Set(list));
-    } catch {
-      setCompletedNodeIds(new Set());
-    }
-  }, [slug]);
-
   const fetchRoadmapData = async () => {
     setLoading(true);
     setError('');
@@ -479,6 +465,20 @@ function RoadmapDetail({ slug, onBack }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchRoadmapData();
+
+    // Load progress for this roadmap
+    try {
+      const savedMap = JSON.parse(localStorage.getItem('notesx:roadmap:completed_nodes') || '{}');
+      const list = savedMap[slug] || [];
+      setCompletedNodeIds(new Set(list));
+    } catch {
+      setCompletedNodeIds(new Set());
+    }
+  }, [slug]);
 
   // Toggle node completion
   const toggleNodeCompletion = (nodeId) => {

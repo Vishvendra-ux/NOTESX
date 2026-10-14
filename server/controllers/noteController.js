@@ -377,7 +377,7 @@ exports.download = async (req, res, next) => {
     await NoteDownload.create({
       noteId: note._id,
       userId: req.user ? req.user._id : null,
-      ip: req.ip || req.connection.remoteAddress || ''
+      ip: req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || ''
     });
 
     res.json({

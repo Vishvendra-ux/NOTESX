@@ -3,6 +3,8 @@ const CommunityPost = require('../models/CommunityPost');
 const CampusEvent = require('../models/CampusEvent');
 const User = require('../models/User');
 
+const escapeRegex = (s) => String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Get College Details by slug or ID
 exports.getCollegeDetails = async (req, res, next) => {
   try {
@@ -165,7 +167,17 @@ exports.getCollegeLeaderboard = async (req, res, next) => {
       college = await College.findById(slugOrId);
     }
 
-    const query = college ? { collegeId: college._id } : {};
+    let query = {};
+    if (college) {
+      const safeColName = escapeRegex(college.name || '');
+      query = {
+        $or: [
+          { collegeId: college._id },
+          { collegeName: new RegExp(`^${safeColName}$`, 'i') }
+        ]
+      };
+    }
+
     const users = await User.find(query)
       .select('name year reputation badges profilePhoto')
       .sort({ reputation: -1 })

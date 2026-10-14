@@ -72,8 +72,9 @@ exports.list = async (req, res, next) => {
     }
 
     // Clamp pagination so a huge ?limit= can't dump the whole collection
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const take = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
-    const skip = (Math.max(1, parseInt(page, 10) || 1) - 1) * take;
+    const skip = (pageNum - 1) * take;
 
     const [doubts, total] = await Promise.all([
       Doubt.find(query)
@@ -98,7 +99,7 @@ exports.list = async (req, res, next) => {
     res.json({
       doubts: formattedDoubts,
       total,
-      page: parseInt(page, 10),
+      page: pageNum,
       totalPages: Math.ceil(total / take)
     });
   } catch (error) {

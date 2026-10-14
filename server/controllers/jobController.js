@@ -89,7 +89,7 @@ exports.list = async (req, res, next) => {
     res.json({
       jobs: formatted,
       total,
-      page: parseInt(page, 10),
+      page: pageNum,
       totalPages: Math.ceil(total / take)
     });
   } catch (error) {

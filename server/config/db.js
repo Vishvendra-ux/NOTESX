@@ -61,7 +61,7 @@ const seedDemoStudentUser = async () => {
   }
 };
 
-const connectDB = async () => {
+const connectDB = async (retryCount = 0) => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -71,8 +71,14 @@ const connectDB = async () => {
       await seedDemoStudentUser();
     }
   } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('⚠️  MongoDB is unreachable. Retrying connection in 5 seconds...');
+      console.warn('💡 If MongoDB is not running locally, run: brew services start mongodb-community@7.0');
+      setTimeout(() => connectDB(retryCount + 1), 5000);
+    } else {
+      process.exit(1);
+    }
   }
 };
 

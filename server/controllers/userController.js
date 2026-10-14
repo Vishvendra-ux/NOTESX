@@ -16,11 +16,12 @@ exports.profile = async (req, res, next) => {
     }
 
     const safeRegex = new RegExp(`^${username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
-    const user = await User.findOne({ 
-      $or: [
-        { name: safeRegex }
-      ] 
-    })
+    const queryConditions = [{ name: safeRegex }];
+    if (/^[0-9a-fA-F]{24}$/.test(username)) {
+      queryConditions.push({ _id: username });
+    }
+
+    const user = await User.findOne({ $or: queryConditions })
       .select('name bio collegeName course year semester github linkedin reputation badges profilePhoto createdAt')
       .populate('collegeId', 'name location'); 
     

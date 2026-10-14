@@ -48,8 +48,8 @@ function App() {
               <Route path="/colleges" element={<Colleges />} />
               <Route path="/colleges/:id" element={<CollegeCommunity />} />
               <Route path="/notes" element={<Notes />} />
-              <Route path="/notes/:id" element={<Notes />} />
               <Route path="/notes/upload" element={<Notes />} />
+              <Route path="/notes/:id" element={<Notes />} />
               <Route path="/gate" element={<Gate />} />
               <Route path="/gate/questions" element={<Gate />} />
               <Route path="/gate/tests" element={<Gate />} />
@@ -57,8 +57,8 @@ function App() {
               <Route path="/gate/tests/:id" element={<Gate />} />
               <Route path="/gate/tests/:id/result" element={<Gate />} />
               <Route path="/doubts" element={<Doubts />} />
-              <Route path="/doubts/:id" element={<Doubts />} />
               <Route path="/doubts/ask" element={<Doubts />} />
+              <Route path="/doubts/:id" element={<Doubts />} />
               <Route path="/contests" element={<Contests />} />
               <Route path="/contests/:id" element={<Contests />} />
               <Route path="/leaderboard" element={<Contests />} />

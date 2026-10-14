@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CheckCircle2, ChevronDown,
   ChevronRight, Clock3, Flame, LoaderCircle, Play, RotateCcw, Search, Sparkles,
@@ -50,6 +51,7 @@ function TopicStatus({ entry }) {
 }
 
 export default function Gate() {
+  const location = useLocation();
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -61,9 +63,17 @@ export default function Gate() {
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState('All subjects');
   const [query, setQuery] = useState('');
-  const [showTestBuilder, setShowTestBuilder] = useState(false);
+  const [showTestBuilder, setShowTestBuilder] = useState(
+    location.pathname === '/gate/tests/create' || location.pathname === '/gate/tests'
+  );
   const [testSession, setTestSession] = useState(null);
   const [resumeState, setResumeState] = useState(() => readStoredJson('gate_pyq_resume', null));
+
+  useEffect(() => {
+    if (location.pathname === '/gate/tests/create' || location.pathname === '/gate/tests') {
+      setShowTestBuilder(true);
+    }
+  }, [location.pathname]);
 
   const loadProgress = async () => {
     setLoading(true);

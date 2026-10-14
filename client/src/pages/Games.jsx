@@ -133,7 +133,7 @@ export default function Games() {
   useEffect(() => {
     const socketUrl =
       import.meta.env.VITE_API_URL?.replace('/api', '') ||
-      (window.location.hostname === 'localhost' ? 'http://localhost:5001' : '/');
+      (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5001' : '/');
     const token = localStorage.getItem('token');
 
     try {
