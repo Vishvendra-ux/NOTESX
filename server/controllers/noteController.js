@@ -120,8 +120,8 @@ exports.list = async (req, res, next) => {
     else if (sort === 'downloads' || sort === 'Most Downloaded') sortObj = { downloadCount: -1 };
     else if (sort === 'reviews' || sort === 'Most Reviewed') sortObj = { ratingCount: -1 };
 
-    const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
     const skip = (pageNum - 1) * limitNum;
 
     const [notes, total] = await Promise.all([
@@ -392,6 +392,11 @@ exports.download = async (req, res, next) => {
 // ── Bookmark Note (Toggle) ──
 exports.toggleBookmark = async (req, res, next) => {
   try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+
     const existing = await Bookmark.findOne({
       noteId: req.params.id,
       userId: req.user._id
@@ -401,10 +406,17 @@ exports.toggleBookmark = async (req, res, next) => {
       await Bookmark.findByIdAndDelete(existing._id);
       return res.json({ bookmarked: false, message: 'Removed from bookmarks' });
     } else {
-      await Bookmark.create({
-        noteId: req.params.id,
-        userId: req.user._id
-      });
+      try {
+        await Bookmark.create({
+          noteId: req.params.id,
+          userId: req.user._id
+        });
+      } catch (err) {
+        if (err.code === 11000) {
+          return res.json({ bookmarked: true, message: 'Saved to bookmarks' });
+        }
+        throw err;
+      }
       return res.json({ bookmarked: true, message: 'Saved to bookmarks' });
     }
   } catch (error) {
@@ -481,8 +493,13 @@ exports.addOrUpdateReview = async (req, res, next) => {
     });
 
     if (note.subjectId) {
+      const subjectStats = await Note.aggregate([
+        { $match: { subjectId: note.subjectId, isApproved: true, ratingCount: { $gt: 0 } } },
+        { $group: { _id: null, avgRating: { $avg: '$ratingAverage' } } }
+      ]);
+      const subjAvg = subjectStats.length > 0 ? Number(subjectStats[0].avgRating.toFixed(1)) : newAvg;
       await Subject.findByIdAndUpdate(note.subjectId, {
-        ratingAverage: newAvg
+        ratingAverage: subjAvg
       });
     }
 

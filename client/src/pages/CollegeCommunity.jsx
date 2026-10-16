@@ -381,7 +381,7 @@ export default function CollegeCommunity() {
       try {
         const resPosts = await api.get(`/colleges/community/${slugOrId}/posts`);
         if (isMounted && resPosts.data && resPosts.data.length > 0) {
-          setPosts(resPosts.data.map(p => ({ ...p, hasUpvoted: false })));
+          setPosts(resPosts.data.map(p => ({ ...p, hasUpvoted: Boolean(p.hasUpvoted) })));
         } else {
           setPosts([
             { id: 1, author: 'Aman Verma', role: '3rd Year CSE', title: `Mid-Sem Exam Dates Announced!`, content: 'The date sheet for Sem 5 exams is out on the portal. Exams start from Oct 15th.', upvotes: 45, hasUpvoted: false, commentsCount: 18, time: '2 hours ago', tag: 'Announcement' },
@@ -429,7 +429,7 @@ export default function CollegeCommunity() {
     try {
       const res = await api.post(`/colleges/community/${slugOrId}/posts`, postData);
       if (res.data) {
-        setPosts([{ ...res.data, hasUpvoted: false }, ...posts]);
+        setPosts([{ ...res.data, hasUpvoted: true }, ...posts]);
       }
     } catch (err) {
       const localPost = {
@@ -485,9 +485,32 @@ export default function CollegeCommunity() {
     }));
 
     try {
-      await api.post(`/colleges/community/posts/${postId}/upvote`);
+      const res = await api.post(`/colleges/community/posts/${postId}/upvote`);
+      if (res.data) {
+        setPosts(prevPosts => prevPosts.map(p => {
+          if (p._id === postId || p.id === postId) {
+            return {
+              ...p,
+              upvotes: res.data.upvotes ?? p.upvotes,
+              hasUpvoted: res.data.hasUpvoted ?? p.hasUpvoted
+            };
+          }
+          return p;
+        }));
+      }
     } catch (e) {
-      // Optimistic UI already updated; nothing to show on failure
+      // Revert optimistic update on failure
+      setPosts(prevPosts => prevPosts.map(p => {
+        if (p._id === postId || p.id === postId) {
+          const wasUpvoted = p.hasUpvoted;
+          return {
+            ...p,
+            hasUpvoted: !wasUpvoted,
+            upvotes: wasUpvoted ? Math.max(0, (p.upvotes || 1) - 1) : (p.upvotes || 0) + 1
+          };
+        }
+        return p;
+      }));
     }
   };
 

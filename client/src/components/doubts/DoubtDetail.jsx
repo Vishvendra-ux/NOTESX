@@ -2,8 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ChevronUp, ChevronDown, Check, Bookmark, Share2,
-  Trash2, MessageSquare, Send, Sparkles, AlertCircle, Eye,
-  Tag, Clock, User, CheckCircle2, Bold, Italic, Code, List, Quote,
+  Trash2, MessageSquare, Send, Sparkles, AlertCircle,
+  Tag, CheckCircle2, Bold, Italic, Code, List, Quote,
   Edit3, HelpCircle, Layers, CheckCircle
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
@@ -37,11 +37,6 @@ export default function DoubtDetail() {
   // Copy link status
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    fetchDoubtData();
-  }, [id]);
-
   const fetchDoubtData = async () => {
     try {
       setLoading(true);
@@ -59,6 +54,11 @@ export default function DoubtDetail() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchDoubtData();
+  }, [id]);
 
   // Upvote / Downvote Question
   const handleVoteQuestion = async (type) => {
@@ -167,12 +167,18 @@ export default function DoubtDetail() {
   const handleDeleteAnswer = async (answerId) => {
     if (!window.confirm('Are you sure you want to delete your answer?')) return;
     try {
+      const deletedAnswer = answers.find(a => a._id === answerId);
       await doubtService.deleteAnswer(answerId);
       setAnswers(prev => prev.filter(a => a._id !== answerId));
-      setDoubt(prev => ({
-        ...prev,
-        answersCount: Math.max(0, (prev.answersCount || 1) - 1)
-      }));
+      setDoubt(prev => {
+        if (!prev) return prev;
+        const wasAccepted = deletedAnswer?.isAccepted;
+        return {
+          ...prev,
+          answersCount: Math.max(0, (prev.answersCount || 1) - 1),
+          ...(wasAccepted ? { hasAcceptedAnswer: false, status: 'open' } : {})
+        };
+      });
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete answer.');
     }

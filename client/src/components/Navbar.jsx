@@ -34,6 +34,7 @@ export default function Navbar() {
   const [notificationRefresh, setNotificationRefresh] = useState(0);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef(null);
+  const dropdownRef = useRef(null);
   const notificationPanelRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -118,9 +119,38 @@ export default function Navbar() {
   }, [notificationsOpen]);
 
   useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
+  useEffect(() => {
     setNotificationsOpen(false);
     setMoreOpen(false);
+    setDropdownOpen(false);
+    setIsOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return undefined;
+    const handlePointerDown = (event) => {
+      if (!dropdownRef.current?.contains(event.target)) setDropdownOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setDropdownOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [dropdownOpen]);
 
   useEffect(() => {
     if (!moreOpen) return undefined;
@@ -397,7 +427,7 @@ export default function Navbar() {
                   <div className="h-6 w-px bg-slate-200 mx-1"></div>
 
                   {/* Profile Dropdown */}
-                  <div className="relative">
+                  <div className="relative" ref={dropdownRef}>
                     <button 
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className="flex items-center gap-2 xl:gap-2.5 p-1 xl:p-1.5 xl:pr-3 rounded-xl border border-transparent xl:border-slate-200 xl:bg-slate-50 hover:bg-slate-100 transition"

@@ -266,9 +266,16 @@ exports.deleteDoubt = async (req, res, next) => {
       return res.status(403).json({ message: 'Not authorized to delete this question' });
     }
 
-    // Delete associated answers and comments
+    // Delete associated answers and comments (both doubt comments and answer comments)
+    const answers = await Answer.find({ doubtId: doubt._id }).select('_id');
+    const answerIds = answers.map(a => a._id);
+    await Comment.deleteMany({
+      $or: [
+        { parentId: doubt._id, onModel: 'Doubt' },
+        { parentId: { $in: answerIds }, onModel: 'Answer' }
+      ]
+    });
     await Answer.deleteMany({ doubtId: doubt._id });
-    await Comment.deleteMany({ parentId: doubt._id, onModel: 'Doubt' });
     await Doubt.findByIdAndDelete(doubt._id);
 
     res.json({ message: 'Doubt removed successfully', id: req.params.id });
@@ -457,8 +464,13 @@ exports.acceptAnswer = async (req, res, next) => {
       return res.json({ message: 'Answer unaccepted', isAccepted: false, answerId: answer._id });
     }
 
-    // Reset any other accepted answer for this doubt
-    await Answer.updateMany({ doubtId: doubt._id }, { isAccepted: false });
+    // Reset any previously accepted answer for this doubt and deduct reputation
+    const previousAccepted = await Answer.findOne({ doubtId: doubt._id, isAccepted: true });
+    if (previousAccepted && previousAccepted._id.toString() !== answer._id.toString()) {
+      previousAccepted.isAccepted = false;
+      await previousAccepted.save();
+      await User.findByIdAndUpdate(previousAccepted.answererId, { $inc: { reputation: -15 } });
+    }
 
     answer.isAccepted = true;
     await answer.save();

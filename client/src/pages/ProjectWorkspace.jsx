@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { buildTogetherService } from '../services/api';
 import { io } from 'socket.io-client';
@@ -7,8 +7,7 @@ import { ArrowLeft, Send, Users, ShieldCheck, Ticket } from 'lucide-react';
 
 export default function ProjectWorkspace() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
 
   const [project, setProject] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -19,13 +18,22 @@ export default function ProjectWorkspace() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    let isCancelled = false;
+
+    if (!user) {
+      return undefined;
+    }
+
     // Fetch project and messages, then join the project's real-time room
     const fetchData = async () => {
       try {
+        setLoading(true);
         const [projectRes, messagesRes] = await Promise.all([
           buildTogetherService.get(id),
           buildTogetherService.getMessages(id)
         ]);
+
+        if (isCancelled) return;
 
         const p = projectRes.data;
         if (!p.isMember && !p.isCreator && user?.role !== 'admin') {
@@ -41,39 +49,42 @@ export default function ProjectWorkspace() {
         const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '')
           || (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5001' : '/');
         const token = localStorage.getItem('token');
-        socketRef.current = io(socketUrl, {
+        const socket = io(socketUrl, {
           auth: { token }
         });
+        socketRef.current = socket;
 
-        socketRef.current.emit('join_project', id);
+        socket.emit('join_project', id);
 
-        socketRef.current.on('receive_message', (message) => {
+        socket.on('receive_message', (message) => {
           setMessages((prev) => [...prev, message]);
         });
 
-        socketRef.current.on('project_error', (err) => {
+        socket.on('project_error', (err) => {
           setError(err?.message || 'Unable to join this project workspace in real time.');
         });
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load project workspace');
+        if (!isCancelled) {
+          setError(err.response?.data?.message || 'Failed to load project workspace');
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    if (user) {
-      fetchData();
-    }
+    fetchData();
 
-    // Disconnect on unmount or when id/user changes, so effect re-runs
-    // (e.g. navigating between projects) don't leak connections
+    // Disconnect on unmount or when id/user changes
     return () => {
+      isCancelled = true;
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, [id, user]);
+  }, [id, user, authLoading]);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -96,7 +107,22 @@ export default function ProjectWorkspace() {
     setNewMessage('');
   };
 
-  if (loading) {
+  if (!authLoading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-lg border border-slate-200">
+          <ShieldCheck size={48} className="mx-auto text-rose-500 mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Sign In Required</h2>
+          <p className="text-slate-600 mb-6">Please log in to access this project team workspace.</p>
+          <Link to="/login" className="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>

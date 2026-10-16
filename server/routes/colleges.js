@@ -1,14 +1,14 @@
 const router = require('express').Router();
 const collegeController = require('../controllers/collegeController');
 const communityController = require('../controllers/collegeCommunityController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, optionalProtect, authorize } = require('../middleware/authMiddleware');
 
 // Standard College routes
 router.get('/', collegeController.list);
 
 // College Community Specific Routes
 router.get('/community/:slugOrId', communityController.getCollegeDetails);
-router.get('/community/:slugOrId/posts', communityController.getCollegePosts);
+router.get('/community/:slugOrId/posts', optionalProtect, communityController.getCollegePosts);
 router.post('/community/:slugOrId/posts', protect, communityController.createCollegePost);
 router.post('/community/posts/:postId/upvote', protect, communityController.upvotePost);
 router.delete('/community/posts/:postId', protect, communityController.deleteCollegePost);

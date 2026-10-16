@@ -137,7 +137,7 @@ const colleges = [
   },
 ];
 
-const filters = ['All Colleges', 'Uttar Pradesh', 'Delhi', 'Maharashtra', 'Tamil Nadu', 'Karnataka'];
+const filters = ['All Colleges', ...Array.from(new Set(colleges.map((c) => c.state).filter(Boolean)))];
 
 export default function Colleges() {
   const [query, setQuery] = useState(''); 

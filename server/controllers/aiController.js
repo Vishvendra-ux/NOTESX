@@ -350,11 +350,12 @@ exports.ask = async (req, res, next) => {
       Doubt.find({
         $or: [
           { title: { $regex: keywordRegex } },
-          { subject: { $regex: keywordRegex } },
+          { subjectName: { $regex: keywordRegex } },
+          { topic: { $regex: keywordRegex } },
           { tags: { $in: keywords.map(k => new RegExp(`^${escapeRegex(k)}`, 'i')) } }
         ]
       })
-      .select('title subject isResolved upvoteCount')
+      .select('title subjectName topic hasAcceptedAnswer upvotes')
       .limit(3)
     ]);
 
@@ -375,7 +376,7 @@ exports.ask = async (req, res, next) => {
     const contextSummary = [
       matchedNotes.length ? `Matching Notes:\n${matchedNotes.map(n => `- Title: "${n.title}", Subject: ${n.subject}, Unit: ${n.unit}, Description: ${n.description}`).join('\n')}` : '',
       matchedRoadmaps ? `Matching Career Roadmap: "${matchedRoadmaps.title}" (${matchedRoadmaps.category})\nDescription: ${matchedRoadmaps.description}` : '',
-      matchedDoubts.length ? `Related Questions: ${matchedDoubts.map(d => `"${d.title}" (${d.subject})`).join(', ')}` : ''
+      matchedDoubts.length ? `Related Questions: ${matchedDoubts.map(d => `"${d.title}" (${d.subjectName || 'General'})`).join(', ')}` : ''
     ].filter(Boolean).join('\n\n');
 
     // 2. Attempt Google Gemini call if configured

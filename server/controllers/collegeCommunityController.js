@@ -37,7 +37,14 @@ exports.getCollegePosts = async (req, res, next) => {
     const query = college ? { collegeId: college._id } : { collegeSlug: slugOrId.toLowerCase() };
     const posts = await CommunityPost.find(query).sort({ createdAt: -1 });
 
-    res.json(posts);
+    const currentUserId = req.user?._id;
+    const postsWithMeta = posts.map(p => {
+      const obj = p.toObject();
+      obj.hasUpvoted = Boolean(currentUserId && p.upvotedBy && p.upvotedBy.some(id => id.equals(currentUserId)));
+      return obj;
+    });
+
+    res.json(postsWithMeta);
   } catch (error) {
     next(error);
   }
@@ -108,7 +115,9 @@ exports.upvotePost = async (req, res, next) => {
     }
 
     await post.save();
-    res.json(post);
+    const result = post.toObject();
+    result.hasUpvoted = !alreadyUpvoted;
+    res.json(result);
   } catch (error) {
     next(error);
   }

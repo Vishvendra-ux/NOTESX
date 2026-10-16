@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const GameRoom = require('../models/GameRoom');
 const User = require('../models/User');
 const escapeRegex = require('../utils/escapeRegex');
@@ -544,7 +545,7 @@ exports.joinRoom = async (req, res) => {
       if (room.status === 'CLOSED') {
         return res.status(400).json({ success: false, message: 'This room has already been closed.' });
       }
-      if (room.players.some((p) => p.userId.toString() === req.user._id.toString())) {
+      if (room.players.some((p) => p.userId && p.userId.toString() === req.user._id.toString())) {
         return res.json({
           success: true,
           message: 'You have already joined this room squad!',
@@ -585,7 +586,7 @@ exports.leaveRoom = async (req, res) => {
     const userIdStr = req.user._id.toString();
 
     // If host leaves, either close or keep open
-    if (room.hostId.toString() === userIdStr) {
+    if (room.hostId && room.hostId.toString() === userIdStr) {
       room.status = 'CLOSED';
       await room.save();
       emitSocket(req, 'game_room_deleted', { roomId: room._id });
@@ -595,7 +596,7 @@ exports.leaveRoom = async (req, res) => {
       });
     }
 
-    room.players = room.players.filter((p) => p.userId.toString() !== userIdStr);
+    room.players = room.players.filter((p) => p.userId && p.userId.toString() !== userIdStr);
     room.currentPlayers = room.players.length;
     if (room.status === 'FULL' && room.currentPlayers < room.maxPlayers) {
       room.status = 'OPEN';
@@ -686,6 +687,27 @@ async function seedDefaultRooms() {
     const demoUser = await User.findOne({ role: { $in: ['student', 'admin'] } });
     if (!demoUser) return;
 
+    const newId = () => new mongoose.Types.ObjectId();
+    const amanId = newId();
+    const rohanId = newId();
+    const sidId = newId();
+    const priyaId = newId();
+    const kavyaId = newId();
+    const arjunId = newId();
+    const devId = newId();
+    const rahulId = newId();
+    const varunId = newId();
+    const harshitId = newId();
+    const adityaId = newId();
+    const karanId = newId();
+    const vikramId = newId();
+    const sameerId = newId();
+    const naveenId = newId();
+    const raviId = newId();
+    const tanviId = newId();
+    const ayushId = newId();
+    const snehaId = newId();
+
     const sampleRooms = [
       {
         gameId: 'bgmi',
@@ -699,7 +721,7 @@ async function seedDefaultRooms() {
         currentPlayers: 2,
         players: [
           { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
-          { userId: demoUser._id, name: 'Aman Sharma', college: 'IIT Delhi' },
+          { userId: amanId, name: 'Aman Sharma', college: 'IIT Delhi' },
         ],
         voiceChannel: 'In-game Mic',
         notes: 'Room starting in 5 mins! Friendly match, no toxic players.',
@@ -718,16 +740,15 @@ async function seedDefaultRooms() {
         gameMode: '5v5 Custom Match',
         serverRegion: 'Mumbai Server',
         maxPlayers: 5,
-        currentPlayers: 3,
+        currentPlayers: 2,
         players: [
-          { userId: demoUser._id, name: 'Rohan Verma', college: 'DTU Delhi' },
-          { userId: demoUser._id, name: 'Siddharth K', college: 'NSUT' },
-          { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
+          { userId: rohanId, name: 'Rohan Verma', college: 'DTU Delhi' },
+          { userId: sidId, name: 'Siddharth K', college: 'NSUT' },
         ],
         voiceChannel: 'Discord Voice',
         discordOrLink: 'https://discord.gg/student-gaming-notesx',
         notes: 'Casual swiftplay/unrated custom. Join Discord voice for calls.',
-        hostId: demoUser._id,
+        hostId: rohanId,
         hostName: 'Rohan Verma',
         hostCollege: 'DTU Delhi',
         status: 'OPEN',
@@ -744,12 +765,12 @@ async function seedDefaultRooms() {
         maxPlayers: 2,
         currentPlayers: 1,
         players: [
-          { userId: demoUser._id, name: 'Priya Patel', college: 'BITS Pilani' },
+          { userId: priyaId, name: 'Priya Patel', college: 'BITS Pilani' },
         ],
         voiceChannel: 'No Mic Required',
         discordOrLink: 'https://lichess.org',
         notes: 'Looking for a challenging game over study break! Anyone rated 1200-1800 welcome.',
-        hostId: demoUser._id,
+        hostId: priyaId,
         hostName: 'Priya Patel',
         hostCollege: 'BITS Pilani',
         status: 'OPEN',
@@ -764,20 +785,19 @@ async function seedDefaultRooms() {
         gameMode: 'Custom College Words',
         serverRegion: 'Web Browser',
         maxPlayers: 12,
-        currentPlayers: 5,
+        currentPlayers: 4,
         players: [
-          { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
-          { userId: demoUser._id, name: 'Kavya S', college: 'VIT Vellore' },
-          { userId: demoUser._id, name: 'Arjun N', college: 'NIT Trichy' },
-          { userId: demoUser._id, name: 'Dev P', college: 'GLA University' },
-          { userId: demoUser._id, name: 'Rahul R', college: 'IIT Delhi' },
+          { userId: kavyaId, name: 'Kavya S', college: 'VIT Vellore' },
+          { userId: arjunId, name: 'Arjun N', college: 'NIT Trichy' },
+          { userId: devId, name: 'Dev P', college: 'GLA University' },
+          { userId: rahulId, name: 'Rahul R', college: 'IIT Delhi' },
         ],
         voiceChannel: 'Google Meet / Voice',
         discordOrLink: 'https://skribbl.io',
         notes: 'Room ID is custom link code. Enter room and guess hilarious coding terms!',
-        hostId: demoUser._id,
-        hostName: demoUser.name,
-        hostCollege: demoUser.collegeName || 'GLA University',
+        hostId: kavyaId,
+        hostName: 'Kavya S',
+        hostCollege: 'VIT Vellore',
         status: 'OPEN',
         expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000),
       },
@@ -790,15 +810,14 @@ async function seedDefaultRooms() {
         gameMode: 'Clash Squad Custom (CS)',
         serverRegion: 'India',
         maxPlayers: 4,
-        currentPlayers: 3,
+        currentPlayers: 2,
         players: [
-          { userId: demoUser._id, name: 'Varun Singh', college: 'AKGEC' },
-          { userId: demoUser._id, name: 'Harshit J', college: 'GLA University' },
-          { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
+          { userId: varunId, name: 'Varun Singh', college: 'AKGEC' },
+          { userId: harshitId, name: 'Harshit J', college: 'GLA University' },
         ],
         voiceChannel: 'In-game Mic',
         notes: 'Need 1 rusher! Unlimited ammo & gloo wall custom card activated.',
-        hostId: demoUser._id,
+        hostId: varunId,
         hostName: 'Varun Singh',
         hostCollege: 'AKGEC',
         status: 'OPEN',
@@ -815,12 +834,12 @@ async function seedDefaultRooms() {
         maxPlayers: 4,
         currentPlayers: 2,
         players: [
-          { userId: demoUser._id, name: 'Aditya Gupta', college: 'GLA University' },
-          { userId: demoUser._id, name: 'Karan Mehra', college: 'IIT Delhi' },
+          { userId: adityaId, name: 'Aditya Gupta', college: 'GLA University' },
+          { userId: karanId, name: 'Karan Mehra', college: 'IIT Delhi' },
         ],
         voiceChannel: 'No Mic Required',
         notes: 'Quick study break game! Enter the 6-digit code in Ludo King app under Play With Friends.',
-        hostId: demoUser._id,
+        hostId: adityaId,
         hostName: 'Aditya Gupta',
         hostCollege: 'GLA University',
         status: 'OPEN',
@@ -835,16 +854,15 @@ async function seedDefaultRooms() {
         gameMode: '5v5 Competitive Scrim',
         serverRegion: 'India / Mumbai',
         maxPlayers: 5,
-        currentPlayers: 3,
+        currentPlayers: 2,
         players: [
-          { userId: demoUser._id, name: 'Vikram Malhotra', college: 'DTU Delhi' },
-          { userId: demoUser._id, name: 'Sameer Sen', college: 'NSUT' },
-          { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
+          { userId: vikramId, name: 'Vikram Malhotra', college: 'DTU Delhi' },
+          { userId: sameerId, name: 'Sameer Sen', college: 'NSUT' },
         ],
         voiceChannel: 'Discord Voice',
         discordOrLink: 'https://discord.gg/student-gaming-notesx',
         notes: 'Private server practice match. Mirage only. Competitive mindset, good comms please.',
-        hostId: demoUser._id,
+        hostId: vikramId,
         hostName: 'Vikram Malhotra',
         hostCollege: 'DTU Delhi',
         status: 'OPEN',
@@ -861,11 +879,11 @@ async function seedDefaultRooms() {
         maxPlayers: 2,
         currentPlayers: 1,
         players: [
-          { userId: demoUser._id, name: 'Naveen Kumar', college: 'NIT Trichy' },
+          { userId: naveenId, name: 'Naveen Kumar', college: 'NIT Trichy' },
         ],
         voiceChannel: 'Google Meet / Voice',
         notes: '6 min halves, tactical defending. Add on EA App or join friendly lobby!',
-        hostId: demoUser._id,
+        hostId: naveenId,
         hostName: 'Naveen Kumar',
         hostCollege: 'NIT Trichy',
         status: 'OPEN',
@@ -880,15 +898,14 @@ async function seedDefaultRooms() {
         gameMode: 'Cayo Perico / Casino Heist',
         serverRegion: 'India / Asia',
         maxPlayers: 4,
-        currentPlayers: 2,
+        currentPlayers: 1,
         players: [
-          { userId: demoUser._id, name: 'Ravi Teja', college: 'BITS Pilani' },
-          { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
+          { userId: raviId, name: 'Ravi Teja', college: 'BITS Pilani' },
         ],
         voiceChannel: 'Discord Voice',
         discordOrLink: 'https://discord.gg/student-gaming-notesx',
         notes: 'Stealth approach, Drainage tunnel entry, full bags of gold. 25% cut each!',
-        hostId: demoUser._id,
+        hostId: raviId,
         hostName: 'Ravi Teja',
         hostCollege: 'BITS Pilani',
         status: 'OPEN',
@@ -903,17 +920,16 @@ async function seedDefaultRooms() {
         gameMode: 'Battle Royale Duels',
         serverRegion: 'Web Browser',
         maxPlayers: 8,
-        currentPlayers: 4,
+        currentPlayers: 3,
         players: [
-          { userId: demoUser._id, name: 'Tanvi Jain', college: 'IIT Delhi' },
-          { userId: demoUser._id, name: 'Ayush Roy', college: 'GLA University' },
-          { userId: demoUser._id, name: 'Sneha M', college: 'VIT Vellore' },
-          { userId: demoUser._id, name: demoUser.name, college: demoUser.collegeName || 'GLA University' },
+          { userId: tanviId, name: 'Tanvi Jain', college: 'IIT Delhi' },
+          { userId: ayushId, name: 'Ayush Roy', college: 'GLA University' },
+          { userId: snehaId, name: 'Sneha M', college: 'VIT Vellore' },
         ],
         voiceChannel: 'No Mic Required',
         discordOrLink: 'https://geoguessr.com',
         notes: 'Free to join in browser! Click challenge link or enter party code to guess street view spots.',
-        hostId: demoUser._id,
+        hostId: tanviId,
         hostName: 'Tanvi Jain',
         hostCollege: 'IIT Delhi',
         status: 'OPEN',

@@ -195,6 +195,10 @@ export default function Jobs() {
                   alert('Please sign in to post a hiring opportunity.');
                   return;
                 }
+                if (user.role !== 'admin' && user.role !== 'recruiter') {
+                  alert('Posting job openings is reserved for campus placement admins and company recruiters.');
+                  return;
+                }
                 setIsPostModalOpen(true);
               }}
               className="btn-primary py-3 px-6 shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 font-bold cursor-pointer whitespace-nowrap"
