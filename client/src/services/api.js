@@ -90,7 +90,13 @@ export const doubtService = {
   createComment: (data) => api.post('/comments', data),
 };
 export const questionService = { list: (params) => api.get('/questions', { params }), create: (data) => api.post('/questions', data) };
-export const contestService = { list: () => api.get('/contests'), get: (id) => api.get(`/contests/${id}`) };
+export const contestService = {
+  list: (params) => api.get('/contests', { params }),
+  get: (id) => api.get(`/contests/${id}`),
+  submit: (id, data) => api.post(`/contests/${id}/submit`, data),
+  runCode: (id, data) => api.post(`/contests/${id}/run`, data),
+  getLeaderboard: (id) => api.get(`/contests/${id}/leaderboard`),
+};
 export const userService = { me: () => api.get('/users/me'), profile: (username) => api.get(`/users/${username}`) };
 // LLM-backed calls can legitimately take longer than the default 10s timeout
 export const aiService = { ask: (data) => api.post('/ai/chat', data, { timeout: 60000 }) };
