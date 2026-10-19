@@ -97,9 +97,16 @@ export const contestService = {
   runCode: (id, data) => api.post(`/contests/${id}/run`, data),
   getLeaderboard: (id) => api.get(`/contests/${id}/leaderboard`),
 };
-export const userService = { me: () => api.get('/users/me'), profile: (username) => api.get(`/users/${username}`) };
+export const userService = { 
+  me: () => api.get('/users/me'), 
+  profile: (username) => api.get(`/users/${username}`),
+  upgradePro: (data) => api.post('/users/upgrade-pro', data)
+};
 // LLM-backed calls can legitimately take longer than the default 10s timeout
-export const aiService = { ask: (data) => api.post('/ai/chat', data, { timeout: 60000 }) };
+export const aiService = { 
+  ask: (data) => api.post('/ai/chat', data, { timeout: 60000 }),
+  getQuota: () => api.get('/ai/quota')
+};
 export const roadmapService = {
   list: (params) => api.get('/roadmaps', { params }),
   categories: () => api.get('/roadmaps/categories'),

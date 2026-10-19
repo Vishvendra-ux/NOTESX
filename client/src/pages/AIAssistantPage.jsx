@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, BookOpen, ListChecks, Lightbulb, Route, BarChart3, Plus, FileText, ArrowRight, Loader2, Compass, ChevronRight, MapPin } from 'lucide-react';
+import { Sparkles, Send, BookOpen, ListChecks, Lightbulb, Route, BarChart3, Plus, FileText, ArrowRight, Loader2, Compass, ChevronRight, MapPin, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { aiService } from '../services/api';
 
@@ -23,9 +23,18 @@ const recentTopics = [
 export default function AIAssistantPage() {
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
+  const [quota, setQuota] = useState(null);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      aiService.getQuota()
+        .then(res => setQuota(res.data))
+        .catch(() => {});
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,6 +54,9 @@ export default function AIAssistantPage() {
 
     try {
       const { data } = await aiService.ask({ message: query });
+      if (data.quota) {
+        setQuota(data.quota);
+      }
       setMessages(prev => [
         ...prev,
         {
@@ -53,16 +65,28 @@ export default function AIAssistantPage() {
           navigation: data.navigation || null,
           matchedDocs: data.matchedDocs || [],
           matchedRoadmap: data.matchedRoadmap || null,
-          provider: data.provider
+          provider: data.provider,
+          quota: data.quota
         }
       ]);
     } catch (err) {
       console.error('Error querying AI assistant:', err);
+      if (err.response?.data?.quota) {
+        setQuota(err.response.data.quota);
+      }
+      let errorText = err.response?.data?.message;
+      if (err.response?.status === 401) {
+        errorText = "🔒 Please **[Log In](/login)** to ask the 24/7 AI Study Tutor questions and track your daily quota.";
+      } else if (err.response?.status === 429) {
+        errorText = err.response?.data?.message || "⚠️ Daily free AI study limit reached (15/15 questions used today). Quota resets at midnight UTC. Upgrade to NOTESX Pro for unlimited questions!";
+      } else if (!errorText) {
+        errorText = "I couldn't retrieve an answer right now. Please ensure the backend server is running and try again.";
+      }
       setMessages(prev => [
         ...prev,
         {
           user: false,
-          text: "I couldn't retrieve an answer right now. Please ensure the backend server is running and try again.",
+          text: errorText,
           matchedDocs: []
         }
       ]);
@@ -147,7 +171,52 @@ export default function AIAssistantPage() {
           <Plus size={16} /> New learning session
         </button>
 
-        <div className="mt-8">
+        {/* Daily Quota Tracker Card */}
+        <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-xs">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 font-bold text-white">
+              <Zap size={13} className={quota?.isPro ? "text-amber-400" : "text-indigo-400"} />
+              {quota?.isPro ? "Pro Plan" : "Daily Free Quota"}
+            </span>
+            {quota?.isPro ? (
+              <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-400/30">
+                UNLIMITED
+              </span>
+            ) : (
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                {quota?.remaining !== null && quota?.remaining !== undefined ? quota.remaining : 15} left
+              </span>
+            )}
+          </div>
+
+          {!quota?.isPro && (
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                <span>Free questions</span>
+                <span className="text-white font-bold">
+                  {quota?.remaining !== null && quota?.remaining !== undefined ? quota.remaining : 15} / {quota?.limit || 15}
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    (quota?.remaining ?? 15) <= 3 ? "bg-amber-400" : "bg-gradient-to-r from-indigo-400 to-purple-400"
+                  }`}
+                  style={{ width: `${Math.min(100, Math.max(0, (((quota?.remaining ?? 15)) / (quota?.limit || 15)) * 100))}%` }}
+                />
+              </div>
+              <p className="mt-2 text-[10px] text-slate-400 leading-relaxed">
+                {(quota?.remaining ?? 15) === 0 ? (
+                  <span className="text-amber-300 font-medium">Daily free questions used. Resets tomorrow!</span>
+                ) : (
+                  <span>Resets daily at 00:00 UTC to protect against runaway usage.</span>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-7">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Popular Study Topics</p>
           <div className="mt-3 space-y-2">
             {recentTopics.map((item) => (
@@ -172,12 +241,17 @@ export default function AIAssistantPage() {
         {/* Header */}
         <header className="border-b border-slate-100 px-6 py-5 shrink-0 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-indigo-600">Document Q&A & Support Agent</p>
+            <p className="text-xs font-semibold tracking-wide text-indigo-600">24/7 AI Academic Tutor & Support</p>
             <h1 className="mt-1 text-2xl font-extrabold tracking-[-.04em] text-slate-900">Learn faster with your campus notes.</h1>
           </div>
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-100">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live RAG Engine
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" /> Gemini 2.5 Flash
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-100">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Campus RAG
+            </span>
+          </div>
         </header>
 
         {/* Conversation Body */}

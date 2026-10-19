@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles, FileText, ArrowRight, Loader2, RotateCcw, Compass, ExternalLink, MapPin } from 'lucide-react';
+import { Bot, X, Send, Sparkles, FileText, ArrowRight, Loader2, RotateCcw, Compass, ExternalLink, MapPin, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { aiService } from '../services/api';
 
@@ -12,6 +12,7 @@ const STARTER_PROMPTS = [
 
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
+  const [quota, setQuota] = useState(null);
   const [messages, setMessages] = useState([
     {
       text: "👋 Hi! I'm your **NOTESX Study & Docs Assistant**.\n\nAsk me any concept question, algorithm, or tell me what you're looking for — I'll point you to (and take you to) the right page on NOTESX!",
@@ -23,6 +24,14 @@ export default function AIAssistant() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen && localStorage.getItem('token')) {
+      aiService.getQuota()
+        .then(res => setQuota(res.data))
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,6 +54,9 @@ export default function AIAssistant() {
 
     try {
       const { data } = await aiService.ask({ message: query });
+      if (data.quota) {
+        setQuota(data.quota);
+      }
       setMessages(prev => [
         ...prev,
         {
@@ -53,15 +65,27 @@ export default function AIAssistant() {
           navigation: data.navigation || null,
           matchedDocs: data.matchedDocs || [],
           matchedRoadmap: data.matchedRoadmap || null,
-          provider: data.provider
+          provider: data.provider,
+          quota: data.quota
         }
       ]);
     } catch (err) {
       console.error('Failed to get answer from AI service:', err);
+      if (err.response?.data?.quota) {
+        setQuota(err.response.data.quota);
+      }
+      let errorText = err.response?.data?.message;
+      if (err.response?.status === 401) {
+        errorText = "🔒 Please **[Log In](/login)** to ask the 24/7 AI Study Tutor questions and track your daily quota.";
+      } else if (err.response?.status === 429) {
+        errorText = err.response?.data?.message || "⚠️ Daily free AI study limit reached (15/15 questions used today). Quota resets at midnight UTC. Upgrade to NOTESX Pro for unlimited questions!";
+      } else if (!errorText) {
+        errorText = "I encountered an issue connecting to the knowledge base. Please check your internet or try asking again in a moment.";
+      }
       setMessages(prev => [
         ...prev,
         {
-          text: "I encountered an issue connecting to the knowledge base. Please check your internet or try asking again in a moment.",
+          text: errorText,
           isBot: true,
           matchedDocs: []
         }
@@ -170,10 +194,10 @@ export default function AIAssistant() {
                 <Sparkles size={16} className="text-yellow-300" />
               </span>
               <div>
-                <h3 className="text-sm font-bold leading-tight">NOTESX AI Assistant</h3>
+                <h3 className="text-sm font-bold leading-tight">NOTESX 24/7 AI Tutor</h3>
                 <span className="text-[10px] text-indigo-100 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Connected to verified campus docs
+                  Gemini 2.5 Flash • Campus RAG
                 </span>
               </div>
             </div>
@@ -194,6 +218,21 @@ export default function AIAssistant() {
                 <X size={18} />
               </button>
             </div>
+          </div>
+
+          {/* Daily Quota Status Banner */}
+          <div className="bg-indigo-950 px-4 py-1.5 border-b border-indigo-900/60 flex items-center justify-between text-[11px] text-indigo-200 shrink-0">
+            <span className="flex items-center gap-1.5 font-medium">
+              <Zap size={12} className={quota?.isPro ? "text-amber-400" : "text-indigo-400"} />
+              {quota?.isPro ? (
+                <span className="text-amber-300 font-bold">NOTESX Pro • Unlimited Questions</span>
+              ) : (
+                <span>Daily Quota: <strong className="text-white font-semibold">{quota?.remaining !== null && quota?.remaining !== undefined ? quota.remaining : 15}</strong> of {quota?.limit || 15} free questions left</span>
+              )}
+            </span>
+            {quota && !quota.isPro && quota.remaining <= 3 && (
+              <span className="text-[10px] text-amber-300 font-bold animate-pulse">Low free quota</span>
+            )}
           </div>
 
           {/* Messages Area */}

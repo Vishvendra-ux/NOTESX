@@ -35,6 +35,7 @@ router.put('/profile', protect, controller.updateProfile);
 router.put('/me', protect, controller.updateProfile);
 router.post('/resume', protect, uploadLimiter, upload.single('resume'), controller.uploadResume);
 router.delete('/resume', protect, controller.deleteResume);
+router.post('/upgrade-pro', protect, controller.togglePro);
 router.get('/:username', controller.profile);
 
 module.exports = router;

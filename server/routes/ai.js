@@ -1,11 +1,12 @@
 const router = require('express').Router();
-const { ask } = require('../controllers/aiController');
+const { ask, getQuota } = require('../controllers/aiAssistantController');
 const { protect } = require('../middleware/authMiddleware');
 const { aiLimiter } = require('../middleware/rateLimiter');
 
-// Auth required: this endpoint forwards prompts to the paid Gemini API, so
-// anonymous traffic would be an unbounded cost-abuse vector.
+// Rate-limited & authenticated: forwards prompts to Gemini 2.5 Flash / NOTESX Knowledge Base
 router.post('/chat', aiLimiter, protect, ask);
 
-module.exports = router;
+// Check remaining daily AI questions and Pro status
+router.get('/quota', protect, getQuota);
 
+module.exports = router;

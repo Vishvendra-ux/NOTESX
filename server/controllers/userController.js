@@ -104,3 +104,27 @@ exports.deleteResume = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.togglePro = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const setProTo = req.body.isPro !== undefined ? Boolean(req.body.isPro) : !user.isPro;
+    user.isPro = setProTo;
+    user.proExpiresAt = setProTo ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null;
+    await user.save();
+
+    const updatedUser = await User.findById(user._id).select('-password');
+    console.log(`⭐ Pro status updated for ${updatedUser.email}: ${updatedUser.isPro}`);
+    res.json({
+      message: updatedUser.isPro ? 'Successfully upgraded to NOTESX Pro!' : 'Downgraded to free plan.',
+      user: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -26,6 +26,7 @@ const formatUserResponse = (user, token) => ({
   resume: user.resume,
   resumeOriginalName: user.resumeOriginalName,
   isVerified: user.isVerified,
+  isPro: Boolean(user.isPro),
   token,
 });
 
