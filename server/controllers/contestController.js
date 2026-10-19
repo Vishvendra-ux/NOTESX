@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
+const { runAllTestCases } = require('../services/judge0Service');
 
 const DEFAULT_QUESTIONS = [
   {
@@ -277,7 +278,56 @@ exports.submitSolution = async (req, res, next) => {
 
     const points = question.points || 100;
 
-    // 1. Update or create individual leaderboard entry
+    // 1. Execute all test cases (visible and hidden) via Judge0 / Sandbox execution
+    const execResult = await runAllTestCases({
+      code: code || '',
+      language: language || 'python',
+      question,
+      testCases: question.testCases,
+    });
+
+    // If any test case fails, reject submission with precise diagnostics
+    if (!execResult.allPassed) {
+      const failedCase = execResult.results.find((r) => !r.passed) || execResult.results[0];
+      const failStatus = failedCase.statusDesc || 'Wrong Answer';
+
+      contest.submissions.push({
+        userId,
+        userName,
+        collegeName,
+        questionId,
+        language: language || 'python',
+        code: code || '',
+        status: failStatus,
+        pointsAwarded: 0,
+        submittedAt: new Date(),
+      });
+      await contest.save();
+
+      const failureMessage = failedCase.isHidden
+        ? `Failed on hidden edge case #${failedCase.caseNum} (${failStatus}). Check constraints and edge cases.`
+        : `Failed on Test Case #${failedCase.caseNum} (${failStatus}). Expected: ${failedCase.expectedOutput}, Got: ${failedCase.actualOutput}`;
+
+      return res.json({
+        success: false,
+        status: failStatus,
+        message: failureMessage,
+        engine: execResult.engine,
+        totalCases: execResult.totalCases,
+        passedCases: execResult.passedCases,
+        failedCaseNum: failedCase.caseNum,
+        results: execResult.results.map((r) => ({
+          ...r,
+          input: r.isHidden ? 'Hidden test input' : r.input,
+          expectedOutput: r.isHidden ? 'Hidden' : r.expectedOutput,
+          actualOutput: r.isHidden && !r.passed ? 'Incorrect Output' : r.actualOutput,
+        })),
+        leaderboard: contest.leaderboard,
+        collegeLeaderboard: contest.collegeLeaderboard,
+      });
+    }
+
+    // 2. All test cases passed! Update or create individual leaderboard entry
     if (studentEntry) {
       studentEntry.score += points;
       studentEntry.solvedCount += 1;
@@ -296,7 +346,7 @@ exports.submitSolution = async (req, res, next) => {
       });
     }
 
-    // Record submission
+    // Record accepted submission
     contest.submissions.push({
       userId,
       userName,
@@ -309,7 +359,7 @@ exports.submitSolution = async (req, res, next) => {
       submittedAt: new Date(),
     });
 
-    // 2. Update College Leaderboard (Inter-College Score)
+    // 3. Update College Leaderboard (Inter-College Score)
     let collegeEntry = contest.collegeLeaderboard.find(
       (c) => c.collegeName.toLowerCase() === collegeName.toLowerCase()
     );
@@ -342,14 +392,14 @@ exports.submitSolution = async (req, res, next) => {
       }
     });
 
-    // 3. Sort Individual Leaderboard
+    // 4. Sort Individual Leaderboard
     contest.leaderboard.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       if (b.solvedCount !== a.solvedCount) return b.solvedCount - a.solvedCount;
       return new Date(a.lastSolvedAt) - new Date(b.lastSolvedAt);
     });
 
-    // 4. Sort College Leaderboard (Highest score and solved questions appear on top!)
+    // 5. Sort College Leaderboard (Highest score and solved questions appear on top!)
     contest.collegeLeaderboard.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       return b.solvedCount - a.solvedCount;
@@ -376,6 +426,10 @@ exports.submitSolution = async (req, res, next) => {
       collegeRank,
       userName,
       collegeName,
+      engine: execResult.engine,
+      passedCases: execResult.passedCases,
+      totalCases: execResult.totalCases,
+      results: execResult.results,
       leaderboard: contest.leaderboard,
       collegeLeaderboard: contest.collegeLeaderboard,
     });
@@ -394,24 +448,30 @@ exports.runCode = async (req, res, next) => {
       return res.status(404).json({ message: 'Problem not found' });
     }
 
-    // Run against sample test cases
-    const results = (question.testCases || []).map((tc, idx) => ({
-      caseNum: idx + 1,
-      input: customInput || tc.input,
-      expectedOutput: tc.expectedOutput,
-      actualOutput: tc.expectedOutput, // Verified execution result
-      passed: true,
-      executionTime: `${(Math.random() * 20 + 15).toFixed(1)}ms`,
-      memory: `${(Math.random() * 2 + 12).toFixed(1)}MB`,
-    }));
+    // Run against sample test cases (non-hidden) or custom input
+    let testCasesToRun;
+    if (customInput) {
+      testCasesToRun = [{ input: customInput, expectedOutput: '', isHidden: false }];
+    } else {
+      testCasesToRun = (question.testCases || []).filter((tc) => !tc.isHidden);
+      if (testCasesToRun.length === 0) testCasesToRun = question.testCases || [];
+    }
+
+    const execResult = await runAllTestCases({
+      code: code || '',
+      language: language || 'python',
+      question,
+      testCases: testCasesToRun,
+    });
 
     res.json({
-      success: true,
-      status: 'Passed',
+      success: execResult.allPassed,
+      status: execResult.allPassed ? 'Passed' : 'Failed',
       language: language || 'python',
-      totalCases: results.length,
-      passedCases: results.length,
-      results,
+      totalCases: execResult.totalCases,
+      passedCases: execResult.passedCases,
+      engine: execResult.engine,
+      results: execResult.results,
     });
   } catch (error) {
     next(error);

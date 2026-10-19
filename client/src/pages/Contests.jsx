@@ -293,6 +293,18 @@ export default function Contests() {
         collegeName: college,
       });
 
+      if (res.data?.success === false) {
+        setAlertBanner({
+          type: 'error',
+          title: `${res.data.status || 'Submission Rejected'} ✗`,
+          message: res.data.message || 'One or more test cases failed. Review your code and constraints.',
+        });
+        if (res.data?.results) {
+          setRunResults(res.data.results);
+        }
+        return;
+      }
+
       if (res.data?.collegeLeaderboard?.length) {
         setCollegeLeaderboard(res.data.collegeLeaderboard);
       }
@@ -303,6 +315,9 @@ export default function Contests() {
       // Mark question as solved in session
       setUserSolvedMap((prev) => ({ ...prev, [activeQuestion.id]: true }));
       setUserScore((prev) => prev + points);
+      if (res.data?.results) {
+        setRunResults(res.data.results);
+      }
 
       setAlertBanner({
         type: 'success',
@@ -953,16 +968,54 @@ export default function Contests() {
 
                 {/* Test Output Panel */}
                 {runResults && (
-                  <div className="border-t border-slate-800 bg-slate-900/95 p-4 max-h-36 overflow-y-auto space-y-2">
-                    <div className="flex items-center justify-between text-xs font-bold text-emerald-400">
-                      <span>✓ All Sample Test Cases Passed!</span>
-                      <span className="text-[11px] text-slate-400 font-mono">2 / 2 passed</span>
+                  <div className="border-t border-slate-800 bg-slate-900/95 p-4 max-h-48 overflow-y-auto space-y-2.5">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className={runResults.every((r) => r.passed) ? 'text-emerald-400' : 'text-rose-400'}>
+                        {runResults.every((r) => r.passed) ? '✓ All Test Cases Passed!' : '⚠ Some Test Cases Failed'}
+                      </span>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+                        {runResults[0]?.engine && (
+                          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-400 border border-slate-700">
+                            {runResults[0].engine}
+                          </span>
+                        )}
+                        <span>
+                          {runResults.filter((r) => r.passed).length} / {runResults.length} passed
+                        </span>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                       {runResults.map((res) => (
-                        <div key={res.caseNum} className="p-2 rounded-lg bg-slate-800/70 border border-slate-700/60 font-mono">
-                          <span className="text-emerald-400 font-bold block">Case {res.caseNum}: Passed ✓</span>
-                          <span className="text-slate-400 text-[10px]">Time: {res.executionTime} · Mem: {res.memory}</span>
+                        <div
+                          key={res.caseNum}
+                          className={`p-2.5 rounded-lg border font-mono transition-all ${
+                            res.passed
+                              ? 'bg-emerald-950/20 border-emerald-500/30'
+                              : 'bg-rose-950/25 border-rose-500/40'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className={`font-bold ${res.passed ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              Case {res.caseNum}: {res.passed ? 'Passed ✓' : (res.statusDesc || 'Failed ✗')}
+                            </span>
+                            <span className="text-slate-400 text-[10px]">
+                              {res.executionTime} · {res.memory}
+                            </span>
+                          </div>
+                          {!res.passed && (
+                            <div className="mt-1.5 text-[10px] space-y-0.5">
+                              {res.expectedOutput && res.expectedOutput !== 'Hidden' && (
+                                <p className="text-slate-400 truncate">
+                                  Expected: <span className="text-emerald-300">{res.expectedOutput}</span>
+                                </p>
+                              )}
+                              {res.actualOutput && (
+                                <p className="text-rose-300 truncate" title={res.actualOutput}>
+                                  Got: <span>{res.actualOutput}</span>
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
