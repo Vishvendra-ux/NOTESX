@@ -10,3 +10,4 @@ router.post('/chat', aiLimiter, protect, ask);
 router.get('/quota', protect, getQuota);
 
 module.exports = router;
+

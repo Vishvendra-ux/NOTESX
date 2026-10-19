@@ -161,8 +161,8 @@ Curriculum Context from NOTESX:
 ${contextText}`;
 
   // Candidate models to try in order
-  const primaryModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const candidateModels = [primaryModel, 'gemini-3.8-flash', 'gemini-2.0-flash'];
+  const primaryModel = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  const candidateModels = [primaryModel, 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
   const uniqueModels = [...new Set(candidateModels)];
 
   for (const model of uniqueModels) {
@@ -539,3 +539,4 @@ exports.normalizeNavigation = normalizeNavigation;
 exports.SITE_PAGES = SITE_PAGES;
 exports.FREE_DAILY_LIMIT = FREE_DAILY_LIMIT;
 exports.isUserPro = isUserPro;
+
