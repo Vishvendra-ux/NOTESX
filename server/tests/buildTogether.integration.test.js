@@ -3,19 +3,25 @@
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { once } = require('node:events');
+const { createServer } = require('node:http');
 const { after, before, test } = require('node:test');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const { Server: SocketServer } = require('socket.io');
+// Use the same Socket.IO client package that the NOTESX frontend runs.
+const { io: socketClient } = require('../../client/node_modules/socket.io-client');
 
 const JWT_SECRET = 'notesx-build-together-integration-test-secret';
 let baseUrl;
 let httpServer;
+let socketServer;
 let testDbName;
 
 const User = require('../models/User');
 const ProjectCollab = require('../models/ProjectCollab');
 const ProjectApplication = require('../models/ProjectApplication');
 const Notification = require('../models/Notification');
+const ProjectMessage = require('../models/ProjectMessage');
 
 function getTestMongoConfig() {
   // This default points only at a dedicated local test database. TEST_MONGO_URI
@@ -43,17 +49,23 @@ before(async () => {
     User.init(),
     ProjectCollab.init(),
     ProjectApplication.init(),
-    Notification.init()
+    Notification.init(),
+    ProjectMessage.init()
   ]);
 
   const app = require('../app');
-  httpServer = app.listen(0, '127.0.0.1');
+  httpServer = createServer(app);
+  socketServer = new SocketServer(httpServer);
+  require('../socket')(socketServer);
+  httpServer.listen(0, '127.0.0.1');
   await once(httpServer, 'listening');
   baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
 });
 
 after(async () => {
-  if (httpServer) {
+  if (socketServer) {
+    await new Promise(resolve => socketServer.close(resolve));
+  } else if (httpServer) {
     await new Promise((resolve, reject) => {
       httpServer.close(error => error ? reject(error) : resolve());
     });
@@ -85,6 +97,29 @@ async function requestJson(path, { method = 'GET', token, body } = {}) {
     }
   }
   return { status: response.status, body: parsedBody };
+}
+
+function waitForSocketEvent(socket, eventName, timeoutMs = 3000) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      socket.off(eventName, handleEvent);
+      reject(new Error(`Timed out waiting for Socket.IO event: ${eventName}`));
+    }, timeoutMs);
+    const handleEvent = value => {
+      clearTimeout(timeout);
+      resolve(value);
+    };
+    socket.once(eventName, handleEvent);
+  });
+}
+
+function emitSocketWithAck(socket, eventName, ...args) {
+  return new Promise((resolve, reject) => {
+    socket.timeout(3000).emit(eventName, ...args, (error, response) => {
+      if (error) reject(error);
+      else resolve(response);
+    });
+  });
 }
 
 async function createUser(name, role = 'student') {
@@ -308,6 +343,158 @@ test('application contact details are visible only to the applicant and project 
 
   const unauthorizedReview = await review(stranger, project, applicationId, 'accept');
   assert.equal(unauthorizedReview.status, 403);
+});
+
+test('anonymous project previews keep team links private and illustrative projects read-only', async () => {
+  const owner = await createUser('Preview Owner');
+  const member = await createUser('Preview Member');
+  const stranger = await createUser('Preview Stranger');
+  const project = await createProject(owner, 'Public preview');
+  const inviteLink = 'https://chat.example.test/private-team-invite';
+  await ProjectCollab.updateOne({ _id: project._id }, { $set: { communicationLink: inviteLink } });
+
+  const [guestView, strangerView, ownerView, memberView, publicList] = await Promise.all([
+    requestJson(`/api/build-together/${project._id}`),
+    requestJson(`/api/build-together/${project._id}`, { token: stranger.token }),
+    requestJson(`/api/build-together/${project._id}`, { token: owner.token }),
+    (async () => {
+      await ProjectCollab.updateOne({ _id: project._id }, {
+        $push: { members: { userId: member.user._id, name: member.user.name, role: 'Frontend Developer' } }
+      });
+      return requestJson(`/api/build-together/${project._id}`, { token: member.token });
+    })(),
+    requestJson('/api/build-together')
+  ]);
+
+  assert.equal(guestView.status, 200);
+  assert.equal(guestView.body.communicationLink, '');
+  assert.deepEqual(guestView.body.applications, []);
+  assert.equal(JSON.stringify(guestView.body).includes(inviteLink), false);
+  assert.equal(strangerView.body.communicationLink, '');
+  assert.equal(ownerView.body.communicationLink, inviteLink);
+  assert.equal(memberView.body.communicationLink, inviteLink);
+  assert.ok(publicList.body.projects.some(item => item._id === project._id));
+
+  const example = await ProjectCollab.create({
+    title: 'Illustrative preview only',
+    tagline: 'A sample project for showing how a pitch appears.',
+    description: 'This is not an active student team.',
+    category: 'Web Development',
+    targetGoal: 'Portfolio & Learning',
+    creatorId: owner.user._id,
+    creatorName: owner.user.name,
+    isDemo: true,
+    communicationLink: inviteLink,
+    rolesNeeded: [{ roleTitle: 'Frontend Developer', count: 1, skills: ['React'] }]
+  });
+
+  const exampleView = await requestJson(`/api/build-together/${example._id}`);
+  const exampleApply = await requestJson(`/api/build-together/${example._id}/apply`, {
+    method: 'POST',
+    token: stranger.token,
+    body: applicationPayload(2, 'Frontend Developer')
+  });
+  const exampleUpvote = await requestJson(`/api/build-together/${example._id}/upvote`, {
+    method: 'POST',
+    token: stranger.token
+  });
+
+  assert.equal(exampleView.body.isDemo, true);
+  assert.equal(exampleView.body.communicationLink, '');
+  assert.equal(exampleApply.status, 409);
+  assert.equal(exampleUpvote.status, 409);
+});
+
+test('approved teammates can read workspace chat and the owner can publish a final demo', async () => {
+  const owner = await createUser('Demo Owner');
+  const teammate = await createUser('Demo Teammate');
+  const stranger = await createUser('Demo Stranger');
+  const project = await createProject(owner, 'Final demo flow');
+
+  const application = await apply(teammate, project, 2, 'Frontend Developer');
+  assert.equal(application.status, 200, JSON.stringify(application.body));
+  const applicationId = application.body.project.applications[0]._id;
+  const approval = await review(owner, project, applicationId, 'accept');
+  assert.equal(approval.status, 200, JSON.stringify(approval.body));
+
+  const ownerSocket = socketClient(baseUrl, { auth: { token: owner.token }, transports: ['websocket'], reconnection: false });
+  const teammateSocket = socketClient(baseUrl, { auth: { token: teammate.token }, transports: ['websocket'], reconnection: false });
+  const strangerSocket = socketClient(baseUrl, { auth: { token: stranger.token }, transports: ['websocket'], reconnection: false });
+  try {
+    await Promise.all([
+      waitForSocketEvent(ownerSocket, 'connect'),
+      waitForSocketEvent(teammateSocket, 'connect'),
+      waitForSocketEvent(strangerSocket, 'connect')
+    ]);
+
+    assert.deepEqual(await emitSocketWithAck(ownerSocket, 'join_project', project._id.toString()), { ok: true });
+    assert.deepEqual(await emitSocketWithAck(teammateSocket, 'join_project', project._id.toString()), { ok: true });
+    const receivedByOwner = waitForSocketEvent(ownerSocket, 'receive_message');
+    const receivedByTeammate = waitForSocketEvent(teammateSocket, 'receive_message');
+    const sentMessage = await emitSocketWithAck(teammateSocket, 'send_message', {
+      projectId: project._id.toString(),
+      senderId: stranger.user._id.toString(),
+      senderName: 'Untrusted client name',
+      text: 'The demo is ready for review.'
+    });
+    const [ownerMessage, teammateMessage] = await Promise.all([receivedByOwner, receivedByTeammate]);
+    assert.equal(sentMessage.ok, true);
+    assert.equal(ownerMessage.text, 'The demo is ready for review.');
+    assert.equal(ownerMessage.sender.toString(), teammate.user._id.toString());
+    assert.equal(ownerMessage.senderName, teammate.user.name);
+    assert.equal(teammateMessage._id.toString(), ownerMessage._id.toString());
+
+    const deniedJoin = await emitSocketWithAck(strangerSocket, 'join_project', project._id.toString());
+    const deniedSend = await emitSocketWithAck(strangerSocket, 'send_message', {
+      projectId: project._id.toString(),
+      text: 'I am not a member.'
+    });
+    assert.equal(deniedJoin.ok, false);
+    assert.equal(deniedSend.ok, false);
+  } finally {
+    ownerSocket.disconnect();
+    teammateSocket.disconnect();
+    strangerSocket.disconnect();
+  }
+
+  const [ownerMessages, teammateMessages, strangerMessages] = await Promise.all([
+    requestJson(`/api/build-together/${project._id}/messages`, { token: owner.token }),
+    requestJson(`/api/build-together/${project._id}/messages`, { token: teammate.token }),
+    requestJson(`/api/build-together/${project._id}/messages`, { token: stranger.token })
+  ]);
+  assert.equal(ownerMessages.status, 200);
+  assert.equal(teammateMessages.status, 200);
+  assert.equal(teammateMessages.body[0].text, 'The demo is ready for review.');
+  assert.equal(teammateMessages.body[0].senderName, teammate.user.name);
+  assert.equal(strangerMessages.status, 403);
+
+  const nonOwnerPublish = await requestJson(`/api/build-together/${project._id}/demo`, {
+    method: 'PATCH',
+    token: teammate.token,
+    body: { demoUrl: 'https://demo.example.test', githubUrl: 'https://github.com/team/project' }
+  });
+  const invalidPublish = await requestJson(`/api/build-together/${project._id}/demo`, {
+    method: 'PATCH',
+    token: owner.token,
+    body: { demoUrl: 'javascript:alert(1)', githubUrl: 'https://github.com/team/project' }
+  });
+  const publish = await requestJson(`/api/build-together/${project._id}/demo`, {
+    method: 'PATCH',
+    token: owner.token,
+    body: { demoUrl: 'https://demo.example.test', githubUrl: 'https://github.com/team/project' }
+  });
+  const lateApplication = await apply(stranger, project, 2, 'Frontend Developer');
+  const completedPreview = await requestJson(`/api/build-together/${project._id}`);
+
+  assert.equal(nonOwnerPublish.status, 403);
+  assert.equal(invalidPublish.status, 400);
+  assert.equal(publish.status, 200, JSON.stringify(publish.body));
+  assert.equal(publish.body.project.status, 'Completed');
+  assert.equal(publish.body.project.demoUrl, 'https://demo.example.test');
+  assert.equal(publish.body.project.githubUrl, 'https://github.com/team/project');
+  assert.equal(lateApplication.status, 409);
+  assert.equal(completedPreview.body.status, 'Completed');
+  assert.equal(completedPreview.body.demoUrl, 'https://demo.example.test');
 });
 
 test('duplicate pending applications are rejected, including simultaneous submissions', async () => {

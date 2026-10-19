@@ -57,6 +57,12 @@ const ProjectCollabSchema = new mongoose.Schema({
     default: 'Looking for Members',
     index: true,
   },
+  // Seeded showcase records are examples, not active student teams.
+  isDemo: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
   techStack: {
     type: [String],
     default: [],

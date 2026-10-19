@@ -22,6 +22,7 @@ const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'));
 const Roadmaps = lazy(() => import('./pages/Roadmaps'));
 const Jobs = lazy(() => import('./pages/Jobs'));
 const BuildTogether = lazy(() => import('./pages/BuildTogether'));
+const Sprint = lazy(() => import('./pages/Sprint'));
 const ProjectWorkspace = lazy(() => import('./pages/ProjectWorkspace'));
 const Games = lazy(() => import('./pages/Games'));
 const GateQuestionAdmin = lazy(() => import('./pages/GateQuestionAdmin'));
@@ -37,6 +38,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/sprint" element={<Sprint />} />
+            <Route path="/build-together" element={<BuildTogether />} />
+            <Route path="/buildtogether" element={<BuildTogether />} />
 
             {/* Protected Routes (Must be logged in) */}
             <Route element={<ProtectedRoute />}>
@@ -66,9 +70,7 @@ function App() {
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/settings" element={<Profile />} />
               <Route path="/ai-assistant" element={<AIAssistantPage />} />
-              <Route path="/build-together" element={<BuildTogether />} />
               <Route path="/build-together/:id/workspace" element={<ProjectWorkspace />} />
-              <Route path="/buildtogether" element={<BuildTogether />} />
               <Route path="/games" element={<Games />} />
               <Route path="/games/:gameId" element={<Games />} />
               <Route path="/admin" element={<Dashboard />} />

@@ -121,6 +121,7 @@ export const buildTogetherService = {
   create: (data) => api.post('/build-together', data),
   apply: (id, data) => api.post(`/build-together/${id}/apply`, data),
   toggleUpvote: (id) => api.post(`/build-together/${id}/upvote`),
+  publishDemo: (id, data) => api.patch(`/build-together/${id}/demo`, data),
   manageApplication: (id, appId, data) => api.patch(`/build-together/${id}/applications/${appId}`, data),
   delete: (id) => api.delete(`/build-together/${id}`),
   getMessages: (id) => api.get(`/build-together/${id}/messages`),

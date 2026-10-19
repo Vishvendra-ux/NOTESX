@@ -37,23 +37,31 @@ module.exports = (io) => {
     console.log(`User ${socket.user.name} connected to socket: ${socket.id}`);
 
     // Join a project room
-    socket.on('join_project', async (projectId) => {
+    socket.on('join_project', async (projectId, acknowledge) => {
       if (!(await canAccessProject(socket.user, projectId))) {
-        socket.emit('project_error', { message: 'Only team members can join this project chat' });
+        const result = { ok: false, message: 'Only team members can join this project chat' };
+        socket.emit('project_error', { message: result.message });
+        if (typeof acknowledge === 'function') acknowledge(result);
         return;
       }
       socket.join(projectId);
+      if (typeof acknowledge === 'function') acknowledge({ ok: true });
       console.log(`Socket ${socket.id} joined project room: ${projectId}`);
     });
 
     // Handle new message
-    socket.on('send_message', async (data) => {
+    socket.on('send_message', async (data, acknowledge) => {
       try {
         const { projectId } = data || {};
         const text = typeof data?.text === 'string' ? data.text.trim().slice(0, 2000) : '';
-        if (!text) return;
+        if (!text) {
+          if (typeof acknowledge === 'function') acknowledge({ ok: false, message: 'Message cannot be empty' });
+          return;
+        }
         if (!(await canAccessProject(socket.user, projectId))) {
-          socket.emit('project_error', { message: 'Only team members can send messages' });
+          const result = { ok: false, message: 'Only team members can send messages' };
+          socket.emit('project_error', { message: result.message });
+          if (typeof acknowledge === 'function') acknowledge(result);
           return;
         }
         
@@ -68,6 +76,7 @@ module.exports = (io) => {
 
         // Broadcast to room
         io.to(projectId).emit('receive_message', message);
+        if (typeof acknowledge === 'function') acknowledge({ ok: true, messageId: message._id });
       } catch (err) {
         console.error('Error handling send_message:', err);
       }

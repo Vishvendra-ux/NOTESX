@@ -1,228 +1,102 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Award, BookOpen, MessageSquare, Zap, Trophy, Flame } from 'lucide-react';
+import { ArrowRight, BookOpen, BriefcaseBusiness, Code2, GraduationCap, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const shortcuts = [
+  {
+    title: 'Build with a team',
+    description: 'Browse project pitches, find collaborators, and work together in a shared workspace.',
+    to: '/build-together',
+    icon: Code2,
+    tone: 'from-indigo-600 to-violet-600'
+  },
+  {
+    title: 'Follow a roadmap',
+    description: 'Pick a learning path and move through practical milestones at your own pace.',
+    to: '/roadmaps',
+    icon: BriefcaseBusiness,
+    tone: 'from-emerald-600 to-teal-600'
+  },
+  {
+    title: 'Find study material',
+    description: 'Explore the notes and practice tools available for your course.',
+    to: '/notes',
+    icon: BookOpen,
+    tone: 'from-sky-600 to-blue-600'
+  }
+];
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
-
-  // Mock data for display
-  const stats = [
-    { label: 'Progress', value: '78%', icon: <Zap className="text-orange-500" /> },
-    { label: 'Questions Solved', value: '142', icon: <BookOpen className="text-primary-500" /> },
-    { label: 'College Rank', value: '#18', icon: <Trophy className="text-purple-500" /> },
-    { label: 'Total XP', value: '1,240', icon: <Award className="text-emerald-500" /> },
-  ];
+  const firstName = user?.name?.trim().split(/\s+/)[0] || 'there';
 
   return (
-    <div className="flex flex-col gap-8 pb-12 animate-fade-in">
-      
-      {/* Header Profile Section */}
-      <section className="glass-card p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
-        {/* Decorative background element */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex-shrink-0 flex items-center justify-center text-white text-3xl font-extrabold shadow-lg overflow-hidden">
-          {user?.profilePhoto ? (
-            <img src={user.profilePhoto} alt={user.name} className="w-full h-full object-cover" />
-          ) : (
-            user?.name?.charAt(0).toUpperCase() || 'V'
-          )}
-        </div>
-        <div className="flex-1 text-center md:text-left z-10">
-          <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Good evening, {user?.name || 'Vishvendra'} 👋</h2>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-bold mx-auto md:mx-0">
-              <Flame size={14} /> 14 Day Streak
-            </div>
+    <div className="mx-auto flex max-w-6xl flex-col gap-8 pb-12">
+      <section className="relative overflow-hidden rounded-3xl border border-indigo-900/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-6 text-white shadow-xl sm:p-9">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/10 text-3xl font-black ring-1 ring-white/15">
+            {user?.profilePhoto ? (
+              <img src={user.profilePhoto} alt={`${user.name}'s profile`} className="h-full w-full object-cover" />
+            ) : (
+              user?.name?.charAt(0)?.toUpperCase() || <UserRound size={32} />
+            )}
           </div>
-          <p className="text-slate-500 font-semibold text-xs">{user?.course || 'B.Tech CSE'} • {user?.year || '3rd Year'}</p>
-          <p className="text-indigo-600 font-bold text-sm mt-1">{user?.collegeName || 'GLA University'}</p>
-        </div>
-        <div className="z-10 mt-4 md:mt-0">
-          <Link to="/profile" className="btn-secondary text-xs px-4 py-2 font-bold">Edit Profile</Link>
+          <div className="min-w-0 flex-1">
+            <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-indigo-200">
+              <GraduationCap size={15} /> Your NOTESX workspace
+            </p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Welcome, {firstName}.</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+              Pick a next step for your semester or start building something with other students.
+            </p>
+            {(user?.course || user?.year || user?.collegeName) && (
+              <p className="mt-3 text-xs font-semibold text-indigo-200">
+                {[user?.course, user?.year, user?.collegeName].filter(Boolean).join(' · ')}
+              </p>
+            )}
+          </div>
+          <Link to="/profile" className="relative inline-flex shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold transition hover:bg-white/10">
+            Edit profile
+          </Link>
         </div>
       </section>
 
-      {/* Stats Grid */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
-          <div key={i} className="glass-card p-5 flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                {stat.icon}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-              <h3 className="text-2xl font-bold">{stat.value}</h3>
-            </div>
-          </div>
-        ))}
+      <section>
+        <div className="mb-5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">Choose your next step</p>
+          <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">Make progress on something real.</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {shortcuts.map((shortcut) => {
+            const Icon = shortcut.icon;
+            return (
+              <Link key={shortcut.title} to={shortcut.to} className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-indigo-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700">
+                <span className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${shortcut.tone} text-white shadow-sm`}>
+                  <Icon size={20} />
+                </span>
+                <h3 className="mt-4 font-extrabold text-slate-950 dark:text-white">{shortcut.title}</h3>
+                <p className="mt-2 min-h-12 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{shortcut.description}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                  Open <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Main Content Column */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
-          
-          {/* Continue Learning */}
-          <section>
-            <div className="flex justify-between items-end mb-4">
-              <h3 className="text-xl font-bold">Continue Learning</h3>
-              <Link to="/gate" className="text-sm font-medium text-primary-600 hover:underline">View GATE Dashboard</Link>
-            </div>
-            <div className="glass-card p-6 flex flex-col gap-5">
-              
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex flex-col items-center justify-center border border-blue-100 dark:border-blue-800">
-                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">DBMS</span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-semibold text-sm">Database Management</span>
-                    <span className="text-sm font-bold text-slate-500">80%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '80%' }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex flex-col items-center justify-center border border-emerald-100 dark:border-emerald-800">
-                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">OS</span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-semibold text-sm">Operating Systems</span>
-                    <span className="text-sm font-bold text-slate-500">60%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '60%' }}></div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* Recommended Notes */}
-          <section>
-            <div className="flex justify-between items-end mb-4">
-              <h3 className="text-xl font-bold">Recommended Notes</h3>
-              <Link to="/notes" className="text-sm font-medium text-primary-600 hover:underline">Browse All</Link>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              
-              <div className="glass-card p-5 group cursor-pointer hover:-translate-y-1 transition-transform">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg">
-                    <BookOpen size={18} />
-                  </div>
-                  <span className="text-xs font-bold text-slate-400 flex items-center gap-1">★ 4.8</span>
-                </div>
-                <h4 className="font-bold mb-1 group-hover:text-primary-600 transition-colors">Process Synchronization</h4>
-                <p className="text-xs text-slate-500 mb-3">B.Tech CSE • 3rd Year</p>
-                <div className="text-xs font-medium text-slate-400 flex items-center justify-between">
-                  <span>1.2K downloads</span>
-                  <span className="text-primary-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
-                </div>
-              </div>
-
-              <div className="glass-card p-5 group cursor-pointer hover:-translate-y-1 transition-transform">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg">
-                    <BookOpen size={18} />
-                  </div>
-                  <span className="text-xs font-bold text-slate-400 flex items-center gap-1">★ 4.9</span>
-                </div>
-                <h4 className="font-bold mb-1 group-hover:text-primary-600 transition-colors">B-Trees & Indexing</h4>
-                <p className="text-xs text-slate-500 mb-3">B.Tech CSE • 3rd Year</p>
-                <div className="text-xs font-medium text-slate-400 flex items-center justify-between">
-                  <span>840 downloads</span>
-                  <span className="text-primary-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
-                </div>
-              </div>
-
-            </div>
-          </section>
-
+      <section className="flex flex-col gap-4 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-6 dark:border-indigo-900/60 dark:bg-indigo-950/30 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-indigo-700 dark:text-indigo-300">Three-week student pilot</p>
+          <h2 className="mt-1 text-xl font-black text-slate-950 dark:text-white">Build a demo with a small team.</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">See the proposed Build-to-Portfolio Sprint and its current pilot status.</p>
         </div>
-
-        {/* Sidebar Column */}
-        <div className="flex flex-col gap-8">
-          
-          {/* Recent Doubts */}
-          <section>
-            <h3 className="text-xl font-bold mb-4">Recent Doubts</h3>
-            <div className="glass-card p-0 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-              
-              <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
-                <div className="flex gap-3">
-                  <div className="flex flex-col items-center justify-center px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded min-w-[2.5rem]">
-                    <span className="text-xs font-bold">12</span>
-                    <span className="text-[10px] text-slate-500 uppercase">Votes</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1 line-clamp-2 hover:text-primary-600 transition-colors">How does a TLB miss handle page faults in OS?</h4>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">OS</span>
-                      <span>2 hrs ago</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
-                <div className="flex gap-3">
-                  <div className="flex flex-col items-center justify-center px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded min-w-[2.5rem]">
-                    <span className="text-xs font-bold">5</span>
-                    <span className="text-[10px] text-slate-500 uppercase">Votes</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1 line-clamp-2 hover:text-primary-600 transition-colors">Dijkstra's vs Bellman Ford time complexity comparison</h4>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Algorithms</span>
-                      <span>4 hrs ago</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* Upcoming Contests */}
-          <section>
-            <h3 className="text-xl font-bold mb-4">Upcoming Contests</h3>
-            <div className="glass-card p-5 relative overflow-hidden group border-primary-200 dark:border-primary-900/50 cursor-pointer">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-400 to-purple-500 opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
-              
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                LIVE NOW
-              </div>
-              
-              <h4 className="font-bold text-lg mb-1">College Coding Battle #42</h4>
-              <p className="text-sm text-slate-500 mb-4">1,248 participants currently competing</p>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex -space-x-2">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-slate-200 border-2 border-white dark:border-slate-800"></div>
-                  ))}
-                  <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white dark:border-slate-800 flex items-center justify-center text-[8px] font-bold text-slate-500">+1k</div>
-                </div>
-                <span className="text-sm font-bold text-primary-600">Join →</span>
-              </div>
-            </div>
-          </section>
-
-        </div>
-      </div>
+        <Link to="/sprint" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700">
+          View sprint details <ArrowRight size={16} />
+        </Link>
+      </section>
     </div>
   );
 }
-

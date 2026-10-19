@@ -12,6 +12,11 @@ export default function ProjectWorkspace() {
   const [project, setProject] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [demoUrl, setDemoUrl] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [isSavingDemo, setIsSavingDemo] = useState(false);
+  const [demoError, setDemoError] = useState('');
+  const [demoNotice, setDemoNotice] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const socketRef = useRef(null);
@@ -43,6 +48,8 @@ export default function ProjectWorkspace() {
         }
 
         setProject(p);
+        setDemoUrl(p.demoUrl || '');
+        setGithubUrl(p.githubUrl || '');
         setMessages(messagesRes.data || []);
 
         // Initialize Socket.io — same-origin in production, localhost in dev
@@ -107,6 +114,25 @@ export default function ProjectWorkspace() {
     setNewMessage('');
   };
 
+  const handlePublishDemo = async (e) => {
+    e.preventDefault();
+    if (!project?.isCreator) return;
+    setIsSavingDemo(true);
+    setDemoError('');
+    setDemoNotice('');
+    try {
+      const response = await buildTogetherService.publishDemo(id, { demoUrl, githubUrl });
+      setProject(response.data.project);
+      setDemoUrl(response.data.project.demoUrl || '');
+      setGithubUrl(response.data.project.githubUrl || '');
+      setDemoNotice('Demo and repository saved. The project is marked complete.');
+    } catch (err) {
+      setDemoError(err.response?.data?.message || 'Could not save the project outcome. Please try again.');
+    } finally {
+      setIsSavingDemo(false);
+    }
+  };
+
   if (!authLoading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -158,7 +184,7 @@ export default function ProjectWorkspace() {
           <div>
             <h1 className="text-lg font-bold text-slate-900 line-clamp-1">{project.title}</h1>
             <p className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-              <ShieldCheck size={12} /> Team Workspace
+              <ShieldCheck size={12} /> {project.status === 'Completed' ? 'Demo published' : 'Team Workspace'}
             </p>
           </div>
         </div>
@@ -203,6 +229,37 @@ export default function ProjectWorkspace() {
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col bg-slate-50 relative">
+          {(project.demoUrl || project.githubUrl) && (
+            <section className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-200 bg-emerald-50 px-4 py-3 sm:px-6">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">Project outcome</p>
+                <p className="mt-0.5 text-xs text-emerald-900">Demo and project repository</p>
+              </div>
+              <div className="flex gap-2">
+                {project.demoUrl && <a href={project.demoUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-800">Open demo</a>}
+                {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100">Repository / README</a>}
+              </div>
+            </section>
+          )}
+
+          {project.isCreator && (
+            <form onSubmit={handlePublishDemo} className="grid gap-2 border-b border-slate-200 bg-white p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:px-6">
+              <label className="text-xs font-bold text-slate-700">
+                Working demo URL
+                <input type="url" value={demoUrl} onChange={(e) => setDemoUrl(e.target.value)} placeholder="https://your-demo.example" required maxLength={2048} className="mt-1 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm font-medium outline-none focus:border-indigo-500" />
+              </label>
+              <label className="text-xs font-bold text-slate-700">
+                GitHub repository or README URL
+                <input type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} placeholder="https://github.com/you/project" required maxLength={2048} className="mt-1 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm font-medium outline-none focus:border-indigo-500" />
+              </label>
+              <button type="submit" disabled={isSavingDemo} className="h-10 rounded-lg bg-indigo-600 px-4 text-xs font-extrabold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60">
+                {isSavingDemo ? 'Saving…' : project.status === 'Completed' ? 'Update outcome' : 'Publish final demo'}
+              </button>
+              {(demoError || demoNotice) && <p role={demoError ? 'alert' : 'status'} className={`text-xs sm:col-span-3 ${demoError ? 'text-rose-700' : 'text-emerald-700'}`}>{demoError || demoNotice}</p>}
+              {!project.demoUrl && <p className="text-[11px] text-slate-500 sm:col-span-3">Publishing marks the project complete and requires at least one approved teammate.</p>}
+            </form>
+          )}
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
             {messages.length === 0 ? (

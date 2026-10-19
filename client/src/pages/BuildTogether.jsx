@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Users, Plus, Search, Rocket, Sparkles, Code2, GitBranch, MessageSquare,
   Heart, CheckCircle2, X, ChevronRight, UserPlus, Check, ArrowRight, AlertCircle, Trash2,
@@ -30,6 +30,9 @@ const TARGET_GOALS = [
 
 export default function BuildTogether() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const requireLogin = () => navigate('/login', { state: { from: location } });
 
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,7 +129,10 @@ export default function BuildTogether() {
   // Sync user info into booking form when modal opens
   const openBookingModalForSlot = (project, slot) => {
     if (!user) {
-      alert('Please log in to book a collaboration seat!');
+      requireLogin();
+      return;
+    }
+    if (project.isDemo) {
       return;
     }
     setSelectedProject(project);
@@ -147,9 +153,11 @@ export default function BuildTogether() {
   // Toggle upvote
   const handleToggleUpvote = async (projectId) => {
     if (!user) {
-      alert('Please log in to upvote projects!');
+      requireLogin();
       return;
     }
+    const project = projects.find((item) => item._id === projectId) || selectedProject;
+    if (project?.isDemo) return;
     try {
       const res = await buildTogetherService.toggleUpvote(projectId);
       setProjects(prev => prev.map(p => {
@@ -210,7 +218,10 @@ export default function BuildTogether() {
   // Submit Project Pitch
   const handlePitchSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      requireLogin();
+      return;
+    }
     setPitchError('');
     setIsSubmittingPitch(true);
 
@@ -334,19 +345,15 @@ export default function BuildTogether() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => {
-                  if (!user) {
-                    alert('Please log in to pitch a project!');
-                    return;
-                  }
-                  setIsPitchModalOpen(true);
-                }}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-600/30 transition cursor-pointer"
-              >
-                <Plus size={18} />
-                <span>Pitch a Project & Open Seats</span>
-              </button>
+              {user ? (
+                <button onClick={() => setIsPitchModalOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-600/30 transition cursor-pointer">
+                  <Plus size={18} /> <span>Pitch a Project & Open Seats</span>
+                </button>
+              ) : (
+                <Link to="/login" state={{ from: location }} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-600/30 transition">
+                  <Plus size={18} /> Sign in to pitch a project
+                </Link>
+              )}
 
               <a
                 href="#browse-projects"
@@ -435,19 +442,15 @@ export default function BuildTogether() {
             </div>
 
             {/* Issue 24 fix: Solid primary button matching hero CTA */}
-            <button
-              onClick={() => {
-                if (!user) {
-                  alert('Please log in to pitch a project!');
-                  return;
-                }
-                setIsPitchModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer ml-auto"
-            >
-              <Plus size={15} />
-              <span>Pitch New Project</span>
-            </button>
+            {user ? (
+              <button onClick={() => setIsPitchModalOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer ml-auto">
+                <Plus size={15} /> <span>Pitch New Project</span>
+              </button>
+            ) : (
+              <Link to="/login" state={{ from: location }} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition ml-auto">
+                <Plus size={15} /> <span>Sign in to pitch</span>
+              </Link>
+            )}
           </div>
 
           {/* Issue 25 fix: Standardized heights, rounded corners, and aligned grid layout */}
@@ -523,7 +526,7 @@ export default function BuildTogether() {
                 ? 'Projects you pitched. Review collaborator requests and manage team seats.'
                 : activeTab === 'applied'
                 ? 'Projects where you reserved a collaboration seat or submitted an application.'
-                : 'Browse student project teams, select an open seat, and collaborate.'}
+                : 'Preview student project ideas and open roles. Sign in to apply or start a team.'}
             </p>
           </div>
           <span className="text-xs font-bold text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
@@ -576,7 +579,7 @@ export default function BuildTogether() {
                 ? 'Pitch your idea, specify the roles and seats needed, and let students apply for collaboration seats.'
                 : search
                 ? `No results match "${search}". Try another keyword or clear filters.`
-                : 'There are no active projects right now. Be the first to pitch one!'}
+                : 'There are no project previews or active pitches right now.'}
             </p>
             <button
               onClick={() => {
@@ -588,10 +591,7 @@ export default function BuildTogether() {
                   setSelectedGoal('All Goals');
                   setStatusFilter('All');
                 } else {
-                  if (!user) {
-                    alert('Please log in to pitch a project!');
-                    return;
-                  }
+                  if (!user) return requireLogin();
                   setIsPitchModalOpen(true);
                 }
               }}
@@ -601,7 +601,7 @@ export default function BuildTogether() {
                 ? <><Rocket size={16} /> Explore Open Seats</>
                 : search || selectedCategory !== 'All' || selectedGoal !== 'All Goals' || statusFilter !== 'All'
                 ? <><X size={16} /> Clear Filters</>
-                : <><Plus size={16} /> Pitch a Project</>}
+                : <><Plus size={16} /> {user ? 'Pitch a Project' : 'Sign in to pitch'}</>}
             </button>
           </div>
         ) : (
@@ -627,13 +627,21 @@ export default function BuildTogether() {
                       </span>
 
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                        !isFull
+                        project.isDemo
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                          : project.status === 'Completed'
+                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                          : !isFull
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : project.status === 'Completed'
                           ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                           : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
-                        {!isFull ? (
+                        {project.isDemo ? (
+                          <span>Illustrative example</span>
+                        ) : project.status === 'Completed' ? (
+                          <span>Project Completed</span>
+                        ) : !isFull ? (
                           <>
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                             <span>{availableSlots.length} Seats Open</span>
@@ -752,7 +760,7 @@ export default function BuildTogether() {
 
                     {/* Actions: standardized button styles */}
                     <div className="flex items-center gap-2 shrink-0">
-                      <button
+                      {!project.isDemo && <button
                         onClick={() => handleToggleUpvote(project._id)}
                         className={`p-2 rounded-xl border transition cursor-pointer flex items-center gap-1 text-xs font-bold ${
                           project.hasUpvoted
@@ -763,7 +771,7 @@ export default function BuildTogether() {
                       >
                         <Heart size={14} className={project.hasUpvoted ? 'fill-rose-600 text-rose-600' : ''} />
                         <span>{project.upvotesCount || 0}</span>
-                      </button>
+                      </button>}
 
                       <button
                         onClick={() => setSelectedProject(project)}
@@ -794,6 +802,11 @@ export default function BuildTogether() {
 
             {/* Header info */}
             <div className="mb-6">
+              {selectedProject.isDemo && (
+                <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+                  Illustrative example only. This is not an active student team and cannot accept applications.
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
                   {selectedProject.targetGoal}
@@ -805,11 +818,15 @@ export default function BuildTogether() {
                   {selectedProject.projectStage}
                 </span>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                  (selectedProject.bookingSlots || []).some(s => s.status === 'available')
+                  selectedProject.status === 'Completed'
+                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                    : (selectedProject.bookingSlots || []).some(s => s.status === 'available')
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     : 'bg-rose-50 text-rose-700 border border-rose-200'
                 }`}>
-                  {(selectedProject.bookingSlots || []).some(s => s.status === 'available')
+                  {selectedProject.status === 'Completed'
+                    ? '✅ Project Completed'
+                    : (selectedProject.bookingSlots || []).some(s => s.status === 'available')
                     ? '🟢 Open Collaboration Seats'
                     : '🔒 All Team Seats Booked'}
                 </span>
@@ -821,6 +838,13 @@ export default function BuildTogether() {
               <p className="text-slate-600 text-sm font-medium leading-relaxed">
                 {selectedProject.tagline}
               </p>
+              {selectedProject.status === 'Completed' && selectedProject.demoUrl && (
+                <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                  <span className="mr-1 text-xs font-extrabold text-emerald-900">Project outcome:</span>
+                  <a href={selectedProject.demoUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-800">Open working demo</a>
+                  {selectedProject.githubUrl && <a href={selectedProject.githubUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100">GitHub / README</a>}
+                </div>
+              )}
             </div>
 
             {/* Pitcher / Team Bar */}
@@ -858,7 +882,7 @@ export default function BuildTogether() {
                     <span>Shared Repo</span>
                   </a>
                 )}
-                {selectedProject.communicationLink && (
+                {selectedProject.communicationLink && !selectedProject.isDemo && (
                   <a
                     href={selectedProject.communicationLink}
                     target="_blank"
@@ -869,7 +893,7 @@ export default function BuildTogether() {
                     <span>Join {selectedProject.communicationChannel || 'Team'} Chat</span>
                   </a>
                 )}
-                {selectedProject.isCreator && (
+                {selectedProject.isCreator && !selectedProject.isDemo && (
                   <button
                     onClick={() => handleDeleteProject(selectedProject._id)}
                     className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition cursor-pointer text-xs font-bold flex items-center gap-1"
@@ -1040,7 +1064,11 @@ export default function BuildTogether() {
                             Seat open for assignment
                           </p>
 
-                          {selectedProject.isCreator ? (
+                          {selectedProject.isDemo ? (
+                            <span className="text-xs font-bold text-amber-200">Example only</span>
+                          ) : selectedProject.status === 'Completed' ? (
+                            <span className="text-xs font-bold text-indigo-200">Project completed</span>
+                          ) : selectedProject.isCreator ? (
                             <span className="text-xs font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg">
                               Awaiting Applicant
                             </span>
@@ -1052,7 +1080,7 @@ export default function BuildTogether() {
                             }`}>
                               {userAppForThisSlot.status === 'declined' ? 'Request Declined' : 'Under Review'}
                             </span>
-                          ) : (
+                          ) : user ? (
                             <button
                               onClick={() => openBookingModalForSlot(selectedProject, slot)}
                               className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
@@ -1060,6 +1088,10 @@ export default function BuildTogether() {
                               <Ticket size={13} />
                               <span>Book Seat #{slot.slotNumber}</span>
                             </button>
+                          ) : (
+                            <Link to="/login" state={{ from: location }} className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm">
+                              Sign in to apply
+                            </Link>
                           )}
                         </div>
                       )}
@@ -1070,7 +1102,7 @@ export default function BuildTogether() {
             </div>
 
             {/* ── PITCHER VERIFICATION DESK (VISIBLE ONLY TO CREATOR / ADMIN) ── */}
-            {selectedProject.isCreator && (
+            {selectedProject.isCreator && !selectedProject.isDemo && (
               <div className="mb-6 border-t border-slate-200 pt-6">
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-2">
@@ -1176,16 +1208,19 @@ export default function BuildTogether() {
 
             {/* Footer Connect Button */}
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-              <button
-                onClick={() => handleToggleUpvote(selectedProject._id)}
-                className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-rose-700 cursor-pointer"
-              >
-                <Heart size={16} className={selectedProject.hasUpvoted ? 'fill-rose-600 text-rose-700' : ''} />
-                <span>{selectedProject.upvotesCount || 0} students interested</span>
-              </button>
+              {selectedProject.isDemo ? (
+                <span className="text-xs font-semibold text-slate-500">Example project preview</span>
+              ) : user ? (
+                <button onClick={() => handleToggleUpvote(selectedProject._id)} className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-rose-700 cursor-pointer">
+                  <Heart size={16} className={selectedProject.hasUpvoted ? 'fill-rose-600 text-rose-700' : ''} />
+                  <span>{selectedProject.upvotesCount || 0} students interested</span>
+                </button>
+              ) : (
+                <Link to="/login" state={{ from: location }} className="text-xs font-bold text-indigo-700 hover:text-indigo-900">Sign in to show interest</Link>
+              )}
 
               <div className="flex items-center gap-2">
-                {(selectedProject.isCreator || selectedProject.isMember) && (
+                {(selectedProject.isCreator || selectedProject.isMember) && !selectedProject.isDemo && (
                   <Link
                     to={`/build-together/${selectedProject._id}/workspace`}
                     className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold transition shadow-sm flex items-center gap-1.5"

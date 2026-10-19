@@ -80,10 +80,29 @@ function ensureBookingSlots(project) {
   return slots;
 }
 
-// Seed realistic sample collaboration projects if database is empty
+// Seed illustrative sample collaboration projects if database is empty
 const ProjectApplication = require('../models/ProjectApplication');
 const Reaction = require('../models/Reaction');
 const Notification = require('../models/Notification');
+
+const ILLUSTRATIVE_PROJECT_TITLES = new Set([
+  'DevSync: Realtime Collaborative Code & Whiteboard IDE',
+  'MedScan AI: On-Device Chest X-Ray Triage App',
+  'UniSwap: Zero-Commission Campus Marketplace & Textbook Rental'
+]);
+
+function isIllustrativeProject(project) {
+  return Boolean(project?.isDemo || ILLUSTRATIVE_PROJECT_TITLES.has(project?.title));
+}
+
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
 
 // Build the per-viewer view of a project list. Applications (which hold the
 // applicants' email / contact details) are only attached for the project's
@@ -122,8 +141,16 @@ async function decorateProjects(projects, user) {
     const isCreator = !!userIdStr && p.creatorId?.toString() === userIdStr;
     const applications = appsByProject.get(key) || [];
     const mine = userIdStr ? applications.find(a => a.applicantId?.toString() === userIdStr) : null;
+    const isDemo = isIllustrativeProject(p);
+    const canAccessTeamChat = !isDemo && (isCreator || !!p.members?.some(m => m.userId?.toString() === userIdStr));
     return {
       ...p,
+      isDemo,
+      githubUrl: isHttpUrl(p.githubUrl) ? p.githubUrl : '',
+      demoUrl: isHttpUrl(p.demoUrl) ? p.demoUrl : '',
+      // Invite links are private workspace credentials. Keep them out of
+      // anonymous previews and away from logged-in users outside the team.
+      communicationLink: canAccessTeamChat ? (p.communicationLink || '') : '',
       bookingSlots: ensureBookingSlots(p),
       applications: (isCreator || isAdmin) ? applications : (mine ? [mine] : []),
       hasUpvoted: upvotedIds.has(key),
@@ -149,6 +176,7 @@ async function seedDefaultProjectsIfEmpty() {
     const sampleProjects = [
       {
         title: 'DevSync: Realtime Collaborative Code & Whiteboard IDE',
+        isDemo: true,
         tagline: 'Google Docs meets VS Code with WebRTC audio & live terminal execution for student hackathons',
         description: 'Building an in-browser pair programming platform optimized for college hackathons. Includes real-time syntax highlighting with Monaco Editor, collaborative code execution via sandboxed Docker containers, and live voice channels so teams do not have to switch between Discord and VS Code.',
         category: 'Web Development',
@@ -234,6 +262,7 @@ async function seedDefaultProjectsIfEmpty() {
       },
       {
         title: 'MedScan AI: On-Device Chest X-Ray Triage App',
+        isDemo: true,
         tagline: 'Lightweight PyTorch vision model running on mobile for rural clinics without reliable internet',
         description: 'A mobile application that runs an quantized MobileNet/ResNet vision classifier locally on Android and iOS to detect pneumonia, cardiomegaly, and pneumothorax from chest radiograph photos. Aimed as our final year Capstone project with planned submission to international student research symposiums.',
         category: 'AI & Machine Learning',
@@ -296,6 +325,7 @@ async function seedDefaultProjectsIfEmpty() {
       },
       {
         title: 'UniSwap: Zero-Commission Campus Marketplace & Textbook Rental',
+        isDemo: true,
         tagline: 'Buy, sell, and rent engineering textbooks, drafters, calculators with verified student email OTP',
         description: 'Students spend thousands every semester on books, Lab kits, and calculators that are only used for 4 months. UniSwap creates a hyperlocal marketplace restricted to verified campus students with in-person pickup points across college hostels.',
         category: 'Web Development',
@@ -912,6 +942,44 @@ exports.manageApplication = async (req, res, next) => {
     if (error instanceof mongoose.Error.VersionError) {
       return res.status(409).json({ message: 'Project capacity changed while reviewing this request. Refresh and try again.' });
     }
+    next(error);
+  }
+};
+
+// @desc    Publish the finished project demo and repository / README
+// @route   PATCH /api/build-together/:id/demo
+// @access  Private (project creator or admin)
+exports.publishDemo = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const project = await ProjectCollab.findById(id);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!project.creatorId.equals(req.user._id) && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only the project pitcher can publish the final demo.' });
+    }
+
+    const demoUrl = typeof req.body.demoUrl === 'string' ? req.body.demoUrl.trim() : '';
+    const githubUrl = typeof req.body.githubUrl === 'string' ? req.body.githubUrl.trim() : '';
+    if (!demoUrl || !githubUrl || demoUrl.length > 2048 || githubUrl.length > 2048 || !isHttpUrl(demoUrl) || !isHttpUrl(githubUrl)) {
+      return res.status(400).json({ message: 'Enter a valid HTTP or HTTPS demo URL and repository or README URL.' });
+    }
+
+    const confirmedMembers = new Set((project.members || []).map(member => member.userId?.toString()).filter(Boolean));
+    if (confirmedMembers.size < 2) {
+      return res.status(409).json({ message: 'At least one teammate must be approved before publishing a team demo.' });
+    }
+
+    project.demoUrl = demoUrl;
+    project.githubUrl = githubUrl;
+    project.status = 'Completed';
+    await project.save();
+
+    const [decoratedProject] = await decorateProjects([project.toObject()], req.user);
+    return res.json({ message: 'Demo and repository saved. Project marked complete.', project: decoratedProject });
+  } catch (error) {
     next(error);
   }
 };

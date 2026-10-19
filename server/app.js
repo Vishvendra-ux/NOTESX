@@ -113,6 +113,11 @@ app.use((err, req, res, next) => {
   let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal server error';
 
+  if (err.code === 'UPLOADS_DISABLED') {
+    statusCode = 503;
+    message = 'Uploads are temporarily unavailable until persistent storage is configured.';
+  }
+
   // Multer upload errors and bad ObjectIds are client mistakes, not server faults
   if (err.name === 'CastError') {
     statusCode = 400;
@@ -128,7 +133,7 @@ app.use((err, req, res, next) => {
     message = 'Duplicate value for a unique field';
   }
 
-  if (statusCode >= 500 && process.env.NODE_ENV === 'production') {
+  if (statusCode >= 500 && process.env.NODE_ENV === 'production' && err.code !== 'UPLOADS_DISABLED') {
     // Don't leak driver internals/file paths to clients in production
     message = 'Internal server error';
   }

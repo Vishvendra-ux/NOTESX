@@ -17,32 +17,28 @@ import {
   Trophy,
   Users,
   Check,
-  Search,
-  Award,
   ShieldCheck,
   TrendingUp,
   Zap,
   ChevronRight,
   Star,
-  FileText,
   Code2,
-  HelpCircle,
-  ExternalLink,
-  BookMarked,
-  X
+  X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const quickSurfPills = [
   { name: 'Course Notes', to: '/notes', icon: BookOpen, badge: 'Units 1-5' },
   { name: '24/7 AI Tutor', to: '/ai-assistant', icon: BrainCircuit, badge: 'Instant' },
+  { name: 'Coding Battles', to: '/contests', icon: Trophy, badge: 'Campus Rank' },
   { name: 'GATE Arena', to: '/gate', icon: Target, badge: 'Test Series' },
   { name: 'BuildTogether', to: '/build-together', icon: Users, badge: 'Find Teams' },
+  { name: '3-Week Sprint', to: '/sprint', icon: Rocket, badge: 'Portfolio' },
   { name: 'Career Roadmaps', to: '/roadmaps', icon: Compass, badge: 'Tech Paths' },
   { name: 'Jobs & Internships', to: '/jobs', icon: Briefcase, badge: 'Fresher' },
   { name: 'Doubts Forum', to: '/doubts', icon: MessageCircle, badge: 'Q&A' },
   { name: 'Campus Hubs', to: '/colleges', icon: GraduationCap, badge: '50+ Colleges' },
-  { name: 'Game Lounge', to: '/games', icon: Gamepad2, badge: 'Break Time' }
+  { name: 'Game Lounge', to: '/games', icon: Gamepad2, badge: 'Break Time' },
 ];
 
 const liveQueries = [
@@ -50,26 +46,32 @@ const liveQueries = [
     q: "Explain Dijkstra vs Bellman-Ford negative cycles?",
     tag: "AI Tutor • Unit 4 Algo",
     res: "Solved in 3 steps • Unit 4 Algorithms notes & PYQs linked",
-    match: "99% Syllabus Match"
+    match: "99% Syllabus Match",
   },
   {
     q: "Looking for 2 full-stack teammates for campus hackathon",
     tag: "BuildTogether • Lab",
     res: "3 GLA & 2 NIT batchmates ready to build with you",
-    match: "Live Teaming"
+    match: "Live Teaming",
   },
   {
     q: "GATE CS Operating Systems: Process Sync & Semaphores",
     tag: "GATE CS 2027 • Mock Arena",
     res: "128 Topic MCQs with AIR 214 solutions ready",
-    match: "Topper Verified"
+    match: "Topper Verified",
+  },
+  {
+    q: "Two Sum & Kadane Algorithms Inter-College Battle",
+    tag: "Coding Battles • Live-42",
+    res: "Judge0 real-time test execution • GLA pushed to Rank 1",
+    match: "Live Leaderboard",
   },
   {
     q: "Web Dev Roadmap: Frontend to Backend Milestone 3",
     tag: "Career Roadmaps",
     res: "Interactive checklist with 14 hands-on projects",
-    match: "Industry Standard"
-  }
+    match: "Industry Standard",
+  },
 ];
 
 const collegeRow1 = [
@@ -80,7 +82,7 @@ const collegeRow1 = [
   { name: 'BITS Pilani', badge: 'Hackathon Lead', icon: '🚀' },
   { name: 'DTU Delhi', badge: 'Internship Portal', icon: '💼' },
   { name: 'IIIT Hyderabad', badge: 'AI & Coding', icon: '🧠' },
-  { name: 'VIT Vellore', badge: '3.1k Active', icon: '🎓' }
+  { name: 'VIT Vellore', badge: '3.1k Active', icon: '🎓' },
 ];
 
 const collegeRow2 = [
@@ -91,15 +93,15 @@ const collegeRow2 = [
   { name: 'IIT Kharagpur', badge: 'Verified Notes', icon: '📖' },
   { name: 'Jadavpur University', badge: 'Core Engg', icon: '⚙️' },
   { name: 'BITS Goa', badge: 'Open Source', icon: '🌐' },
-  { name: 'Delhi University', badge: 'CS Community', icon: '✨' }
+  { name: 'Delhi University', badge: 'CS Community', icon: '✨' },
 ];
 
 const liveActivities = [
-  { student: 'Rahul S.', college: 'GLA Univ', action: 'accessed Unit 3 Data Structures PYQs', time: 'Just now', icon: '🔥' },
+  { student: 'Rahul S.', college: 'GLA Univ', action: 'solved Two Sum in Coding Battle Live-42 (+100 XP)', time: 'Just now', icon: '🔥' },
   { student: 'Priya P.', college: 'NIT Trichy', action: 'completed GATE CS Algo Mock Test', time: '1m ago', icon: '⚡' },
   { student: 'Ayush V.', college: 'DTU Delhi', action: 'teamed up in BuildTogether Lab', time: '2m ago', icon: '🚀' },
   { student: 'Neha K.', college: 'BITS Pilani', action: 'asked 24/7 AI: B-Tree vs Red-Black', time: '3m ago', icon: '🧠' },
-  { student: 'Amit R.', college: 'IIT Bombay', action: 'bookmarked OS Scheduling Cheatsheet', time: '4m ago', icon: '📚' }
+  { student: 'Amit R.', college: 'IIT Bombay', action: 'bookmarked OS Scheduling Cheatsheet', time: '4m ago', icon: '📚' },
 ];
 
 const allServices = [
@@ -116,8 +118,8 @@ const allServices = [
     features: [
       'Unit 1 to 5 structured syllabi',
       'Previous Year Questions (PYQs) & solutions',
-      'High-yield formula & revision summaries'
-    ]
+      'High-yield formula & revision summaries',
+    ],
   },
   {
     category: 'ai',
@@ -132,8 +134,24 @@ const allServices = [
     features: [
       'Step-by-step math & code walkthroughs',
       'Context-aware answers mapped to syllabus',
-      'Instant study summaries & quiz generation'
-    ]
+      'Instant study summaries & quiz generation',
+    ],
+  },
+  {
+    category: 'career',
+    icon: Trophy,
+    title: 'Competitive Coding & Campus Battles',
+    tagline: 'Real-time arena with Judge0 code execution',
+    copy: 'Solve algorithmic DSA challenges in Python, C++, Java, and JavaScript. Your points aggregate dynamically to crown your college at the top of the national Inter-College Campus Leaderboard.',
+    to: '/contests',
+    badge: 'Campus Battles',
+    color: 'from-amber-600 to-yellow-600',
+    iconBg: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
+    features: [
+      'Real Judge0 multi-language code execution',
+      'Dual live leaderboards: Campus Rank vs Student Coders',
+      'Dynamic college score aggregation on every solve',
+    ],
   },
   {
     category: 'academic',
@@ -148,8 +166,8 @@ const allServices = [
     features: [
       'Subject & topic-wise practice question banks',
       'Custom timed mock test generator',
-      'Detailed solutions & accuracy diagnostics'
-    ]
+      'Detailed solutions & accuracy diagnostics',
+    ],
   },
   {
     category: 'career',
@@ -164,8 +182,24 @@ const allServices = [
     features: [
       'Skill-based student team matching',
       'Dedicated collaborative workspaces',
-      'Showcase portfolio apps for recruiters'
-    ]
+      'Showcase portfolio apps for recruiters',
+    ],
+  },
+  {
+    category: 'career',
+    icon: Rocket,
+    title: 'Build-to-Portfolio Sprint',
+    tagline: 'Three weeks from idea to a shipped demo',
+    copy: 'A focused, peer-led 3-week student sprint to build a real production project with team checkpoints, git workflows, and a live demo ready for resumes.',
+    to: '/sprint',
+    badge: 'Sprint Cohort',
+    color: 'from-fuchsia-600 to-purple-600',
+    iconBg: 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-950/50 dark:text-fuchsia-300',
+    features: [
+      'Week 1: Team formation & architecture spec',
+      'Week 2: Core feature implementation & PRs',
+      'Week 3: Live demo, GitHub README & portfolio',
+    ],
   },
   {
     category: 'career',
@@ -180,8 +214,8 @@ const allServices = [
     features: [
       'Role & technology-based learning paths',
       'Interactive progress & milestone tracking',
-      'Vetted free tutorials, docs & repositories'
-    ]
+      'Vetted free tutorials, docs & repositories',
+    ],
   },
   {
     category: 'career',
@@ -196,8 +230,8 @@ const allServices = [
     features: [
       'Vetted fresher & internship listings',
       'Role filters: Frontend, Backend, AI, Data',
-      'Direct company application portals'
-    ]
+      'Direct company application portals',
+    ],
   },
   {
     category: 'ai',
@@ -212,8 +246,8 @@ const allServices = [
     features: [
       'Code syntax highlighting & image uploads',
       'Verified topper & peer responses',
-      'Subject & topic categorization'
-    ]
+      'Subject & topic categorization',
+    ],
   },
   {
     category: 'community',
@@ -228,8 +262,8 @@ const allServices = [
     features: [
       '50+ campus-specific community boards',
       'Internal exam discussions & announcements',
-      'Direct peer networking within your branch'
-    ]
+      'Direct peer networking within your branch',
+    ],
   },
   {
     category: 'community',
@@ -244,32 +278,32 @@ const allServices = [
     features: [
       'Quick web minigames & memory challenges',
       'Multiplayer rooms to play with batchmates',
-      'Designed for healthy, productive study breaks'
-    ]
-  }
+      'Designed for healthy, productive study breaks',
+    ],
+  },
 ];
 
 const comparisonPoints = [
   {
     title: 'Syllabus-Aligned Precision vs. Messy Drive Folders',
     traditional: 'Scattered across 20+ WhatsApp groups and broken Google Drive links with duplicate, disorganized PDFs.',
-    notesx: 'Structured Unit-by-Unit (Units 1 to 5) directly aligned with your university, branch, and semester curriculum.'
+    notesx: 'Structured Unit-by-Unit (Units 1 to 5) directly aligned with your university, branch, and semester curriculum.',
   },
   {
     title: 'Senior-Verified High-Yield Content',
     traditional: 'Unverified random uploads, illegible handwriting, and missing topics right before exam night.',
-    notesx: 'Curated and vetted by academic toppers and rankers with clear formula sheets and solved previous years questions.'
+    notesx: 'Curated and vetted by academic toppers and rankers with clear formula sheets and solved previous years questions.',
   },
   {
     title: 'Active 24/7 AI Connected to Your Course',
     traditional: 'Generic chatbots that know nothing about your university syllabus or specific unit modules.',
-    notesx: 'Intelligent AI study assistant that understands engineering topics and connects explanations directly to your campus notes.'
+    notesx: 'Intelligent AI study assistant that understands engineering topics and connects explanations directly to your campus notes.',
   },
   {
     title: 'Theory Linked to Real Projects & Tech Careers',
     traditional: 'Memorizing theory for marks, ending college with zero hands-on projects or industry portfolio.',
-    notesx: 'Seamless progression from learning notes to finding teammates in BuildTogether, practicing in GATE Arena, and landing tech jobs.'
-  }
+    notesx: 'Seamless progression from learning notes to finding teammates in BuildTogether, practicing in GATE Arena, and landing tech jobs.',
+  },
 ];
 
 const onboardingSteps = [
@@ -279,42 +313,42 @@ const onboardingSteps = [
     description: 'Select your university, branch, and semester to instantly access unit-wise notes, handwritten summaries, and past papers before your lectures.',
     linkText: 'Browse Course Notes',
     linkTo: '/notes',
-    icon: BookOpen
+    icon: BookOpen,
   },
   {
     step: '02',
-    title: 'Unpack Complex Concepts with AI & Doubts',
-    description: 'Stuck on an algorithm or mathematical proof at midnight? Ask the 24/7 AI Study Assistant or post in the Doubts forum for peer validation.',
-    linkText: 'Ask AI Assistant',
+    title: 'Get 24/7 AI Help When You Get Stuck',
+    description: 'Paste tricky derivations or compiler bugs into the AI Assistant. It breaks them down with syllabus context in 3 seconds.',
+    linkText: 'Ask AI Study Assistant',
     linkTo: '/ai-assistant',
-    icon: BrainCircuit
+    icon: BrainCircuit,
   },
   {
     step: '03',
-    title: 'Benchmark Retention in GATE Arena',
-    description: 'Test your understanding with topic-wise MCQ quizzes and timed GATE simulations to pinpoint weak areas before exams.',
-    linkText: 'Practice in GATE Arena',
-    linkTo: '/gate',
-    icon: Target
+    title: 'Compete in Coding Battles & Rep Your Campus',
+    description: 'Solve real DSA problems executed by Judge0. Every solve awards you XP and dynamically elevates your college on the inter-college leaderboard.',
+    linkText: 'Enter Coding Arena',
+    linkTo: '/contests',
+    icon: Trophy,
   },
   {
     step: '04',
-    title: 'Build Team Projects & Land Internships',
-    description: 'Collaborate with fellow students on BuildTogether to ship real-world portfolio apps, follow verified career roadmaps, and apply to tech jobs.',
-    linkText: 'Find Project Teams',
+    title: 'Build in BuildTogether & Ship to Portfolio',
+    description: 'Find student co-builders across India, join the 3-week sprint, and build production projects to impress recruiters.',
+    linkText: 'Join a Project Team',
     linkTo: '/build-together',
-    icon: Rocket
-  }
+    icon: Users,
+  },
 ];
 
 const testimonials = [
   {
     name: 'Rahul Sharma',
-    role: 'B.Tech CSE, 3rd Year',
+    role: 'Computer Science, 3rd Year',
     college: 'GLA University, Mathura',
     avatar: '/images/notesx-avatar-rahul.jpg',
-    quote: 'Before NOTESX, our batch was drowning in 20 different WhatsApp groups for notes and past papers. Having unit-wise notes aligned to our semester syllabus plus the 24/7 AI tutor bumped my CGPA from 7.4 to 8.9.',
-    highlight: 'CGPA jumped from 7.4 to 8.9'
+    quote: 'Before NOTESX, our batch was drowning in 20 different WhatsApp groups for notes and past papers. Having unit-wise notes aligned to our semester syllabus plus the 24/7 AI tutor and campus coding battles bumped my CGPA from 7.4 to 8.9.',
+    highlight: 'CGPA jumped from 7.4 to 8.9',
   },
   {
     name: 'Priya Patel',
@@ -322,7 +356,7 @@ const testimonials = [
     college: 'NIT Trichy',
     avatar: '/images/notesx-avatar-priya.jpg',
     quote: 'The GATE Prep Arena and topic-wise MCQ tests gave me real exam simulation. Practicing every day and getting instant doubt resolutions helped me secure AIR 214 in GATE CSE! Absolute game-changer.',
-    highlight: 'Secured AIR 214 in GATE CSE'
+    highlight: 'Secured AIR 214 in GATE CSE',
   },
   {
     name: 'Ayush Verma',
@@ -330,21 +364,8 @@ const testimonials = [
     college: 'Delhi Technological University (DTU)',
     avatar: '/images/notesx-avatar-ayush.jpg',
     quote: 'I met my hackathon co-builder on NOTESX BuildTogether. We built a full-stack project together, followed the React/Node roadmap, and both received internship offers through the job portal!',
-    highlight: 'Landed Tech Internship via BuildTogether'
-  }
-];
-
-const featuredColleges = [
-  'GLA University',
-  'IIT Delhi',
-  'IIT Bombay',
-  'NIT Trichy',
-  'BITS Pilani',
-  'DTU Delhi',
-  'Anna University',
-  'AKTU',
-  'VIT Vellore',
-  'IIIT Hyderabad'
+    highlight: 'Landed Tech Internship via BuildTogether',
+  },
 ];
 
 export default function Home() {
@@ -369,7 +390,7 @@ export default function Home() {
 
   const filteredServices = activeCategory === 'all'
     ? allServices
-    : allServices.filter(s => s.category === activeCategory);
+    : allServices.filter((s) => s.category === activeCategory);
 
   return (
     <div className="space-y-24 pb-20 sm:space-y-32">
@@ -402,9 +423,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HERO SECTION (TAAI.LIVE SIGNATURE STYLING & ANIMATIONS) */}
+      {/* HERO SECTION (TAAI.LIVE SIGNATURE STYLING & AI STUDENTS) */}
       <section className="relative isolate overflow-hidden rounded-[2.5rem] border border-violet-900/40 taai-dot-matrix p-6 text-white shadow-2xl sm:p-10 lg:p-14">
-        {/* Ambient Counter-Rotating Glow Orbs (from taai.live) */}
+        {/* Ambient Counter-Rotating Glow Orbs */}
         <div className="pointer-events-none absolute -right-24 -top-36 h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,127,183,0.24)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-1" />
         <div className="pointer-events-none absolute -bottom-32 -left-28 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(77,139,255,0.22)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-2" />
 
@@ -438,7 +459,7 @@ export default function Home() {
 
             {/* Stagger 3: Subtitle */}
             <p className="hero-in-3 mt-6 text-base leading-relaxed text-slate-300 sm:text-lg">
-              Say goodbye to messy WhatsApp groups and dead Google Drive links. <strong className="text-white">NOTESX</strong> unites syllabus-aligned unit notes, a 24/7 AI study assistant, GATE practice arenas, peer hackathon teams, and verified tech internships in one unified student space.
+              Say goodbye to messy WhatsApp groups and dead Google Drive links. <strong className="text-white">NOTESX</strong> unites syllabus-aligned unit notes, a 24/7 AI study assistant, real-time campus coding battles, GATE practice arenas, peer project teams, and verified tech internships in one unified student space.
             </p>
 
             {/* Stagger 4: Verified Checklist */}
@@ -449,44 +470,36 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 size={16} className="text-[#8B5CF6] shrink-0" />
-                <span>24/7 AI Tutor + peer doubts forum for midnight conceptual clarity</span>
+                <span>24/7 AI Tutor providing step-by-step math and code explanations</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 size={16} className="text-[#4D8BFF] shrink-0" />
-                <span>GATE CS mock tests, BuildTogether team matching & vetted jobs</span>
+                <span>Inter-College Coding Battles: Solves dynamically push your college to #1</span>
               </div>
             </div>
 
-            {/* Stagger 5: CTAs with Sweep Sheen */}
-            <div className="hero-in-5 mt-8 flex flex-col gap-3.5 sm:flex-row">
+            {/* Stagger 5: Dual CTA Buttons */}
+            <div className="hero-in-5 mt-8 flex flex-wrap items-center gap-3.5">
               <Link
                 to="/notes"
-                className="sheen-btn inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] px-7 py-3.5 text-sm font-bold text-white shadow-[0_8px_25px_rgba(139,92,246,0.4)] transition-all hover:shadow-[0_12px_35px_rgba(139,92,246,0.55)] hover:scale-105 active:scale-95"
+                className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_25px_rgba(139,92,246,0.4)] transition-all hover:shadow-[0_12px_32px_rgba(139,92,246,0.55)] hover:scale-105 active:scale-95"
               >
-                <BookOpen size={18} />
-                Explore Course Notes
-                <ArrowRight size={16} />
+                Find Your Semester Notes <ArrowRight size={16} />
               </Link>
               <Link
-                to="/ai-assistant"
-                className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
+                to="/contests"
+                className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10 backdrop-blur"
               >
-                <BrainCircuit size={18} className="text-[#C4B0FF] shrink-0" />
-                <span className="whitespace-nowrap">Ask 24/7 AI Tutor</span>
-                {/* Dancing Audio/AI Equalizer Bars */}
-                <span className="flex items-end gap-0.5 h-3.5 ml-1 shrink-0" aria-hidden="true">
-                  <span className="w-0.5 bg-[#FF7FB7] rounded-full soundwave-1" />
-                  <span className="w-0.5 bg-[#C4B0FF] rounded-full soundwave-2" />
-                  <span className="w-0.5 bg-[#8B5CF6] rounded-full soundwave-3" />
-                  <span className="w-0.5 bg-[#4D8BFF] rounded-full soundwave-4" />
-                </span>
+                <Trophy size={16} className="text-amber-400" />
+                Enter Coding Arena
               </Link>
-              <a
-                href="#services"
-                className="inline-flex items-center justify-center rounded-full px-5 py-3.5 text-sm font-bold text-slate-300 transition hover:text-white hover:underline underline-offset-4"
+              <Link
+                to="/sprint"
+                className="sheen-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15 backdrop-blur"
               >
-                All 9 Services ↓
-              </a>
+                <Rocket size={15} className="text-fuchsia-400" />
+                3-Week Sprint
+              </Link>
             </div>
 
             {/* Stagger 6: Trust Proof */}
@@ -505,7 +518,7 @@ export default function Home() {
 
           {/* HERO VISUAL WITH TAAI-STYLE FLOATING BENTO CARDS & AI STUDENTS */}
           <div className="hero-in-6 relative mx-auto w-full max-w-lg lg:max-w-none">
-            {/* Playful Wobbling Sticker Badge (taai.live signature) */}
+            {/* Playful Wobbling Sticker Badge */}
             <div className="hero-sticker animate-wobble-sticker -top-6 -right-3 sm:-top-8 sm:-right-4">
               <div className="flex flex-col items-center justify-center text-center">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-pink-100">100% FREE</span>
@@ -559,8 +572,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Floating Bento Card 1: Syllabus Coverage (Upper-Left: Safely Above Bottom AI Widget) */}
-            <div className="glass-bento-navy animate-float-1 animate-border-glow absolute top-14 -left-3 sm:top-18 sm:-left-7 max-w-[240px] sm:max-w-[260px] rounded-2xl p-4 text-white shadow-2xl z-20 hidden sm:block">
+            {/* Floating Bento Card 1: Syllabus Coverage */}
+            <div className="glass-bento-navy animate-float-1 animate-border-glow absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 max-w-[250px] sm:max-w-[270px] rounded-2xl p-4 text-white shadow-2xl z-10">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-violet-200 uppercase">
                   <BookOpen size={11} /> Syllabus Coverage
@@ -571,7 +584,6 @@ export default function Home() {
                 <p className="text-xl font-black tracking-tight text-white">100% Curated</p>
                 <span className="text-xs font-bold text-emerald-400">Verified PYQs</span>
               </div>
-              {/* Animated Progress Bar (taai.live signature) */}
               <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="animate-bar-grow h-full w-full rounded-full bg-gradient-to-r from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF]" />
               </div>
@@ -580,8 +592,8 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Floating Bento Card 2: BuildTogether Co-Builders (Top-Right: Safely Positioned) */}
-            <div className="glass-bento-rose animate-float-2 animate-border-glow absolute -top-7 -right-3 sm:-top-9 sm:-right-6 max-w-[220px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-20">
+            {/* Floating Bento Card 2: BuildTogether Co-Builders */}
+            <div className="glass-bento-rose animate-float-2 animate-border-glow absolute -top-8 -right-4 sm:-top-10 sm:-right-6 max-w-[230px] sm:max-w-[250px] rounded-2xl p-4 text-white shadow-2xl z-10">
               <div className="flex items-center justify-between text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full border border-pink-400/30 bg-pink-500/20 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-pink-200 uppercase">
                   <Users size={11} /> BuildTogether
@@ -601,43 +613,7 @@ export default function Home() {
                   <img src="/images/notesx-avatar-priya.jpg" alt="Student" className="h-6 w-6 rounded-full border border-slate-900 object-cover" />
                   <img src="/images/notesx-avatar-ayush.jpg" alt="Student" className="h-6 w-6 rounded-full border border-slate-900 object-cover" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-300">Teaming up for hackathons</span>
-              </div>
-            </div>
-
-            {/* Floating Bento Card 3: GATE CS AIR Benchmark (Mid-Right: Safely Above Bottom AI Widget) */}
-            <div className="glass-bento-navy animate-float-3 absolute top-40 -right-3 sm:top-44 sm:-right-6 max-w-[210px] sm:max-w-[230px] rounded-2xl p-3.5 text-white shadow-2xl z-20 hidden md:block">
-              <div className="flex items-center justify-between text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider text-emerald-300 uppercase">
-                  <Trophy size={10} /> AIR 214 Benchmark
-                </span>
-                <span className="text-[10px] font-extrabold text-[#38bdf8]">GATE CS</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-black tracking-tight text-white">88.4 / 100</p>
-                  <p className="text-[10px] text-slate-300">Mock Exam Score</p>
-                </div>
-                <div className="relative grid h-10 w-10 place-items-center">
-                  <svg className="h-10 w-10 -rotate-90 transform" viewBox="0 0 36 36">
-                    <path
-                      className="text-white/10"
-                      strokeWidth="3.5"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className="text-[#FF7FB7] animate-pen-draw"
-                      strokeDasharray="88, 100"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                </div>
+                <span className="text-[10px] font-bold text-slate-300">+48 teaming today</span>
               </div>
             </div>
           </div>
@@ -657,13 +633,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* METRICS & CREDIBILITY COUNTER (TAAI.LIVE SIGNATURE STATS) */}
+      {/* METRICS & CREDIBILITY COUNTER */}
       <section className="relative overflow-hidden rounded-3xl border border-violet-900/40 taai-dot-matrix p-6 sm:p-10 shadow-2xl text-white">
-        {/* Glowing streaks */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_40%_90%_at_15%_50%,rgba(236,72,153,0.18)_0%,transparent_65%),radial-gradient(ellipse_35%_80%_at_50%_50%,rgba(139,92,246,0.18)_0%,transparent_65%),radial-gradient(ellipse_40%_90%_at_85%_50%,rgba(56,189,248,0.18)_0%,transparent_65%)]" />
 
         <div className="relative grid grid-cols-2 gap-6 lg:grid-cols-4 lg:gap-8">
-          {/* Stat 1 */}
           <div className="flex flex-col items-center text-center p-3 relative">
             <div className="mb-4 h-0.5 w-10 rounded-full bg-[#ec4899] shadow-[0_0_12px_2px_rgba(236,72,153,0.7)]" />
             <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#ffc0dc] to-[#ec4899] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(236,72,153,0.5)]">
@@ -677,7 +651,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Stat 2 */}
           <div className="flex flex-col items-center text-center p-3 relative lg:border-l lg:border-white/10">
             <div className="mb-4 h-0.5 w-10 rounded-full bg-[#8b5cf6] shadow-[0_0_12px_2px_rgba(139,92,246,0.7)]" />
             <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#d8b4fe] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(139,92,246,0.5)]">
@@ -691,7 +664,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Stat 3 */}
           <div className="flex flex-col items-center text-center p-3 relative border-t border-white/10 pt-6 lg:border-t-0 lg:border-l lg:pt-3">
             <div className="mb-4 h-0.5 w-10 rounded-full bg-[#38bdf8] shadow-[0_0_12px_2px_rgba(56,189,248,0.7)]" />
             <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#bae6fd] to-[#38bdf8] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(56,189,248,0.5)]">
@@ -705,7 +677,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Stat 4 */}
           <div className="flex flex-col items-center text-center p-3 relative border-t border-white/10 pt-6 lg:border-t-0 lg:border-l lg:pt-3">
             <div className="mb-4 h-0.5 w-10 rounded-full bg-[#10b981] shadow-[0_0_12px_2px_rgba(16,185,129,0.7)]" />
             <p className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-b from-white via-[#a7f3d0] to-[#10b981] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(16,185,129,0.5)]">
@@ -721,7 +692,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 1: WHAT SERVICES WE PROVIDE */}
+      {/* FULL OVERVIEW: WHAT SERVICES WE PROVIDE */}
       <section id="services" className="scroll-mt-24 space-y-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -732,23 +703,23 @@ export default function Home() {
               What Services We Provide
             </h2>
             <p className="mt-3 max-w-2xl text-base text-slate-600 dark:text-slate-300">
-              NOTESX isn’t just a notes repository. It is a complete 9-pillar engineering operating system built to take you from first-semester basics to hackathons, exams, and high-paying jobs.
+              NOTESX isn’t just a notes repository. It is a complete engineering operating system built to take you from first-semester basics to hackathons, coding battles, exams, and high-paying jobs.
             </p>
           </div>
 
           {/* Interactive Category Filter Pills */}
           <div className="flex flex-wrap gap-2">
             {[
-              { id: 'all', label: 'All Services (9)' },
+              { id: 'all', label: 'All Services (11)' },
               { id: 'academic', label: 'Academic & Exams (2)' },
               { id: 'ai', label: 'AI & Doubts (2)' },
-              { id: 'career', label: 'Career & Projects (3)' },
-              { id: 'community', label: 'Campus & Lounge (2)' }
-            ].map(cat => (
+              { id: 'career', label: 'Coding, Teams & Careers (5)' },
+              { id: 'community', label: 'Campus & Lounge (2)' },
+            ].map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition cursor-pointer ${
                   activeCategory === cat.id
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20 dark:bg-indigo-500'
                     : 'border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
@@ -760,7 +731,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 9 Interactive Service Cards Grid */}
+        {/* 11 Interactive Service Cards Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredServices.map((service) => {
             const Icon = service.icon;
@@ -780,33 +751,32 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <h3 className="mt-5 text-xl font-extrabold text-slate-950 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                  <h3 className="mt-5 text-xl font-extrabold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {service.title}
                   </h3>
-                  <p className="mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">
                     {service.tagline}
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                     {service.copy}
                   </p>
 
-                  {/* Concrete feature bullet points */}
-                  <ul className="mt-5 space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
                     {service.features.map((feat, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
-                        <Check size={14} className="shrink-0 text-emerald-500" />
+                      <li key={idx} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                        <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
                         <span>{feat}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="mt-6 pt-2">
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     to={service.to}
-                    className="sheen-btn inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-2.5 text-xs font-bold text-indigo-700 transition group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-violet-600 group-hover:text-white dark:bg-slate-800 dark:text-indigo-300 dark:group-hover:text-white"
+                    className="sheen-btn inline-flex items-center justify-between w-full rounded-xl bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-800 hover:bg-indigo-50 hover:text-indigo-600 transition dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300"
                   >
-                    Surf {service.title.split(' ')[0]} Hub
+                    <span>Explore {service.title.split(' ')[0]}</span>
                     <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                   </Link>
                 </div>
@@ -816,9 +786,80 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 2: WHY WE ARE DIFFERENT FROM OTHERS */}
+      {/* BUILD-TO-PORTFOLIO 3-WEEK SPRINT SHOWCASE (PRESERVED PILOT FEATURE) */}
+      <section className="relative isolate overflow-hidden rounded-[2.5rem] border border-indigo-900/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-6 py-10 text-white shadow-2xl sm:px-10 sm:py-14 lg:px-14">
+        <div className="pointer-events-none absolute -right-24 -top-28 h-[24rem] w-[24rem] rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-36 -left-24 h-[24rem] w-[24rem] rounded-full bg-blue-500/20 blur-3xl" />
+
+        <div className="relative grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-100">
+              <Rocket size={15} /> Build-to-Portfolio Cohort
+            </span>
+            <h2 className="mt-4 text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
+              Three Weeks to a Working Demo.
+              <span className="block mt-1 bg-gradient-to-r from-fuchsia-300 via-violet-200 to-sky-300 bg-clip-text text-transparent">
+                Ship a Real Project with Peers.
+              </span>
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base max-w-xl">
+              Turn theoretical coursework into an impressive portfolio. Form a small team, execute with structured weekly milestones, and showcase your finished project to recruiters on GitHub.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to="/sprint"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 px-5 py-3 text-sm font-extrabold text-white shadow-lg transition hover:brightness-110"
+              >
+                Explore Sprint Curriculum <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/build-together"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              >
+                Preview Open Teams <Code2 size={16} />
+              </Link>
+            </div>
+            <p className="mt-4 text-xs font-medium text-slate-400">
+              Project previews are open to all students. Workspace posting and applications require a free student profile.
+            </p>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-md">
+            <div className="rounded-[1.75rem] border border-white/15 bg-slate-950/70 p-5 shadow-2xl backdrop-blur sm:p-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-300">Sprint Roadmap</p>
+                  <p className="mt-1 text-base font-black text-white">3-Week Milestone Milestones</p>
+                </div>
+                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-500/20 text-indigo-200">
+                  <Rocket size={20} />
+                </span>
+              </div>
+              <div className="space-y-3 py-4">
+                {[
+                  ['01', 'Form a small student team & define project spec'],
+                  ['02', 'Build core features with git pull requests'],
+                  ['03', 'Deploy live demo with polished GitHub README'],
+                ].map(([number, text]) => (
+                  <div key={number} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-white/10 text-xs font-extrabold text-fuchsia-200">
+                      {number}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-200">{text}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-xl border border-amber-300/20 bg-amber-400/10 p-3 text-xs leading-relaxed text-amber-100">
+                Peer cohort registration is currently open. NOTESX does not charge any mandatory cohort fees.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY NOTESX IS DIFFERENT (FEATURING AI-STUDY IMAGE) */}
       <section className="relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="grid items-stretch lg:grid-cols-12">
+        <div className="grid lg:grid-cols-12">
           {/* AI-Generated Image: Student Late Night Study Setup */}
           <div className="relative min-h-[360px] bg-slate-950 lg:col-span-5 overflow-hidden">
             <img
@@ -892,7 +933,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 3: HOW YOU TAKE OUT MORE SERVICES FROM US (4-STEP BLUEPRINT) */}
+      {/* HOW TO EXTRACT MAXIMUM VALUE (FEATURING BUILD-TOGETHER IMAGE) */}
       <section className="relative overflow-hidden rounded-[2.5rem] border border-indigo-100 bg-gradient-to-br from-indigo-50/60 via-white to-violet-50/60 p-6 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950 sm:p-10 lg:p-14">
         <div className="max-w-3xl">
           <span className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
@@ -902,14 +943,13 @@ export default function Home() {
             How to Extract Maximum Value from NOTESX
           </h2>
           <p className="mt-3 text-base text-slate-600 dark:text-slate-300">
-            Follow this 4-step progressive workflow every semester to stay ahead in your classroom GPA, master competitive exam prep, and build an exceptional engineering portfolio.
+            Follow this 4-step progressive workflow every semester to stay ahead in your classroom GPA, master competitive coding, and build an exceptional engineering portfolio.
           </p>
         </div>
 
         <div className="mt-12 grid items-center gap-12 lg:grid-cols-12">
           {/* 4 Interactive Step Cards with Animated Flow Beam */}
           <div className="relative space-y-4 lg:col-span-7 pl-4 sm:pl-6">
-            {/* Vertical Progressive Glow Beam */}
             <div className="pointer-events-none absolute left-0 top-6 bottom-6 w-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
               <div className="h-28 w-full rounded-full bg-gradient-to-b from-[#FF7FB7] via-[#8B5CF6] to-[#4D8BFF] animate-vertical-beam" />
             </div>
@@ -951,37 +991,43 @@ export default function Home() {
             <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 shadow-2xl dark:border-slate-700">
               <img
                 src="/images/notesx-build-together.jpg"
-                alt="Energetic Indian student hackathon team collaborating on laptops and monitors debugging a project"
+                alt="Dynamic Indian college hackathon team collaborating around laptop monitor in innovation lab"
                 className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider backdrop-blur shadow-md">
-                  <Rocket size={12} /> Step 4: Ship Together
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-300 backdrop-blur">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" /> Build & Ship Together
                 </span>
-                <p className="mt-2 text-base font-black">
-                  "Don't just study code. Ship apps that get you hired."
-                </p>
+                <h4 className="mt-3 text-lg font-bold">Collaborate Across Indian Campuses</h4>
                 <p className="mt-1 text-xs text-slate-300">
-                  Connect with frontend, backend & AI peers in BuildTogether.
+                  Find teammates for Smart India Hackathon, campus tech fests, and open-source software projects.
                 </p>
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    to="/build-together"
+                    className="sheen-btn text-xs font-bold bg-white text-slate-950 px-4 py-2 rounded-xl shadow transition hover:bg-slate-100"
+                  >
+                    Find Co-Builders
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 4: WE PROVIDE THE BEST CONTENT FOR LEARNING (TESTIMONIALS & CAMPUS LIFE) */}
-      <section className="space-y-12">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-            <Award size={16} /> Proven Results
+      {/* STUDENT TESTIMONIALS & REAL PROOF */}
+      <section className="space-y-8">
+        <div className="text-center max-w-2xl mx-auto">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/60 bg-indigo-50/70 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-300">
+            <Star size={13} className="fill-indigo-600 text-indigo-600" /> Student Stories
           </span>
           <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-950 dark:text-white sm:text-4xl">
-            We Provide The Best Content For Learning
+            Loved by Students Across Indian Campuses
           </h2>
-          <p className="mt-3 text-base text-slate-600 dark:text-slate-300">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             From GPA turnarounds to national rank achievements and tech internships—hear directly from students who use NOTESX every single day.
           </p>
         </div>
@@ -994,7 +1040,6 @@ export default function Home() {
               className="interactive-hover-card flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:border-indigo-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
             >
               <div>
-                {/* Highlight Badge with subtle bounce */}
                 <span className="animate-badge-bounce inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
                   <Star size={12} className="fill-indigo-600 text-indigo-600" />
                   {t.highlight}
@@ -1122,7 +1167,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BOTTOM CLOSING CTA (TAAI-INSPIRED GLOW & ATMOSPHERE) */}
+      {/* BOTTOM CLOSING CTA */}
       <section className="relative overflow-hidden rounded-[2.5rem] taai-dot-matrix border border-violet-900/40 px-6 py-12 text-white shadow-2xl sm:px-12 sm:py-16 lg:px-16">
         <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(255,127,183,0.25)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-1" />
         <div className="pointer-events-none absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(77,139,255,0.22)_0%,rgba(139,92,246,0.12)_45%,transparent_68%)] animate-hero-orb-2" />
@@ -1137,7 +1182,7 @@ export default function Home() {
               Ready to Upgrade Your <span className="bg-gradient-to-r from-[#FF7FB7] via-[#C4B0FF] to-[#4D8BFF] bg-clip-text text-transparent animate-gradient-flow">College Journey?</span>
             </h2>
             <p className="mt-4 text-base leading-relaxed text-slate-300 sm:text-lg">
-              Unlock verified unit notes, 24/7 AI explanations, GATE tests, and team project workspaces today.
+              Unlock verified unit notes, 24/7 AI explanations, coding battles, GATE tests, and team project workspaces today.
             </p>
           </div>
 
@@ -1190,7 +1235,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setShowActivity(false)}
-              className="text-slate-400 hover:text-white transition-colors p-1 -mr-1 -mt-1 rounded-lg"
+              className="text-slate-400 hover:text-white transition-colors p-1 -mr-1 -mt-1 rounded-lg cursor-pointer"
               title="Dismiss notification"
               aria-label="Dismiss notification"
             >
