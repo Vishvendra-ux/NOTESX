@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, 
   Layers, ChevronRight, BookOpen, GraduationCap, Shield,
@@ -73,6 +74,18 @@ export default function UploadNoteModal({
   prefilledSubject
 }) {
   const { user } = useContext(AuthContext);
+
+  // Close on Escape key press
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Dynamic hierarchy state lists
   const [courses, setCourses] = useState([]);
@@ -343,19 +356,19 @@ export default function UploadNoteModal({
     }
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[95] grid place-items-center bg-slate-950/60 p-3 sm:p-6 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/75 p-3 sm:p-6 backdrop-blur-md overflow-y-auto"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto animate-slide-up flex flex-col max-h-[92vh]"
+        className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto animate-slide-up flex flex-col max-h-[90vh] border border-slate-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-20">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shadow-xs">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Share with Classmates</span>
             <h3 className="text-xl font-extrabold text-slate-900">Upload Study Material</h3>
@@ -363,9 +376,11 @@ export default function UploadNoteModal({
           <button 
             type="button" 
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            aria-label="Close upload modal"
+            title="Close (Esc)"
+            className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition flex items-center justify-center cursor-pointer border border-slate-200 hover:border-rose-200 shadow-2xs group"
           >
-            <X size={18} />
+            <X size={18} className="stroke-[2.5] group-hover:scale-110 transition-transform" />
           </button>
         </div>
 
@@ -717,6 +732,7 @@ export default function UploadNoteModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

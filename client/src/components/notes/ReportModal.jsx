@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Flag, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { notesService } from '../../services/api';
 
@@ -8,6 +9,18 @@ export default function ReportModal({ isOpen, onClose, note }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  // Close on Escape key press
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !note) return null;
 
@@ -39,15 +52,15 @@ export default function ReportModal({ isOpen, onClose, note }) {
     }
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[110] grid place-items-center bg-slate-950/75 p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-slide-up"
+        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-slide-up border border-slate-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -55,8 +68,13 @@ export default function ReportModal({ isOpen, onClose, note }) {
             <Flag size={18} />
             <h3 className="text-base font-extrabold text-slate-900">Report Note</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100">
-            <X size={18} />
+          <button 
+            onClick={onClose} 
+            aria-label="Close modal"
+            title="Close (Esc)"
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition flex items-center justify-center cursor-pointer border border-slate-200 hover:border-rose-200"
+          >
+            <X size={16} className="stroke-[2.5]" />
           </button>
         </div>
 
@@ -110,6 +128,7 @@ export default function ReportModal({ isOpen, onClose, note }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
