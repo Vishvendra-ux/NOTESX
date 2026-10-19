@@ -15,6 +15,7 @@ router.post('/:id/upvote', protect, controller.upvote);
 router.post('/:id/downvote', protect, controller.downvote); 
 router.post('/:id/bookmark', protect, controller.toggleBookmark);
 router.post('/:id/accept/:answerId', protect, controller.acceptAnswer); 
+router.post('/:id/ai-answer', protect, controller.generateAiAnswer);
 
 // Nested answer routes
 router.get('/:doubtId/answers', optionalProtect, answerController.list);

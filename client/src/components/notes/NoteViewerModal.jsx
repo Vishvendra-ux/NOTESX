@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import { 
   X, ArrowLeft, Download, Bookmark, Flag, Star, ThumbsUp, 
   User, CheckCircle2, Award, Calendar, FileText, Send, 
-  Layers, ExternalLink, Sparkles, AlertCircle, Globe 
+  Layers, ExternalLink, Sparkles, AlertCircle, Globe,
+  Copy, Check, HelpCircle, BookOpen, Lightbulb
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
-import { notesService } from '../../services/api';
+import { notesService, aiService } from '../../services/api';
 import RatingStars from './RatingStars';
+import MarkdownRenderer from '../doubts/MarkdownRenderer';
 
 const getEmbedUrl = (url) => {
   if (!url) return null;
@@ -44,6 +46,16 @@ export default function NoteViewerModal({
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [reviewError, setReviewError] = useState('');
   const [reviewSort, setReviewSort] = useState('newest');
+
+  // Note-Grounded AI Exam Copilot state
+  const [aiResult, setAiResult] = useState('');
+  const [aiActiveMode, setAiActiveMode] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [aiCustomPrompt, setAiCustomPrompt] = useState('');
+  const [aiQuota, setAiQuota] = useState(null);
+  const [aiProvider, setAiProvider] = useState('');
+  const [aiCopied, setAiCopied] = useState(false);
 
   // Close on Escape key press
   useEffect(() => {
@@ -113,6 +125,54 @@ export default function NoteViewerModal({
     } catch (err) {
       if (targetLink) window.open(targetLink, '_blank', 'noopener,noreferrer');
     }
+  };
+
+  const handleRunAiCopilot = async (mode, customMessage = '') => {
+    if (!user) {
+      setAiError('Please log in to use the AI Exam Copilot for this note.');
+      return;
+    }
+    if (mode === 'custom' && !customMessage.trim()) {
+      setAiError('Please enter a question about this note.');
+      return;
+    }
+
+    try {
+      setAiLoading(true);
+      setAiError('');
+      setAiActiveMode(mode);
+
+      const { data } = await aiService.ask({
+        mode,
+        message: customMessage.trim(),
+        noteId: note?._id || note?.id,
+        noteContext: {
+          title: note?.title,
+          subject: note?.subjectId?.name || note?.subject || 'Operating Systems',
+          unit: note?.unit || 'Unit 1',
+          topic: note?.topic || note?.title,
+          description: note?.description,
+          tags: note?.tags || []
+        }
+      });
+
+      setAiResult(data.message || '');
+      if (data.provider) setAiProvider(data.provider);
+      if (data.quota) setAiQuota(data.quota);
+      if (mode === 'custom') setAiCustomPrompt('');
+    } catch (err) {
+      setAiError(err.response?.data?.message || 'Could not generate AI exam insights right now. Please try again.');
+      if (err.response?.data?.quota) setAiQuota(err.response.data.quota);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleCopyAiResult = () => {
+    if (!aiResult) return;
+    navigator.clipboard.writeText(aiResult);
+    setAiCopied(true);
+    setTimeout(() => setAiCopied(false), 2000);
   };
 
   const handleSubmitReview = async (e) => {
@@ -317,11 +377,183 @@ export default function NoteViewerModal({
           )}
 
           {/* Note Description & Syllabus Coverage */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">Description & Notes Overview</h3>
             <p className="text-sm text-slate-700 leading-relaxed bg-white p-4 rounded-2xl border border-slate-100">
               {note?.description || 'Comprehensive handwritten study notes covering unit syllabus, core derivations, diagrams, and university previous year exam questions.'}
             </p>
+          </div>
+
+          {/* ── Note-Grounded AI Exam Copilot ── */}
+          <div className="mb-8 rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/70 p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-sm">
+                  <Sparkles size={17} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900">
+                      AI Exam Copilot for This Note
+                    </h3>
+                    <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">
+                      Gemini Powered
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Instant Hinglish summary, viva Q&amp;A, analogies &amp; 10-mark exam answers grounded in <b>{note?.title}</b>
+                  </p>
+                </div>
+              </div>
+
+              {aiQuota && (
+                <span className="self-start sm:self-auto rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600 border border-slate-200 shadow-2xs">
+                  {aiQuota.isPro ? '✨ PRO Unlimited' : `⚡ ${aiQuota.remaining}/${aiQuota.limit} Free AI Left Today`}
+                </span>
+              )}
+            </div>
+
+            {/* 1-Click Exam Action Pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => handleRunAiCopilot('summary')}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-bold border transition text-left cursor-pointer disabled:opacity-60 ${
+                  aiActiveMode === 'summary' && aiResult
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-white hover:bg-indigo-50/80 text-slate-700 hover:text-indigo-700 border-slate-200/90 hover:border-indigo-300'
+                }`}
+              >
+                <Sparkles size={15} className="shrink-0 text-amber-500" />
+                <span>Summarize in Hinglish</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => handleRunAiCopilot('viva')}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-bold border transition text-left cursor-pointer disabled:opacity-60 ${
+                  aiActiveMode === 'viva' && aiResult
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-white hover:bg-indigo-50/80 text-slate-700 hover:text-indigo-700 border-slate-200/90 hover:border-indigo-300'
+                }`}
+              >
+                <HelpCircle size={15} className="shrink-0 text-emerald-500" />
+                <span>10 Viva Questions &amp; Ans</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => handleRunAiCopilot('analogy')}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-bold border transition text-left cursor-pointer disabled:opacity-60 ${
+                  aiActiveMode === 'analogy' && aiResult
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-white hover:bg-indigo-50/80 text-slate-700 hover:text-indigo-700 border-slate-200/90 hover:border-indigo-300'
+                }`}
+              >
+                <Lightbulb size={15} className="shrink-0 text-purple-500" />
+                <span>Real-Life Analogy</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={() => handleRunAiCopilot('university_questions')}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-bold border transition text-left cursor-pointer disabled:opacity-60 ${
+                  aiActiveMode === 'university_questions' && aiResult
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-white hover:bg-indigo-50/80 text-slate-700 hover:text-indigo-700 border-slate-200/90 hover:border-indigo-300'
+                }`}
+              >
+                <BookOpen size={15} className="shrink-0 text-blue-500" />
+                <span>5 Likely 10-Mark Qs</span>
+              </button>
+            </div>
+
+            {/* Custom Question Input about this Note */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={aiCustomPrompt}
+                onChange={(e) => setAiCustomPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleRunAiCopilot('custom', aiCustomPrompt);
+                  }
+                }}
+                placeholder={`Ask anything about "${note?.title || 'this note'}" (e.g., explain the formula, numerical step)...`}
+                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-medium text-slate-800 outline-none focus:border-indigo-500"
+              />
+              <button
+                type="button"
+                disabled={aiLoading || !aiCustomPrompt.trim()}
+                onClick={() => handleRunAiCopilot('custom', aiCustomPrompt)}
+                className="btn-primary px-4 py-2.5 rounded-2xl text-xs font-bold gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
+              >
+                <Send size={13} />
+                <span>Ask AI</span>
+              </button>
+            </div>
+
+            {/* Error State */}
+            {aiError && (
+              <div className="mt-3 flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-semibold text-rose-700">
+                <AlertCircle size={15} className="shrink-0" />
+                <span>{aiError}</span>
+              </div>
+            )}
+
+            {/* Loading Skeleton */}
+            {aiLoading && (
+              <div className="mt-4 rounded-2xl bg-white border border-indigo-100 p-4 flex items-center gap-3 text-xs font-bold text-indigo-700 animate-pulse">
+                <Sparkles size={16} className="animate-spin text-indigo-600" />
+                <span>Generating exam-ready study notes for &ldquo;{note?.title}&rdquo;...</span>
+              </div>
+            )}
+
+            {/* AI Copilot Result Card */}
+            {!aiLoading && aiResult && (
+              <div className="mt-4 rounded-2xl bg-white border border-indigo-200/80 p-4 sm:p-5 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">
+                      ✨ AI Study Output
+                    </span>
+                    {aiProvider && (
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                        {aiProvider}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyAiResult}
+                      className="inline-flex items-center gap-1 rounded-lg bg-slate-100 hover:bg-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-600 transition cursor-pointer"
+                    >
+                      {aiCopied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                      <span>{aiCopied ? 'Copied!' : 'Copy Notes'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAiResult('');
+                        setAiActiveMode('');
+                      }}
+                      className="rounded-lg bg-slate-100 hover:bg-rose-50 px-2 py-1 text-[11px] font-bold text-slate-500 hover:text-rose-600 transition cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                <div className="max-h-[380px] overflow-y-auto pr-1">
+                  <MarkdownRenderer content={aiResult} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Tags */}

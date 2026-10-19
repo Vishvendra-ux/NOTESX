@@ -354,6 +354,116 @@ You can search and filter community-uploaded lecture notes across 47+ engineerin
 }
 
 /**
+ * Rich Note-Grounded Copilot Fallback (used when Gemini API is offline or rate-limited)
+ */
+function generateNoteCopilotFallback(mode, prompt, note) {
+  const title = note?.title || 'Lecture Notes';
+  const subject = note?.subjectId?.name || note?.subject || 'Engineering Subject';
+  const unit = note?.unit || 'Core Unit';
+  const topic = note?.topic || title;
+  const desc = note?.description || `Core university concepts, derivations, and exam topics for ${subject} (${unit}).`;
+  const tags = Array.isArray(note?.tags) && note.tags.length > 0 ? note.tags.join(', ') : `${subject}, ${unit}`;
+
+  if (mode === 'summary') {
+    return `### ✨ Hinglish Exam Revision Sheet: ${title}
+**Subject:** ${subject} • **${unit}** • **Topic:** ${topic}
+
+#### 1. Easy Hinglish Concept Breakdown (Samajhne ka Asaan Tarika)
+- **Basic Idea Kya Hai?**: Yeh topic (**${topic}**) ${subject} ke **${unit}** ka sabse scoring part hai. Exam mein isका core purpose system efficiency, correctness, aur resource management ko optimize karna hota hai.
+- **Note Overview**: ${desc}
+- **Yaad Rakhne Ki Trick**: Jab bhi exam mein **${topic}** par question aaye, sabse pehle *Definition*, phir *Block Diagram / Flowchart*, aur last mein *2 Advantages + 1 Limitation* zaroor likho—isse examiner full marks deta hai.
+
+#### 2. Key Bullet Points for Last-Minute Revision
+- **Core Mechanism**: Understand the input-state-output flow of ${topic} within ${subject}.
+- **Key Keywords to Underline in Exam**: \`${tags}\`.
+- **Standard Formula / Complexity / Rule**: Always state the governing equation, time/space trade-off, or state transition condition clearly in a box.
+- **Common Exam Trap**: Students often confuse theoretical definitions with practical implementation—always include 1 concrete numerical or diagram example!`;
+  }
+
+  if (mode === 'viva') {
+    return `### 🎯 Top 10 Viva & Short-Answer Questions: ${title}
+**Subject:** ${subject} (${unit})
+
+1. **Q1: Define ${topic} in one crisp sentence for viva.**
+   - **Ans:** Within ${subject}, **${topic}** is a core mechanism in ${unit} used to structure, control, and optimize system execution and theoretical modeling.
+2. **Q2: Why do we need ${topic} in ${subject}?**
+   - **Ans:** Without it, the system suffers from inefficiency, uncoordinated state transitions, or higher computational overhead.
+3. **Q3: What are the key components covered in "${title}"?**
+   - **Ans:** ${desc}
+4. **Q4: What is the primary trade-off or limitation of this approach?**
+   - **Ans:** Balancing implementation complexity/overhead against throughput, response time, or memory utilization.
+5. **Q5: Where is ${topic} practically used in real-world engineering?**
+   - **Ans:** Used in production operating kernels, database engines, compilers, or high-scale distributed architectures depending on the layer of ${subject}.
+6. **Q6: How does ${unit} connect to the rest of the ${subject} syllabus?**
+   - **Ans:** It builds on foundational primitives from earlier units and directly feeds into advanced optimization and design topics.
+7. **Q7: Name the top keywords an external examiner listens for on this topic.**
+   - **Ans:** Key terms include: *${tags}*.
+8. **Q8: Can we optimize the standard approach of ${topic}?**
+   - **Ans:** Yes—by caching frequent lookups, reducing contention/bottlenecks, or applying heuristic approximations.
+9. **Q9: What diagram or table should you draw if asked about ${topic} on the whiteboard?**
+   - **Ans:** Always draw the architecture state flow or step-by-step trace table showing Initial State $\\to$ Transition $\\to$ Final Output.
+10. **Q10: What is the #1 mistake students make in viva on this topic?**
+    - **Ans:** Memorizing the definition without knowing *why* it is preferred over simpler alternatives.`;
+  }
+
+  if (mode === 'analogy') {
+    return `### 🧠 Real-Life Analogy & Intuitive Breakdown: ${title}
+**Subject:** ${subject} • **${unit}**
+
+#### 1. The Real-World Analogy (Imagine a Busy Railway Junction / Restaurant Kitchen)
+Think of **${subject}** as managing a massive, high-speed **Indian Railway Junction** or a **busy cloud kitchen during peak dinner hours**:
+- **The Problem**: Hundreds of requests (trains/orders) arrive simultaneously with limited tracks/chefs (system resources).
+- **How "${topic}" Solves It**: Just like a smart station master uses signaling rules and priority tracks so no two trains collide and VIP trains pass smoothly, **${topic}** organizes ${unit} operations systematically.
+- **Note Context**: ${desc}
+
+#### 2. Mapping the Analogy to Technical Exam Terms
+| Real-Life Element | Technical Equivalent in ${subject} |
+| :--- | :--- |
+| Station Master / Rulebook | Control Logic of **${topic}** |
+| Incoming Trains / Orders | Input Processes, Queries, or Signals |
+| Railway Tracks / Stoves | Shared System Resources & Memory |
+| Smooth On-Time Departure | Optimal Throughput & Correct Output |
+
+#### 3. Takeaway for Your Exam
+Whenever you get stuck writing the theory of **${topic}**, picture this real-life flow first, then translate each step into technical terminology (*${tags}*).`;
+  }
+
+  if (mode === 'university_questions') {
+    return `### 📝 5 Likely 10-Mark University Exam Questions: ${title}
+**Subject:** ${subject} (${unit})
+
+#### Q1. Explain the architecture, working principle, and significance of **${topic}** in detail with a neat diagram. *(10 Marks)*
+- **How to Write for 10/10 Marks:**
+  1. **1-Paragraph Formal Definition** (2 Marks)
+  2. **Labeled Block / State Diagram** (3 Marks)
+  3. **Step-by-Step Working Algorithm / Flow** (3 Marks)
+  4. **Advantages, Disadvantages & Applications** (2 Marks)
+
+#### Q2. Compare and contrast the primary approaches in **${unit}** with respect to performance, overhead, and real-world suitability. *(10 Marks)*
+- **Scoring Tip:** Draw a 5-point comparison table with columns: *Parameter, Approach A, Approach B, Best Use-Case*. Examiners love tabular comparisons!
+
+#### Q3. Solve a step-by-step trace / numerical problem based on **${title}** and justify each intermediate state. *(10 Marks)*
+- **Scoring Tip:** Write the formula first, show every intermediate table step clearly, and put the final answer in a highlighted box.
+
+#### Q4. What are the classic bottlenecks or failure conditions in **${topic}**? Discuss standard prevention and recovery mechanisms. *(10 Marks)*
+- **Scoring Tip:** Reference core syllabus keywords (*${tags}*) and provide a concrete counter-example.
+
+#### Q5. Write short notes on: (a) Core primitives of ${unit}, and (b) Practical applications of ${title}. *(5 + 5 = 10 Marks)*
+- **Scoring Tip:** Keep each short note to 1.5 pages with bullet points and 1 mini-diagram each.`;
+  }
+
+  return `### 📚 Note Copilot Answer: ${title} (${subject})
+
+Based on the note **"${title}"** (${unit} • ${topic}):
+> ${desc}
+
+#### Key Explanation for "${prompt}":
+1. **Core Concept**: In **${subject}** (${unit}), this concept revolves around **${topic}** and its key attributes (*${tags}*).
+2. **Mechanism & Application**: Ensure you connect the theoretical definition with a step-by-step trace or block diagram when answering in semester exams or technical interviews.
+3. **Exam Tip**: Review the uploaded PDF above for complete handwritten derivations and solved university examples.`;
+}
+
+/**
  * Controller endpoint: GET /api/ai/quota or /api/ai-assistant/quota
  * Returns student's remaining daily AI questions
  */
@@ -386,12 +496,16 @@ exports.getQuota = async (req, res, next) => {
 
 /**
  * Controller endpoint: POST /api/ai/chat or /api/ai-assistant/chat
- * Primary entry point for 24/7 AI Study Tutor
+ * Primary entry point for 24/7 AI Study Tutor & Note-Grounded Exam Copilot
  */
 exports.ask = async (req, res, next) => {
   try {
-    const prompt = String(req.body.message || req.body.prompt || '').trim();
-    if (!prompt) {
+    const rawPrompt = String(req.body.message || req.body.prompt || '').trim();
+    const mode = String(req.body.mode || '').trim(); // 'summary' | 'viva' | 'analogy' | 'university_questions' | 'custom'
+    const noteId = req.body.noteId;
+    const clientNoteContext = req.body.noteContext;
+
+    if (!rawPrompt && !mode) {
       return res.status(400).json({ message: 'A question or prompt is required.' });
     }
 
@@ -417,6 +531,38 @@ exports.ask = async (req, res, next) => {
           resetsAt: getNextResetUtc()
         }
       });
+    }
+
+    // 1b. If called from inside NoteViewerModal with a specific note, resolve the active note context
+    let activeNote = null;
+    if (noteId) {
+      try {
+        activeNote = await Note.findById(noteId).populate('subjectId', 'name').lean();
+      } catch {
+        activeNote = null;
+      }
+    }
+    if (!activeNote && clientNoteContext && typeof clientNoteContext === 'object') {
+      activeNote = clientNoteContext;
+    }
+
+    // Build mode-specific prompt if invoked from Note Copilot
+    let prompt = rawPrompt;
+    if (activeNote) {
+      const noteSubject = activeNote.subjectId?.name || activeNote.subject || 'Engineering';
+      const noteUnit = activeNote.unit || 'Unit';
+      const noteTopic = activeNote.topic || activeNote.title || '';
+      if (mode === 'summary') {
+        prompt = `Create a student-friendly Hinglish (mix of easy Hindi + English technical terms) Exam Revision Summary for the note "${activeNote.title}" in subject ${noteSubject} (${noteUnit}, Topic: ${noteTopic}). Include: 1) Easy Hinglish concept explanation, 2) Key bullet points & formulas to remember, 3) Exam writing tips to score full marks.`;
+      } else if (mode === 'viva') {
+        prompt = `Generate 10 high-probability Viva & Short-Answer Exam Questions with concise model answers based on the note "${activeNote.title}" in subject ${noteSubject} (${noteUnit}, Topic: ${noteTopic}).`;
+      } else if (mode === 'analogy') {
+        prompt = `Explain the core concepts of "${activeNote.title}" (${noteSubject}, ${noteUnit}, Topic: ${noteTopic}) using a relatable real-life Indian analogy (like railway junctions, cricket, kitchen, or traffic) and map the analogy back to exact technical exam terms.`;
+      } else if (mode === 'university_questions') {
+        prompt = `Generate 5 likely 10-Mark University Semester Exam Questions for "${activeNote.title}" (${noteSubject}, ${noteUnit}, Topic: ${noteTopic}) along with the exact answer structure, headings, and diagram suggestions a student should write to score 10/10 marks.`;
+      } else if (rawPrompt) {
+        prompt = `Regarding the study note "${activeNote.title}" in ${noteSubject} (${noteUnit}, Topic: ${noteTopic}): ${rawPrompt}`;
+      }
     }
 
     // 2. Parallel search in Notes, Roadmaps, and Doubts for grounded RAG context
@@ -471,7 +617,12 @@ exports.ask = async (req, res, next) => {
       downloads: n.downloadCount
     }));
 
+    const activeNoteContextStr = activeNote
+      ? `ACTIVE STUDY NOTE OPENED BY STUDENT:\n- Title: "${activeNote.title}"\n- Subject: ${activeNote.subjectId?.name || activeNote.subject || 'N/A'}\n- Unit: ${activeNote.unit || 'N/A'}\n- Topic: ${activeNote.topic || 'N/A'}\n- Description: ${activeNote.description || 'N/A'}\n- Tags: ${Array.isArray(activeNote.tags) ? activeNote.tags.join(', ') : ''}`
+      : '';
+
     const contextSummary = [
+      activeNoteContextStr,
       matchedNotes.length ? `Matching Notes:\n${matchedNotes.map(n => `- Title: "${n.title}", Subject: ${n.subject}, Unit: ${n.unit}, Description: ${n.description}`).join('\n')}` : '',
       matchedRoadmaps ? `Matching Career Roadmap: "${matchedRoadmaps.title}" (${matchedRoadmaps.category})\nDescription: ${matchedRoadmaps.description}` : '',
       matchedDoubts.length ? `Related Questions: ${matchedDoubts.map(d => `"${d.title}" (${d.subjectName || 'General'})`).join(', ')}` : ''
@@ -487,6 +638,9 @@ exports.ask = async (req, res, next) => {
       aiResponse = geminiResult.answer;
       provider = geminiResult.modelUsed || 'gemini-2.5-flash';
       tokensUsed = geminiResult.tokensUsed || 0;
+    } else if (activeNote) {
+      aiResponse = generateNoteCopilotFallback(mode || 'custom', rawPrompt || prompt, activeNote);
+      provider = 'notesx-note-copilot';
     } else {
       aiResponse = generateLocalDocAnswer(prompt, matchedNotes, matchedRoadmaps, matchedDoubts[0]);
       provider = 'notesx-docs';
@@ -533,10 +687,100 @@ exports.ask = async (req, res, next) => {
   }
 };
 
+/**
+ * Ensure the system "NOTESX AI Tutor" user exists in MongoDB so AI-generated
+ * Doubt answers populate `answererId` cleanly across all views.
+ */
+let cachedAiTutorUser = null;
+async function ensureAiTutorUser() {
+  if (cachedAiTutorUser) return cachedAiTutorUser;
+  const email = 'ai-tutor@notesx.in';
+  let botUser = await User.findOne({ email });
+  if (!botUser) {
+    botUser = await User.create({
+      name: 'NOTESX AI Tutor ✨',
+      email,
+      password: 'ai_system_account_no_login_' + Date.now(),
+      role: 'moderator',
+      bio: '24/7 AI Academic First Responder powered by Google Gemini & NOTESX Verified Syllabus Engine.',
+      collegeName: 'NOTESX Academic Engine',
+      course: 'AI Tutor • GATE & University Specialist',
+      reputation: 9999,
+      badges: ['AI Verified Tutor', '24/7 Instant Responder', 'GATE & University Expert'],
+      isVerified: true,
+      isPro: true
+    });
+  }
+  cachedAiTutorUser = botUser;
+  return botUser;
+}
+
+/**
+ * Generate a comprehensive, step-by-step academic solution for a Doubt
+ * using Gemini (or rich structured fallback if Gemini is unavailable).
+ */
+async function generateDoubtAiSolution(doubt) {
+  const optionsText = Array.isArray(doubt.options) && doubt.options.length > 0
+    ? `\nOptions:\n${doubt.options.map(o => `(${o.label}) ${o.text}`).join('\n')}`
+    : '';
+  const officialKeyText = doubt.correctOption ? `\nOfficial Answer Key (if known): ${doubt.correctOption}` : '';
+
+  const doubtPrompt = `Solve this academic/engineering doubt step-by-step for a student:
+Title: ${doubt.title}
+Subject: ${doubt.subjectName || 'Computer Science / Engineering'}
+Topic: ${doubt.topic || 'Core Concept'}
+Exam Category: ${doubt.examCategory || 'GATE / University'} (${doubt.questionType || 'General'}, ${doubt.marks || 2} Marks)
+Question Description:
+${doubt.description}${optionsText}${officialKeyText}
+
+Provide:
+1. **Direct Answer / Verdict** at the top.
+2. **Step-by-Step Derivation / Conceptual Explanation** (use clear markdown headings, formulas, and bullet points).
+3. **Why Other Options Are Incorrect** (if MCQ/MSQ) or **Key Exam Takeaway & Pitfalls to Avoid**.`;
+
+  const contextText = `Doubt Subject: ${doubt.subjectName || 'Engineering'}, Topic: ${doubt.topic || 'General'}, Tags: ${(doubt.tags || []).join(', ')}`;
+
+  const geminiResult = await callGeminiIfAvailable(doubtPrompt, contextText);
+  if (geminiResult && geminiResult.answer) {
+    return {
+      content: `> 🤖 **NOTESX AI Instant First Response** *(Verified Syllabus & GATE Engine — Peer reviews and additional human solutions are welcome!)*\n\n${geminiResult.answer}`,
+      aiModel: geminiResult.modelUsed || 'gemini-2.5-flash'
+    };
+  }
+
+  // Structured deterministic fallback if Gemini API is unreachable
+  const keyBanner = doubt.correctOption
+    ? `**Verified Answer Key:** Option **(${doubt.correctOption})**\n\n`
+    : '';
+
+  const fallbackContent = `> 🤖 **NOTESX AI Instant First Response** *(Automated Academic Breakdown — Peer reviews and additional human solutions are welcome!)*
+
+### 1. Concept Overview (${doubt.subjectName || 'Engineering'} ${doubt.topic ? `• ${doubt.topic}` : ''})
+${keyBanner}This question tests core principles from **${doubt.subjectName || 'Computer Science'}** (${doubt.examCategory || 'University / GATE'}).
+
+### 2. Step-by-Step Solution Strategy
+1. **Identify Given Parameters**: Carefully extract the constraints and preconditions stated in *"${doubt.title}"*.
+2. **Apply Governing Principle**:
+   - Formulate the state transition, recurrence, or system property relevant to **${doubt.topic || doubt.subjectName || 'the topic'}**.
+   - Trace the execution on a small test case or verify boundary conditions.
+${Array.isArray(doubt.options) && doubt.options.length > 0 ? `3. **Eliminate Invalid Options**:\n${doubt.options.map(o => `   - **Option (${o.label})**: Evaluate "${o.text}" against the core invariant.${doubt.correctOption === o.label ? ' ✅ *(Matches required condition)*' : ''}`).join('\n')}` : '3. **Structure for Full Marks**: Write the formal definition first, include a labeled diagram or trace table, and state the final time/space or performance conclusion clearly.'}
+
+### 3. Exam Tip & Common Pitfall
+- Always double-check base cases, units, and edge conditions before finalizing your answer in **${doubt.examCategory || 'the exam'}**.`;
+
+  return {
+    content: fallbackContent,
+    aiModel: 'notesx-academic-engine'
+  };
+}
+
 // Exposed for unit tests and route backwards compatibility
 exports.matchNavigationFromPrompt = matchNavigationFromPrompt;
 exports.normalizeNavigation = normalizeNavigation;
 exports.SITE_PAGES = SITE_PAGES;
 exports.FREE_DAILY_LIMIT = FREE_DAILY_LIMIT;
 exports.isUserPro = isUserPro;
+exports.ensureAiTutorUser = ensureAiTutorUser;
+exports.generateDoubtAiSolution = generateDoubtAiSolution;
+
 

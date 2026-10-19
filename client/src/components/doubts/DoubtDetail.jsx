@@ -218,6 +218,41 @@ export default function DoubtDetail() {
     }
   };
 
+  // Generate or regenerate Instant AI First Responder Answer
+  const [generatingAiAnswer, setGeneratingAiAnswer] = useState(false);
+  const handleGenerateAiAnswer = async (regenerate = false) => {
+    if (!user) {
+      alert('Please log in to generate an instant AI solution.');
+      return;
+    }
+    try {
+      setGeneratingAiAnswer(true);
+      const res = await doubtService.generateAiAnswer(doubt._id, { regenerate });
+      const aiAns = res.data;
+
+      setAnswers(prev => {
+        const existsIdx = prev.findIndex(a => a._id === aiAns._id);
+        if (existsIdx >= 0) {
+          const updated = [...prev];
+          updated[existsIdx] = aiAns;
+          return updated;
+        }
+        return [aiAns, ...prev];
+      });
+
+      if (!aiAns.alreadyExists && !regenerate) {
+        setDoubt(prev => ({
+          ...prev,
+          answersCount: (prev.answersCount || 0) + 1
+        }));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not generate AI solution right now.');
+    } finally {
+      setGeneratingAiAnswer(false);
+    }
+  };
+
   // Submit Comment (either for Question or Answer)
   const handleSubmitComment = async (onModel, parentId) => {
     const text = commentInputs[parentId]?.trim();
@@ -610,7 +645,7 @@ export default function DoubtDetail() {
 
           {/* Answers Section */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                   {answers.length} {answers.length === 1 ? 'Answer' : 'Answers'}
@@ -621,15 +656,37 @@ export default function DoubtDetail() {
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => {
-                  document.getElementById('answer')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5 shadow-sm"
-              >
-                <Edit3 size={12} />
-                Write Answer
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={generatingAiAnswer}
+                  onClick={() => {
+                    const hasAiAns = answers.some(
+                      a => a.isAiGenerated || a.answererId?.name?.includes('AI Tutor')
+                    );
+                    handleGenerateAiAnswer(hasAiAns);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 px-3 py-1.5 text-xs font-extrabold text-indigo-700 dark:text-indigo-300 transition shadow-2xs cursor-pointer disabled:opacity-60"
+                >
+                  <Sparkles size={13} className={generatingAiAnswer ? 'animate-spin text-indigo-600' : 'text-indigo-600'} />
+                  <span>
+                    {generatingAiAnswer
+                      ? 'Solving with Gemini AI...'
+                      : answers.some(a => a.isAiGenerated || a.answererId?.name?.includes('AI Tutor'))
+                        ? 'Regenerate AI Solution'
+                        : 'Instant AI Solution'}
+                  </span>
+                </button>
+                <button
+                  onClick={() => {
+                    document.getElementById('answer')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5 shadow-sm"
+                >
+                  <Edit3 size={12} />
+                  Write Answer
+                </button>
+              </div>
             </div>
 
             {/* Answer Cards List */}
@@ -638,13 +695,23 @@ export default function DoubtDetail() {
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   No solutions posted yet for this question.
                 </p>
-                <p className="text-xs text-slate-400">
-                  Know how to solve this? Write the first step-by-step solution below and earn reputation!
+                <p className="text-xs text-slate-400 mb-4">
+                  Need an immediate breakdown at 2:00 AM? Generate a step-by-step AI First Responder solution or write the first peer answer below!
                 </p>
+                <button
+                  type="button"
+                  disabled={generatingAiAnswer}
+                  onClick={() => handleGenerateAiAnswer(false)}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2 text-xs font-extrabold shadow-md transition cursor-pointer disabled:opacity-60"
+                >
+                  <Sparkles size={14} className={generatingAiAnswer ? 'animate-spin' : ''} />
+                  <span>{generatingAiAnswer ? 'Generating Step-by-Step AI Solution...' : '✨ Generate Instant AI First Response'}</span>
+                </button>
               </div>
             ) : (
               answers.map((ans) => {
                 const isAnswerer = user && (ans.answererId?._id === user._id || ans.answererId === user._id);
+                const isAiAns = Boolean(ans.isAiGenerated || ans.answererId?.name?.includes('AI Tutor'));
                 const ansNetVotes = ans.netVotes ?? ((ans.upvotes || 0) - (ans.downvotes || 0));
 
                 return (
@@ -653,6 +720,8 @@ export default function DoubtDetail() {
                     className={`glass-card p-5 sm:p-6 transition-all relative ${
                       ans.isAccepted
                         ? 'border-2 border-emerald-500/80 bg-emerald-50/10 dark:bg-emerald-950/20 shadow-md'
+                        : isAiAns
+                        ? 'border-2 border-indigo-300/80 dark:border-indigo-800/80 bg-indigo-50/15 dark:bg-indigo-950/20 shadow-sm'
                         : 'border border-slate-200/80 dark:border-slate-800'
                     }`}
                   >
@@ -661,6 +730,21 @@ export default function DoubtDetail() {
                       <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-900/40 -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 px-5 py-2.5 rounded-t-xl mb-4 border-b border-emerald-200 dark:border-emerald-800">
                         <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400" />
                         <span>Accepted Solution — Verified by Question Asker</span>
+                      </div>
+                    )}
+
+                    {/* Top AI First Responder Banner */}
+                    {!ans.isAccepted && isAiAns && (
+                      <div className="flex items-center justify-between gap-2 text-xs font-extrabold text-indigo-700 dark:text-indigo-300 bg-gradient-to-r from-indigo-100/80 via-purple-100/60 to-indigo-50/60 dark:from-indigo-900/50 dark:to-purple-900/40 -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 px-5 py-2.5 rounded-t-xl mb-4 border-b border-indigo-200/80 dark:border-indigo-800">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={15} className="text-indigo-600 dark:text-indigo-400" />
+                          <span>Instant AI First Responder — Verified Syllabus &amp; GATE Engine</span>
+                        </div>
+                        {ans.aiModel && (
+                          <span className="rounded-md bg-white/80 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-300">
+                            {ans.aiModel}
+                          </span>
+                        )}
                       </div>
                     )}
 
@@ -727,15 +811,23 @@ export default function DoubtDetail() {
                         {/* Answer Footer Info */}
                         <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-xs font-black shadow-xs">
-                              {ans.answererId?.name ? ans.answererId.name.charAt(0).toUpperCase() : 'A'}
+                            <div className={`w-8 h-8 rounded-xl text-white flex items-center justify-center text-xs font-black shadow-xs ${
+                              isAiAns
+                                ? 'bg-gradient-to-tr from-indigo-600 to-purple-600'
+                                : 'bg-gradient-to-tr from-emerald-600 to-teal-500'
+                            }`}>
+                              {isAiAns ? <Sparkles size={14} /> : (ans.answererId?.name ? ans.answererId.name.charAt(0).toUpperCase() : 'A')}
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <b className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                                   {ans.answererId?.name || 'Anonymous Contributor'}
                                 </b>
-                                {ans.answererId?.reputation !== undefined && (
+                                {isAiAns ? (
+                                  <span className="text-[10px] font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                                    24/7 AI Verified
+                                  </span>
+                                ) : ans.answererId?.reputation !== undefined && (
                                   <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-100 dark:border-emerald-900/60">
                                     {ans.answererId.reputation} XP
                                   </span>

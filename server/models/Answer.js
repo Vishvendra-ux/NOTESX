@@ -13,6 +13,8 @@ const answerSchema = new mongoose.Schema({
   downvotedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   
   isAccepted: { type: Boolean, default: false },
+  isAiGenerated: { type: Boolean, default: false },
+  aiModel: { type: String, default: '' },
 }, { timestamps: true });
 
 // After creating an answer, update the parent Doubt's answersCount and lastActivityAt.

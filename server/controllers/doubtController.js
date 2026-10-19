@@ -3,6 +3,7 @@ const Answer = require('../models/Answer');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
 const escapeRegex = require('../utils/escapeRegex');
+const { ensureAiTutorUser, generateDoubtAiSolution } = require('./aiAssistantController');
 
 // @desc    Get all doubts with GateOverflow filtering, sorting & search
 // @route   GET /api/doubts
@@ -243,6 +244,23 @@ exports.create = async (req, res, next) => {
 
     // Reward asker with reputation points
     await User.findByIdAndUpdate(req.user._id, { $inc: { reputation: 5 } });
+
+    // Auto-AI First Responder: generate an instant verified AI solution so no doubt goes unanswered
+    if (req.body.autoAiAnswer !== false) {
+      try {
+        const aiTutor = await ensureAiTutorUser();
+        const aiSolution = await generateDoubtAiSolution(doubt);
+        await Answer.create({
+          doubtId: doubt._id,
+          answererId: aiTutor._id,
+          content: aiSolution.content,
+          isAiGenerated: true,
+          aiModel: aiSolution.aiModel || 'gemini-2.5-flash'
+        });
+      } catch (aiErr) {
+        console.warn('Auto-AI First Responder skipped on doubt creation:', aiErr.message);
+      }
+    }
 
     const populated = await Doubt.findById(doubt._id).populate('askerId', 'name profilePhoto reputation badges collegeName');
     res.status(201).json(populated);
@@ -487,3 +505,67 @@ exports.acceptAnswer = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Generate or return an instant AI-Verified First Responder solution for a doubt
+// @route   POST /api/doubts/:id/ai-answer
+// @access  Private
+exports.generateAiAnswer = async (req, res, next) => {
+  try {
+    const doubt = await Doubt.findById(req.params.id);
+    if (!doubt) {
+      return res.status(404).json({ message: 'Doubt not found' });
+    }
+
+    const aiTutor = await ensureAiTutorUser();
+
+    // Check if an AI answer already exists for this doubt
+    const existingAiAnswer = await Answer.findOne({
+      doubtId: doubt._id,
+      $or: [{ isAiGenerated: true }, { answererId: aiTutor._id }]
+    }).populate('answererId', 'name profilePhoto reputation badges collegeName email');
+
+    if (existingAiAnswer && !req.body.regenerate) {
+      return res.json({
+        ...existingAiAnswer.toObject(),
+        comments: [],
+        hasUpvoted: false,
+        hasDownvoted: false,
+        netVotes: (existingAiAnswer.upvotes || 0) - (existingAiAnswer.downvotes || 0),
+        alreadyExists: true
+      });
+    }
+
+    const aiSolution = await generateDoubtAiSolution(doubt);
+
+    let savedAnswer;
+    if (existingAiAnswer && req.body.regenerate) {
+      existingAiAnswer.content = aiSolution.content;
+      existingAiAnswer.aiModel = aiSolution.aiModel || 'gemini-2.5-flash';
+      existingAiAnswer.isAiGenerated = true;
+      await existingAiAnswer.save();
+      savedAnswer = existingAiAnswer;
+    } else {
+      savedAnswer = await Answer.create({
+        doubtId: doubt._id,
+        answererId: aiTutor._id,
+        content: aiSolution.content,
+        isAiGenerated: true,
+        aiModel: aiSolution.aiModel || 'gemini-2.5-flash'
+      });
+    }
+
+    const populated = await Answer.findById(savedAnswer._id)
+      .populate('answererId', 'name profilePhoto reputation badges collegeName email');
+
+    res.status(201).json({
+      ...populated.toObject(),
+      comments: [],
+      hasUpvoted: false,
+      hasDownvoted: false,
+      netVotes: (populated.upvotes || 0) - (populated.downvotes || 0)
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
