@@ -34,7 +34,7 @@ exports.profile = async (req, res, next) => {
 
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { name, bio, collegeName, course, year, semester, github, linkedin, profilePhoto } = req.body;
+    const { name, bio, collegeName, course, year, semester, github, linkedin, profilePhoto, careerGoal, skills } = req.body;
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -50,6 +50,8 @@ exports.updateProfile = async (req, res, next) => {
     if (github !== undefined) user.github = github;
     if (linkedin !== undefined) user.linkedin = linkedin;
     if (profilePhoto) user.profilePhoto = profilePhoto;
+    if (careerGoal !== undefined) user.careerGoal = careerGoal;
+    if (Array.isArray(skills)) user.skills = skills.map(s => String(s).trim()).filter(Boolean);
 
     await user.save();
 

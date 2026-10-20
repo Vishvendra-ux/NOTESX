@@ -26,6 +26,7 @@ const Sprint = lazy(() => import('./pages/Sprint'));
 const ProjectWorkspace = lazy(() => import('./pages/ProjectWorkspace'));
 const Games = lazy(() => import('./pages/Games'));
 const GateQuestionAdmin = lazy(() => import('./pages/GateQuestionAdmin'));
+const StudentOnboarding = lazy(() => import('./pages/StudentOnboarding'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
 
             {/* Protected Routes (Must be logged in) */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/onboarding" element={<StudentOnboarding />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/roadmaps" element={<Roadmaps />} />
               <Route path="/roadmaps/:id" element={<Roadmaps />} />

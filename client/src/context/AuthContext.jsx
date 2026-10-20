@@ -48,13 +48,19 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
+  const completeOnboarding = async (onboardingData) => {
+    const res = await api.put('/auth/onboarding', onboardingData);
+    setUser(res.data);
+    return res.data;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, loginWithGoogle, completeOnboarding, logout }}>
       {children}
     </AuthContext.Provider>
   );

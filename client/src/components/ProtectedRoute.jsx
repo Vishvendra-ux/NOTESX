@@ -22,5 +22,16 @@ export default function ProtectedRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Student onboarding enforcement: un-onboarded students must complete their profile
+  const isStudentUnonboarded = user.role === 'student' && !user.isOnboarded;
+  if (isStudentUnonboarded && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" state={{ from: location }} replace />;
+  }
+
+  // Prevent onboarded users or admins from accidentally staying on /onboarding
+  if (!isStudentUnonboarded && location.pathname === '/onboarding') {
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace />;
+  }
+
   return <Outlet />;
 }

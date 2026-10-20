@@ -14,9 +14,21 @@ export default function Register() {
   const { user, register, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const navigateAfterAuth = (userObj) => {
+    if (userObj?.role === 'student' && !userObj?.isOnboarded) {
+      navigate('/onboarding', { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      if (user.role === 'student' && !user.isOnboarded) {
+        navigate('/onboarding', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     }
   }, [user, navigate]);
 
@@ -36,8 +48,8 @@ export default function Register() {
     setIsSubmitting(true);
 
     try {
-      await register({ name, email, password });
-      navigate('/');
+      const res = await register({ name, email, password });
+      navigateAfterAuth(res);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -49,11 +61,11 @@ export default function Register() {
     setError('');
     setIsSubmitting(true);
     try {
-      await loginWithGoogle({
+      const res = await loginWithGoogle({
         name: 'Google Student',
         email: 'student.google@gmail.com',
       });
-      navigate('/');
+      navigateAfterAuth(res);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

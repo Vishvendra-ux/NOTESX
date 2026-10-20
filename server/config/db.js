@@ -52,9 +52,14 @@ const seedDemoStudentUser = async () => {
         collegeName: 'GLA University',
         course: 'B.Tech CSE',
         year: '3rd Year',
+        semester: 'Semester 5',
+        isOnboarded: true,
         isVerified: true
       });
       console.log('✅ Demo Student Account Initialized: student.demo@notesx.edu');
+    } else if (!existing.isOnboarded) {
+      existing.isOnboarded = true;
+      await existing.save();
     }
   } catch (err) {
     console.error('Error seeding demo student user:', err.message);
