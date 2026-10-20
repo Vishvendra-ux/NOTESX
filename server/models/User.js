@@ -92,6 +92,51 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  isOnboarded: {
+    type: Boolean,
+    default: false,
+  },
+  careerGoal: {
+    type: String,
+    default: '',
+  },
+  skills: [{
+    type: String,
+    trim: true,
+  }],
+  codingProfiles: {
+    handles: {
+      leetcode: { type: String, default: '', trim: true },
+      codeforces: { type: String, default: '', trim: true },
+      codechef: { type: String, default: '', trim: true },
+    },
+    leetcode: {
+      easy: { type: Number, default: 0 },
+      medium: { type: Number, default: 0 },
+      hard: { type: Number, default: 0 },
+      totalSolved: { type: Number, default: 0 },
+      rating: { type: Number, default: 0 },
+      contestsAttended: { type: Number, default: 0 },
+      globalRanking: { type: Number, default: 0 },
+    },
+    codeforces: {
+      rating: { type: Number, default: 0 },
+      maxRating: { type: Number, default: 0 },
+      rank: { type: String, default: 'Unrated' },
+      totalSolved: { type: Number, default: 0 },
+    },
+    codechef: {
+      rating: { type: Number, default: 0 },
+      maxRating: { type: Number, default: 0 },
+      stars: { type: String, default: '1★' },
+      totalSolved: { type: Number, default: 0 },
+    },
+    codingScore: { type: Number, default: 0, index: true },
+    totalProblemsSolved: { type: Number, default: 0 },
+    verificationCode: { type: String, default: '' },
+    isVerifiedCoder: { type: Boolean, default: false },
+    lastSyncedAt: { type: Date, default: null },
+  },
 }, {
   timestamps: true,
 });

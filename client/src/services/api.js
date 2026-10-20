@@ -32,7 +32,13 @@ api.interceptors.response.use(
 );
 
 export const collegeService = { list: (params) => api.get('/colleges', { params }), get: (id) => api.get(`/colleges/${id}`) };
-export const authService = { login: (data) => api.post('/auth/login', data), register: (data) => api.post('/auth/register', data), me: () => api.get('/auth/me') };
+export const authService = { 
+  login: (data) => api.post('/auth/login', data), 
+  register: (data) => api.post('/auth/register', data), 
+  googleLogin: (data) => api.post('/auth/google', data),
+  onboarding: (data) => api.put('/auth/onboarding', data),
+  me: () => api.get('/auth/me') 
+};
 
 export const hierarchyService = {
   getCategories: () => api.get('/course-categories'),
@@ -97,6 +103,8 @@ export const contestService = {
   submit: (id, data) => api.post(`/contests/${id}/submit`, data),
   runCode: (id, data) => api.post(`/contests/${id}/run`, data),
   getLeaderboard: (id) => api.get(`/contests/${id}/leaderboard`),
+  getCodingLeaderboard: (params) => api.get('/contests/coding-leaderboard', { params }),
+  syncCodingProfile: (data) => api.post('/contests/coding-profile/sync', data, { timeout: 30000 }),
 };
 export const userService = { 
   me: () => api.get('/users/me'), 

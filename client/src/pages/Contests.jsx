@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { contestService } from '../services/api';
+import CodingProfileTrackerSection from '../components/contests/CodingProfileTrackerSection';
 
 const DEFAULT_QUESTIONS = [
   {
@@ -428,6 +429,9 @@ export default function Contests() {
           </div>
         </div>
       </div>
+
+      {/* ── Live LeetCode + Codeforces + CodeChef Profile Tracker & Unified Leaderboard ── */}
+      <CodingProfileTrackerSection />
 
       {/* ── Main Grid: Contests List & Live Leaderboards ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8" id="leaderboard-section">

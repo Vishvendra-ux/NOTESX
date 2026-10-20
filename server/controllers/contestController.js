@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
+const User = require('../models/User');
 const { runAllTestCases } = require('../services/judge0Service');
+const {
+  extractHandle,
+  fetchLeetCodeStats,
+  fetchCodeforcesStats,
+  fetchCodeChefStats,
+  calculateUnifiedCodingScore,
+} = require('../services/codingTrackerService');
 
 const DEFAULT_QUESTIONS = [
   {
@@ -507,4 +515,422 @@ exports.create = async (req, res, next) => {
     next(error);
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MULTI-PLATFORM CODING PROFILE TRACKER (LEETCODE + CODEFORCES + CODECHEF)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SEED_CAMPUS_CODERS = [
+  {
+    _id: 'seed-coder-1',
+    name: 'Aarav Mehta',
+    collegeName: 'IIT Delhi',
+    course: 'B.Tech CSE',
+    year: '4th Year',
+    codingProfiles: {
+      handles: { leetcode: 'aarav_dsa', codeforces: 'aarav_cf', codechef: 'aarav_cc' },
+      leetcode: { easy: 180, medium: 340, hard: 95, totalSolved: 615, rating: 2045, contestsAttended: 34 },
+      codeforces: { rating: 1740, maxRating: 1795, rank: 'Expert', totalSolved: 410 },
+      codechef: { rating: 1920, maxRating: 1965, stars: '4★', totalSolved: 230 },
+      codingScore: 6789,
+      totalProblemsSolved: 1255,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 25 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-2',
+    name: 'Priya Sharma',
+    collegeName: 'GLA University',
+    course: 'B.Tech CSE',
+    year: '3rd Year',
+    codingProfiles: {
+      handles: { leetcode: 'priya_codes', codeforces: 'priya_gla', codechef: 'priya_star' },
+      leetcode: { easy: 165, medium: 285, hard: 62, totalSolved: 512, rating: 1890, contestsAttended: 26 },
+      codeforces: { rating: 1545, maxRating: 1580, rank: 'Specialist', totalSolved: 315 },
+      codechef: { rating: 1785, maxRating: 1810, stars: '3★', totalSolved: 195 },
+      codingScore: 5392,
+      totalProblemsSolved: 1022,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 40 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-3',
+    name: 'Rohan Kulkarni',
+    collegeName: 'BITS Pilani',
+    course: 'B.Tech CSE',
+    year: '3rd Year',
+    codingProfiles: {
+      handles: { leetcode: 'rohan_bits', codeforces: 'rohan_cp', codechef: 'rohan_k' },
+      leetcode: { easy: 140, medium: 260, hard: 58, totalSolved: 458, rating: 1835, contestsAttended: 22 },
+      codeforces: { rating: 1620, maxRating: 1650, rank: 'Expert', totalSolved: 350 },
+      codechef: { rating: 1840, maxRating: 1870, stars: '4★', totalSolved: 180 },
+      codingScore: 5243,
+      totalProblemsSolved: 988,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 75 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-4',
+    name: 'Ananya Verma',
+    collegeName: 'AKTU',
+    course: 'B.Tech CSE',
+    year: '3rd Year',
+    codingProfiles: {
+      handles: { leetcode: 'ananya_aktu', codeforces: 'ananya_v', codechef: 'ananya_cc' },
+      leetcode: { easy: 155, medium: 230, hard: 42, totalSolved: 427, rating: 1760, contestsAttended: 19 },
+      codeforces: { rating: 1430, maxRating: 1465, rank: 'Specialist', totalSolved: 245 },
+      codechef: { rating: 1690, maxRating: 1720, stars: '3★', totalSolved: 160 },
+      codingScore: 4405,
+      totalProblemsSolved: 832,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 110 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-5',
+    name: 'Devansh Singh',
+    collegeName: 'GLA University',
+    course: 'B.Tech CSE (AI/ML)',
+    year: '3rd Year',
+    codingProfiles: {
+      handles: { leetcode: 'devansh_gla', codeforces: 'devansh_cf', codechef: 'devansh_cc' },
+      leetcode: { easy: 130, medium: 210, hard: 35, totalSolved: 375, rating: 1715, contestsAttended: 16 },
+      codeforces: { rating: 1365, maxRating: 1410, rank: 'Pupil', totalSolved: 210 },
+      codechef: { rating: 1625, maxRating: 1660, stars: '3★', totalSolved: 145 },
+      codingScore: 3864,
+      totalProblemsSolved: 730,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 140 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-6',
+    name: 'Karthik Nair',
+    collegeName: 'NIT Trichy',
+    course: 'B.Tech ECE',
+    year: '4th Year',
+    codingProfiles: {
+      handles: { leetcode: 'karthik_nitt', codeforces: 'karthik_cf', codechef: 'karthik_n' },
+      leetcode: { easy: 120, medium: 195, hard: 38, totalSolved: 353, rating: 1690, contestsAttended: 15 },
+      codeforces: { rating: 1480, maxRating: 1510, rank: 'Specialist', totalSolved: 260 },
+      codechef: { rating: 1640, maxRating: 1680, stars: '3★', totalSolved: 130 },
+      codingScore: 3899,
+      totalProblemsSolved: 743,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 180 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-7',
+    name: 'Sneha Gupta',
+    collegeName: 'VIT',
+    course: 'B.Tech IT',
+    year: '2nd Year',
+    codingProfiles: {
+      handles: { leetcode: 'sneha_vit', codeforces: 'sneha_g', codechef: 'sneha_cc' },
+      leetcode: { easy: 145, medium: 175, hard: 24, totalSolved: 344, rating: 1640, contestsAttended: 12 },
+      codeforces: { rating: 1280, maxRating: 1315, rank: 'Pupil', totalSolved: 165 },
+      codechef: { rating: 1540, maxRating: 1580, stars: '2★', totalSolved: 120 },
+      codingScore: 3281,
+      totalProblemsSolved: 629,
+      isVerifiedCoder: false,
+      lastSyncedAt: new Date(Date.now() - 210 * 60000),
+    },
+  },
+  {
+    _id: 'seed-coder-8',
+    name: 'Vikramaditya Rao',
+    collegeName: 'DTU',
+    course: 'B.Tech SE',
+    year: '3rd Year',
+    codingProfiles: {
+      handles: { leetcode: 'vikram_dtu', codeforces: 'vikram_cf', codechef: 'vikram_cc' },
+      leetcode: { easy: 110, medium: 165, hard: 28, totalSolved: 303, rating: 1625, contestsAttended: 14 },
+      codeforces: { rating: 1390, maxRating: 1420, rank: 'Pupil', totalSolved: 195 },
+      codechef: { rating: 1590, maxRating: 1610, stars: '2★', totalSolved: 115 },
+      codingScore: 3229,
+      totalProblemsSolved: 613,
+      isVerifiedCoder: true,
+      lastSyncedAt: new Date(Date.now() - 240 * 60000),
+    },
+  },
+];
+
+function buildLeaderboardPayload(dbUsers, query = {}) {
+  const { college, platform = 'overall', search = '' } = query;
+
+  // Map DB users into standardized coder entries
+  const realCoders = dbUsers.map((u) => ({
+    _id: String(u._id),
+    name: u.name,
+    collegeName: u.collegeName || 'GLA University',
+    course: u.course || 'B.Tech CSE',
+    year: u.year || '3rd Year',
+    profilePhoto: u.profilePhoto || '',
+    isRealUser: true,
+    codingProfiles: u.codingProfiles,
+  }));
+
+  // Combine real users with campus benchmark coders (avoiding duplicate names)
+  const realNames = new Set(realCoders.map((r) => r.name.toLowerCase()));
+  const combined = [
+    ...realCoders,
+    ...SEED_CAMPUS_CODERS.filter((s) => !realNames.has(s.name.toLowerCase())),
+  ];
+
+  // Aggregate College Standings across all coders before filtering by college
+  const collegeMap = new Map();
+  for (const coder of combined) {
+    const cName = coder.collegeName || 'Engineering Campus';
+    const cp = coder.codingProfiles || {};
+    const existing = collegeMap.get(cName) || {
+      collegeName: cName,
+      totalScore: 0,
+      totalSolved: 0,
+      coderCount: 0,
+      topCoder: coder.name,
+      topCoderScore: 0,
+    };
+
+    const score = Number(cp.codingScore) || 0;
+    existing.totalScore += score;
+    existing.totalSolved += Number(cp.totalProblemsSolved) || 0;
+    existing.coderCount += 1;
+    if (score >= existing.topCoderScore) {
+      existing.topCoderScore = score;
+      existing.topCoder = coder.name;
+    }
+    collegeMap.set(cName, existing);
+  }
+
+  const collegeStandings = Array.from(collegeMap.values()).sort(
+    (a, b) => b.totalScore - a.totalScore || b.totalSolved - a.totalSolved
+  );
+
+  // Filter coders by college & search
+  let filtered = combined;
+  if (college && college !== 'All') {
+    filtered = filtered.filter(
+      (c) => (c.collegeName || '').toLowerCase() === college.toLowerCase()
+    );
+  }
+
+  if (search && search.trim()) {
+    const q = search.trim().toLowerCase();
+    filtered = filtered.filter((c) => {
+      const h = c.codingProfiles?.handles || {};
+      return (
+        (c.name || '').toLowerCase().includes(q) ||
+        (c.collegeName || '').toLowerCase().includes(q) ||
+        (h.leetcode || '').toLowerCase().includes(q) ||
+        (h.codeforces || '').toLowerCase().includes(q) ||
+        (h.codechef || '').toLowerCase().includes(q)
+      );
+    });
+  }
+
+  // Sort by selected platform metric
+  filtered.sort((a, b) => {
+    const cpA = a.codingProfiles || {};
+    const cpB = b.codingProfiles || {};
+    if (platform === 'leetcode') {
+      const diff = (cpB.leetcode?.totalSolved || 0) - (cpA.leetcode?.totalSolved || 0);
+      if (diff !== 0) return diff;
+      return (cpB.leetcode?.rating || 0) - (cpA.leetcode?.rating || 0);
+    }
+    if (platform === 'codeforces') {
+      const diff = (cpB.codeforces?.rating || 0) - (cpA.codeforces?.rating || 0);
+      if (diff !== 0) return diff;
+      return (cpB.codeforces?.totalSolved || 0) - (cpA.codeforces?.totalSolved || 0);
+    }
+    if (platform === 'codechef') {
+      const diff = (cpB.codechef?.rating || 0) - (cpA.codechef?.rating || 0);
+      if (diff !== 0) return diff;
+      return (cpB.codechef?.totalSolved || 0) - (cpA.codechef?.totalSolved || 0);
+    }
+    return (cpB.codingScore || 0) - (cpA.codingScore || 0);
+  });
+
+  return {
+    coders: filtered,
+    collegeStandings,
+  };
+}
+
+// @desc    Get Multi-Platform Coding Leaderboard (LeetCode + Codeforces + CodeChef)
+// @route   GET /api/contests/coding-leaderboard
+// @access  Public (Optional Auth)
+exports.getCodingLeaderboard = async (req, res, next) => {
+  try {
+    const dbUsers = await User.find({
+      'codingProfiles.codingScore': { $gt: 0 },
+    })
+      .select('name collegeName course year profilePhoto codingProfiles')
+      .sort({ 'codingProfiles.codingScore': -1 })
+      .limit(100)
+      .lean();
+
+    const { coders, collegeStandings } = buildLeaderboardPayload(dbUsers, req.query);
+
+    let myProfile = null;
+    if (req.user) {
+      const currentUser = await User.findById(req.user._id).select(
+        'name collegeName course year codingProfiles'
+      );
+      if (currentUser) {
+        if (!currentUser.codingProfiles?.verificationCode) {
+          const code = `NOTESX-${String(currentUser._id).slice(-4).toUpperCase()}`;
+          currentUser.set('codingProfiles.verificationCode', code);
+          await currentUser.save();
+        }
+        myProfile = currentUser.codingProfiles;
+      }
+    }
+
+    res.json({
+      coders,
+      collegeStandings,
+      myProfile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Link & Sync Student's Live LeetCode, Codeforces, and CodeChef Profiles
+// @route   POST /api/contests/coding-profile/sync
+// @access  Private
+exports.syncCodingProfile = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Please log in to link and sync your coding profiles.' });
+    }
+
+    const { leetcode = '', codeforces = '', codechef = '', collegeName } = req.body;
+
+    const cleanLc = extractHandle(leetcode, 'leetcode');
+    const cleanCf = extractHandle(codeforces, 'codeforces');
+    const cleanCc = extractHandle(codechef, 'codechef');
+
+    if (!cleanLc && !cleanCf && !cleanCc) {
+      return res.status(400).json({
+        message: 'Please provide at least one handle (LeetCode, Codeforces, or CodeChef) to sync.',
+      });
+    }
+
+    const userDoc = await User.findById(req.user._id);
+    if (!userDoc) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const verificationCode =
+      userDoc.codingProfiles?.verificationCode ||
+      `NOTESX-${String(userDoc._id).slice(-4).toUpperCase()}`;
+
+    // Fetch all provided platforms in parallel
+    const [lcStats, cfStats, ccStats] = await Promise.all([
+      cleanLc ? fetchLeetCodeStats(cleanLc) : Promise.resolve(null),
+      cleanCf ? fetchCodeforcesStats(cleanCf) : Promise.resolve(null),
+      cleanCc ? fetchCodeChefStats(cleanCc) : Promise.resolve(null),
+    ]);
+
+    const leetcodeData = lcStats
+      ? {
+          easy: lcStats.easy,
+          medium: lcStats.medium,
+          hard: lcStats.hard,
+          totalSolved: lcStats.totalSolved,
+          rating: lcStats.rating,
+          contestsAttended: lcStats.contestsAttended,
+          globalRanking: lcStats.globalRanking,
+        }
+      : { easy: 0, medium: 0, hard: 0, totalSolved: 0, rating: 0, contestsAttended: 0, globalRanking: 0 };
+
+    const codeforcesData = cfStats
+      ? {
+          rating: cfStats.rating,
+          maxRating: cfStats.maxRating,
+          rank: cfStats.rank,
+          totalSolved: cfStats.totalSolved,
+        }
+      : { rating: 0, maxRating: 0, rank: 'Unrated', totalSolved: 0 };
+
+    const codechefData = ccStats
+      ? {
+          rating: ccStats.rating,
+          maxRating: ccStats.maxRating,
+          stars: ccStats.stars,
+          totalSolved: ccStats.totalSolved,
+        }
+      : { rating: 0, maxRating: 0, stars: '1★', totalSolved: 0 };
+
+    const { codingScore, totalProblemsSolved } = calculateUnifiedCodingScore({
+      leetcode: leetcodeData,
+      codeforces: codeforcesData,
+      codechef: codechefData,
+    });
+
+    // Check if the user placed their verificationCode in their LeetCode or Codeforces bio/name
+    const combinedBio = `${lcStats?.bioText || ''} ${cfStats?.bioText || ''}`.toUpperCase();
+    const isVerifiedCoder =
+      Boolean(userDoc.codingProfiles?.isVerifiedCoder) ||
+      (verificationCode && combinedBio.includes(verificationCode.toUpperCase()));
+
+    const wasFirstSync = !userDoc.codingProfiles?.lastSyncedAt;
+
+    if (collegeName && collegeName.trim()) {
+      userDoc.collegeName = collegeName.trim();
+    }
+
+    userDoc.codingProfiles = {
+      handles: {
+        leetcode: lcStats?.handle || cleanLc,
+        codeforces: cfStats?.handle || cleanCf,
+        codechef: ccStats?.handle || cleanCc,
+      },
+      leetcode: leetcodeData,
+      codeforces: codeforcesData,
+      codechef: codechefData,
+      codingScore,
+      totalProblemsSolved,
+      verificationCode,
+      isVerifiedCoder,
+      lastSyncedAt: new Date(),
+    };
+
+    if (wasFirstSync) {
+      userDoc.reputation = (userDoc.reputation || 0) + 25;
+    }
+
+    await userDoc.save();
+
+    // Re-query updated leaderboard so the student immediately sees their live rank
+    const dbUsers = await User.find({
+      'codingProfiles.codingScore': { $gt: 0 },
+    })
+      .select('name collegeName course year profilePhoto codingProfiles')
+      .sort({ 'codingProfiles.codingScore': -1 })
+      .limit(100)
+      .lean();
+
+    const { coders, collegeStandings } = buildLeaderboardPayload(dbUsers, {});
+
+    const myRank =
+      coders.findIndex((c) => String(c._id) === String(userDoc._id)) + 1;
+
+    res.json({
+      message: `Successfully synced your coding profiles! Your NOTESX Coding Score is ${codingScore.toLocaleString()} pts (${totalProblemsSolved} total problems solved).`,
+      myProfile: userDoc.codingProfiles,
+      myRank: myRank > 0 ? myRank : 1,
+      coders,
+      collegeStandings,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 

@@ -3,6 +3,8 @@ const controller = require('../controllers/contestController');
 const { protect, optionalProtect, authorize } = require('../middleware/authMiddleware');
 
 router.get('/', controller.list);
+router.get('/coding-leaderboard', optionalProtect, controller.getCodingLeaderboard);
+router.post('/coding-profile/sync', protect, controller.syncCodingProfile);
 router.get('/:id/leaderboard', controller.getLeaderboard);
 router.post('/:id/submit', optionalProtect, controller.submitSolution);
 router.post('/:id/run', optionalProtect, controller.runCode);
